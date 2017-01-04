@@ -100,7 +100,7 @@ def fund_form(data):
     if data['code'] == '':
         msg1 = 'Fund code field is required\n'
         msg = msg + msg1
-    if len(data['code']) > 10:
+    if len(data['code']) > 25:
         mgs2 = 'Fund code cannot be longer than 10 characters\n'
         msg = msg + mgs2
     if len(data['branches']) == 0:

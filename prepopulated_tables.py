@@ -36,6 +36,8 @@ LANG = [
     ('urd', 'Urdu'),
     ('yid', 'Yiddish'),
     ('zxx', 'No linguistic content'),
+    ('hat', 'Haitian French Creole'),
+    ('alb', 'Albanian')
 ]
 
 BRANCH = [

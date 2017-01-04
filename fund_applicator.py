@@ -1,6 +1,6 @@
 # finds and applies correct fund based on user specified rules
 
-import localDB as db
+import babelstore as db
 
 
 def find_fund(library_id, funds_str, audn_id, matType_id, location_id):
@@ -21,20 +21,28 @@ def find_fund(library_id, funds_str, audn_id, matType_id, location_id):
             db.Fund,
             library_id=library_id,
             code=fund)
-        fund_record.branches
-        fund_record.matTypes
-        fund_record.audns
+        # fund_record.branches
+        # fund_record.matTypes
+        # fund_record.audns
 
         for fund_branch in fund_record.branches:
             if fund_branch.branch_id == location_record.branch_id:
                 criteria['branch_match'] = True
                 # print 'branch', criteria
-
+        # fund_record = db.retrieve_all(
+        #     db.Fund,
+        #     'matTypes',
+        #     library_id=library_id,
+        #     code=fund)
         for fund_matType in fund_record.matTypes:
             if fund_matType.matType_id == matType_id:
                 criteria['matType_match'] = True
                 # print 'matType', criteria
-
+        # fund_record = db.retrieve_all(
+        #     db.Fund,
+        #     'audns',
+        #     library_id=library_id,
+        #     code=fund)
         for fund_audn in fund_record.audns:
             if fund_audn.audn_id == audn_id:
                 criteria['audn_match'] = True
