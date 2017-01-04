@@ -1,6 +1,6 @@
 # generates unique world languge order nubers
 import datetime
-import localDB as db
+import babelstore as db
 
 
 def get_new_number():

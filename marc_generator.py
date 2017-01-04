@@ -8,9 +8,10 @@ from pymarc import MARCWriter, Record, Field
 from datetime import date, datetime
 import os.path
 import shelve
+# import logging
 
 
-import localDB as db
+import babelstore as db
 from convert_price import cents2dollars
 
 
@@ -108,8 +109,9 @@ class MARCGenerator():
             id=self.order.matType_id)
         for record in records:
             for lib_join in record.lib_joins:
-                self.matType_bib_code = lib_join.codeB
-                self.matType_ord_code = lib_join.codeO
+                if self.order.library_id == lib_join.library_id:
+                    self.matType_bib_code = lib_join.codeB
+                    self.matType_ord_code = lib_join.codeO
 
         records = db.retrieve_all(
             db.OrderSingle,
@@ -163,6 +165,7 @@ class MARCGenerator():
                     'matType_bib': self.matType_bib_code,
                     'matType_ord': self.matType_ord_code,
                     'audn': audn_code,
+                    'po_per_line': orderSingle.po_per_line,
                     'wlo': orderSingle.wlo_id,
                     'priceDisc': str(cents2dollars(orderSingle.priceDisc)),
                     'priceReg': str(cents2dollars(orderSingle.priceReg)),
@@ -183,12 +186,9 @@ class MARCGenerator():
 
     def save2marc(self, record):
         """appends records to MARC file"""
-        try:
-            writer = MARCWriter(open(self.filehandle, 'a'))
-            writer.write(record)
-            self.record_count += 1
-        except UnicodeEncodeError:
-            print 'Diactritics error'
+        writer = MARCWriter(open(self.filehandle, 'a'))
+        writer.write(record)
+        self.record_count += 1
 
     def make_bib(self, order_data):
         """creates bib & order record in MARC21 format with UTF-8 encoded charset"""
@@ -347,7 +347,9 @@ class MARCGenerator():
         # 961 field
         subfields = []
         subfield_I = ['i', order_data['wlo']]
+        subfield_H = ['h', order_data['po_per_line']]
         subfields.extend(subfield_I)
+        subfields.extend(subfield_H)
         tags.append(Field(tag='961',
                           indicators=[' ', ' '],
                           subfields=subfields))
