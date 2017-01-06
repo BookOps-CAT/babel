@@ -2041,6 +2041,7 @@ class DistributionSingle(tk.Frame):
             self.lang_by_id = {}
             self.lang_choices = ()
             self.location_by_name = {}
+            self.codeCbx['value'] = ()
 
             # library
             if self.library_id.get() == 1:
