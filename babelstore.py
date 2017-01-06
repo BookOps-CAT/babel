@@ -143,7 +143,8 @@ class Location(Base):
     __tablename__ = 'location'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(length=10, collation='utf8_bin'), nullable=False, unique=True)
+    name = Column(String(length=10, collation='utf8_bin'),
+                  nullable=False, unique=True)
     library_id = Column(Integer, ForeignKey('library.id'), nullable=False)
     matType_id = Column(Integer, ForeignKey('mattype.id'), nullable=False)
     branch_id = Column(Integer, ForeignKey('branch.id'), nullable=False)
@@ -177,7 +178,8 @@ class DistrTemplate(Base):
     __tablename__ = 'distrtemplate'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(length=50, collation='utf8_bin'), nullable=False, unique=True)
+    name = Column(String(length=50, collation='utf8_bin'),
+                  nullable=False, unique=True)
     library_id = Column(Integer, ForeignKey('library.id'), nullable=False)
     lang_id = Column(Integer, ForeignKey('lang.id'), nullable=False)
 
@@ -209,15 +211,15 @@ class DistrCode(Base):
 class DistrLocQuantity(Base):
     __tablename__ = 'distrlocquantity'
 
-    distrCode_id = Column(Integer, ForeignKey('distrcode.id'),
-                          primary_key=True)
-    location_id = Column(Integer, ForeignKey('location.id'), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    distrCode_id = Column(Integer, ForeignKey('distrcode.id'))
+    location_id = Column(Integer, ForeignKey('location.id'))
     quantity = Column(Integer, nullable=False)
 
     def __repr__(self):
-        return "<DistrLocQuantity(distrCode_id='%s', location_id='%s', " \
-               "quantity='%s)>" % (
-                   self.distrCode_id, self.location_id, self.quantity)
+        return "<DistrLocQuantity(id='%s', distrCode_id='%s', " \
+               "location_id='%s', quantity='%s)>" % (
+                   self.id, self.distrCode_id, self.location_id, self.quantity)
 
 
 class FundAudnJoiner(Base):
@@ -270,7 +272,7 @@ class VendorSheetTemplate(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(length=25, collation='utf8_bin'),
                   nullable=False, unique=True)
-    desc = Column(String(250))
+    desc = Column(String(length=250, collation='utf8_bin'))
     lastMod = Column(DateTime, nullable=False)
     vendor_id = Column(Integer, ForeignKey('vendor.id'), nullable=False)
     lang_id = Column(Integer, ForeignKey('lang.id'), nullable=False)
