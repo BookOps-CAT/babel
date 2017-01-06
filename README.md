@@ -7,4 +7,5 @@ launch interface by running babel.py
 * sqlalchemy 1.0.15
 * openpyxl 2.4.0
 * pymarc 3.1.5
+* pymysql 0.7.9
 
