@@ -1853,31 +1853,69 @@ class DistributionSingle(tk.Frame):
         return str(selectBtn.winfo_parent())
 
     def on_save(self):
+        # validate if requried elements are present
+        correct = True
+        if self.name.get() == '':
+            m = 'Please enter template name'
+            tkMessageBox.showerror('Input error', m)
+            correct = False
+        if self.lang.get() == '':
+            m = 'Please select language'
+            tkMessageBox.showerror('Input error', m)
+            correct = False
+        # add validation for codes and distributions
 
-        codes_for_removal = []
-        distr_for_removal = []
-        for key, item in self.distr_data.iteritems():
-            if item['delete_code']:
-                if item['code_data'][0].id is not None:
-                    db.delete_record(
-                        db.DistrCode,
-                        id=item['code_data'][0].id)
-                codes_for_removal.append(key)
+        if correct:
+            if self.distrTemplate_id.get() == 0:
+                new_record = db.ignore_or_insert(
+                    db.DistrTemplate,
+                    library_id=self.library_id.get(),
+                    name=self.name.get().strip(),
+                    lang_id=self.lang_by_name[self.lang.get()][0])
+
+                # update id or DistrCode records stored in mememory
+                new_template = db.retrieve_last(
+                    db.DistrTemplate)
+                for item in self.distr_data.itervalues():
+                    item['code_data'][0].distrTemplate_id = new_template.id
+                if not new_record:
+                    tkMessageBox.showerror('Database error', new_record)
             else:
-                # delete any distributions marked for removal
-                new_distr = []
-                for distr in item['code_data'][1]:
-                    if distr[2]:
-                        new_distr.append(distr[1])
-                    else:
-                        distr_for_removal.append(distr)
-                item['code_data'][0].distrLocQtys = new_distr
-                db.merge_object(item['code_data'][0])
+                db.update_record(
+                    db.DistrTemplate,
+                    id=self.distrTemplate_id.get(),
+                    library_id=self.library_id.get(),
+                    name=self.name.get().strip(),
+                    lang_id=self.lang_by_name[self.lang.get()][0])
 
-        for key in codes_for_removal:
-            self.distr_data.pop(key)
+            codes_for_removal = []
+            distr_for_removal = []
 
-        tkMessageBox.showinfo('Saving', 'distribution has been saved')
+            for key, item in self.distr_data.iteritems():
+                print item
+                if item['delete_code']:
+                    if item['code_data'][0].id is not None:
+                        db.delete_record(
+                            db.DistrCode,
+                            id=item['code_data'][0].id)
+                    codes_for_removal.append(key)
+                else:
+                    # delete any distributions marked for removal
+                    new_distr = []
+                    for distr in item['code_data'][1]:
+                        if distr[2]:
+                            new_distr.append(distr[1])
+                        else:
+                            distr_for_removal.append(distr)
+
+                    item['code_data'][0].distrLocQtys = new_distr
+                    print item['code_data'][0], item['code_data'][0].distrLocQtys
+                    db.merge_object(item['code_data'][0])
+
+            for key in codes_for_removal:
+                self.distr_data.pop(key)
+
+            tkMessageBox.showinfo('Saving', 'distribution has been saved')
 
     def new_code(self):
         # remove whitespaces and change to uppercase
@@ -1893,6 +1931,7 @@ class DistributionSingle(tk.Frame):
         self.code.set(''.join(code_chars))
 
         # check if already displayed
+        print self.codeCbx['value']
         if self.code.get() in self.codeCbx['value']:
             m = 'code already created'
             tkMessageBox.showwarning('Input error', m)
@@ -1997,6 +2036,12 @@ class DistributionSingle(tk.Frame):
 
     def observer(self, *args):
         if self.tier.get() == 'DistributionSingle':
+            # reset indexes
+            self.lang_by_name = {}
+            self.lang_by_id = {}
+            self.lang_choices = ()
+            self.location_by_name = {}
+
             # library
             if self.library_id.get() == 1:
                 self.library.set('BPL')
@@ -2150,22 +2195,22 @@ class FundBrowse(tk.Frame):
 
     def edit_entry(self):
         if self.fundLst.get(tk.ANCHOR) != '':
-            if tkMessageBox.askokcancel(
-                    'Funds',
-                    'delete fund?'):
-                self.selectedItem_1.set(self.fundLst.get(tk.ANCHOR))
-                self.selectedItem_3.set(self.library_id.get())
-                self.action.set('update')
-                self.controller.show_frame('FundSingle')
+            self.selectedItem_1.set(self.fundLst.get(tk.ANCHOR))
+            self.selectedItem_3.set(self.library_id.get())
+            self.action.set('update')
+            self.controller.show_frame('FundSingle')
         else:
             msg = 'Please select library and fund code'
             tkMessageBox.showwarning('Input Error', msg)
 
     def delete_entry(self):
         if self.fundLst.get(tk.ANCHOR) != '':
-            code = self.fundLst.get(tk.ANCHOR)
-            db.delete_record(db.Fund, code=code)
-            self.fundLst.delete(tk.ANCHOR)
+            if tkMessageBox.askokcancel(
+                    'Funds',
+                    'delete fund?'):
+                code = self.fundLst.get(tk.ANCHOR)
+                db.delete_record(db.Fund, code=code)
+                self.fundLst.delete(tk.ANCHOR)
         else:
             msg = 'Please select library and fund code from the list'
             tkMessageBox.showwarning('Input Error', msg)

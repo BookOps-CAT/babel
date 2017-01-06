@@ -16,7 +16,6 @@ DB_DRIVERS = ('pymysql', )
 DB_CHARSET = ('utf8', )
 
 
-
 Base = declarative_base()
 
 
@@ -178,7 +177,7 @@ class DistrTemplate(Base):
     __tablename__ = 'distrtemplate'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(length=25, collation='utf8_bin'), nullable=False, unique=True)
+    name = Column(String(length=50, collation='utf8_bin'), nullable=False, unique=True)
     library_id = Column(Integer, ForeignKey('library.id'), nullable=False)
     lang_id = Column(Integer, ForeignKey('lang.id'), nullable=False)
 
@@ -203,8 +202,8 @@ class DistrCode(Base):
                                 cascade='all, delete-orphan')
 
     def __repr__(self):
-        return "<DistrCode(id='%s', code='%s')>" % (
-            self.id, self.code)
+        return "<DistrCode(id='%s', code='%s', distrTemplate_id='%s')>" % (
+            self.id, self.code, self.distrTemplate_id)
 
 
 class DistrLocQuantity(Base):
@@ -693,4 +692,3 @@ def initiateDB():
 
 if __name__ == '__main__':
     initiateDB()
-    print database_url()
