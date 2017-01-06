@@ -5544,30 +5544,37 @@ class OrderEdit(tk.Frame):
         active_entry = self.entries[self.entry_id.get()]
         self.distrFrm = active_entry['distrFrm']
         distr = active_entry['distr']
+
+        # collect used rows numbers in distrFrm to find later the last one
+        distr_rows = []
+        for item in distr.itervalues():
+            distr_rows.append(int(item['removeBtn'].grid_info()['row']))
+
         location = ttk.Combobox(self.distrFrm, font=REG_FONT,
                                 values=self.location_values,
                                 width=10,
                                 state='readonly')
         location.grid(
-            row=len(distr), column=0, sticky='new', padx=5, pady=2)
+            row=max(distr_rows) + 1, column=0, sticky='new', padx=5, pady=2)
 
         qty = ttk.Entry(self.distrFrm, font=REG_FONT,
                         width=5)
         qty.grid(
-            row=len(distr), column=1, sticky='new', padx=5, pady=2)
+            row=max(distr_rows) + 1, column=1, sticky='new', padx=5, pady=2)
 
         fund = ttk.Combobox(self.distrFrm, font=REG_FONT,
                             width=10,
                             values=self.fund_values,
                             state='readonly')
         fund.grid(
-            row=len(distr), column=2, sticky='new', padx=5, pady=2)
+            row=max(distr_rows) + 1, column=2, sticky='new', padx=5, pady=2)
 
         removeBtn = tk.Button(self.distrFrm, text='remove',
                               font=REG_FONT,
                               width=10,
                               height=1)
-        removeBtn.grid(row=len(distr), column=3, sticky='nw', padx=5, pady=2)
+        removeBtn.grid(row=max(distr_rows) + 1, column=3, sticky='nw',
+                       padx=5, pady=2)
         removeBtn['command'] = lambda n=str(removeBtn): self.delete_distr(n)
 
         distr[str(removeBtn)] = {'distr_id': None,  # populate on save
@@ -5669,7 +5676,8 @@ class OrderEdit(tk.Frame):
             entry['date'].insert(0, bib_rec.pubDate)
 
         entry['audn'].insert(0, audn_rec.code)
-        entry['po_per_line'].insert(0, ord_rec.po_per_line)
+        if entry['po_per_line'] is not None:
+            entry['po_per_line'].insert(0, ord_rec.po_per_line)
         if ord_rec.oNumber is not None:
             entry['oNumber'].insert(0, ord_rec.oNumber)
         if ord_rec.bNumber is not None:
@@ -5969,67 +5977,3 @@ if __name__ == '__main__':
         setup_root.mainloop()
 
     user_data.close()
-
-    # check if localstore is present
-    """if 'local_db_dir' in user_data:
-        user_data.close()
-        fh = db.db_path()
-
-        # in case user_data is not available set up new localstore
-        if not os.path.isfile(fh[10:]):
-            print 'setting up new local DB...'
-            db.initiateDB()
-
-        # launch app
-        app = MainApplication()
-        cur_manager = BusyManager(app)
-        app.title(version)
-        app.mainloop()
-
-    else:
-        setup_win = tk.Tk()
-        setup_win.title('Setup') 
-
-        popup_question = tkMessageBox.askokcancel(
-            title='Database setup', 
-            message='OK - create new\nCancel - link to existing or exit',
-            parent=setup_win)
-        if popup_question:
-            dir = tkFileDialog.askdirectory(
-                title='Choose new database destination',
-                parent=setup_win)
-            if dir is not '':
-                user_data['local_db_dir'] = dir + '/'
-                user_data.close()
-                db.initiateDB()
-                setup_win.destroy()
-
-                # launch app
-                app = MainApplication()
-                cur_manager = BusyManager(app)
-                app.title(version)
-                app.mainloop()
-            else:
-                setup_win.destroy()
-        else:
-            dir = tkFileDialog.askdirectory(
-                title='Select exsiting database destination',
-                parent=setup_win)
-            # link to existing localstore specified by user
-            if dir is not '':
-                user_data['local_db_dir'] = dir + '/'
-                user_data.close()
-                fh = db.db_path()
-                if not os.path.isfile(fh[10:]):
-                    print 'setting up local DB...'
-                    db.initiateDB()
-                setup_win.destroy()
-
-                # launch app
-                app = MainApplication()
-                cur_manager = BusyManager(app)
-                app.title(version)
-                app.mainloop()
-            else:
-                setup_win.destroy()
-        setup_win.mainloop()"""
