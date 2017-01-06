@@ -75,12 +75,12 @@ class MARCGenerator():
             self.vendor_code = record.nyplCode
 
         # create marc file for records
-        temp_data = shelve.open('temp_data')
-        if 'marc_dir' in temp_data:
-            marc_dir = temp_data['marc_dir']
+        user_data = shelve.open('user_data')
+        if 'marc_dir' in user_data:
+            marc_dir = user_data['marc_dir']
         else:
             marc_dir = ''
-        temp_data.close()
+        user_data.close()
         file_date = datetime.strftime(date.today(), '%y%m%d')
         fname = self.library_code + '-' + self.vendor_name + '-' + file_date
         n = 0
