@@ -131,7 +131,7 @@ class MARCGenerator():
 
             distr_records = db.col_preview(
                 db.OrderSingleLoc,
-                'location_id', 'fund_id', 'qty',
+                'id', 'location_id', 'fund_id', 'qty',
                 orderSingle_id=orderSingle.id)
             distr_locations = []
             distr_funds = []
@@ -347,9 +347,10 @@ class MARCGenerator():
         # 961 field
         subfields = []
         subfield_I = ['i', order_data['wlo']]
-        subfield_H = ['h', order_data['po_per_line']]
+        if order_data['po_per_line'] is not None:
+            subfield_H = ['h', order_data['po_per_line']]
+            subfields.extend(subfield_H)
         subfields.extend(subfield_I)
-        subfields.extend(subfield_H)
         tags.append(Field(tag='961',
                           indicators=[' ', ' '],
                           subfields=subfields))

@@ -1892,7 +1892,7 @@ class DistributionSingle(tk.Frame):
             distr_for_removal = []
 
             for key, item in self.distr_data.iteritems():
-                print item
+                # print item
                 if item['delete_code']:
                     if item['code_data'][0].id is not None:
                         db.delete_record(
@@ -1909,7 +1909,7 @@ class DistributionSingle(tk.Frame):
                             distr_for_removal.append(distr)
 
                     item['code_data'][0].distrLocQtys = new_distr
-                    print item['code_data'][0], item['code_data'][0].distrLocQtys
+                    # print item['code_data'][0], item['code_data'][0].distrLocQtys
                     db.merge_object(item['code_data'][0])
 
             for key in codes_for_removal:
@@ -1931,7 +1931,7 @@ class DistributionSingle(tk.Frame):
         self.code.set(''.join(code_chars))
 
         # check if already displayed
-        print self.codeCbx['value']
+        # print self.codeCbx['value']
         if self.code.get() in self.codeCbx['value']:
             m = 'code already created'
             tkMessageBox.showwarning('Input error', m)
@@ -3479,14 +3479,14 @@ class CartSheet(tk.Frame):
             lang = self.lang_by_id[distr.lang_id][0]
             distrCodes = db.col_preview(
                 db.DistrCode,
-                'code', 'id',
+                'id', 'code',
                 distrTemplate_id=distr_id)
             c = ''
             self.codeTotalQntBranch = {}
             for code in distrCodes:
                 locQnts = db.col_preview(
                     db.DistrLocQuantity,
-                    'location_id', 'quantity',
+                    'id', 'location_id', 'quantity',
                     distrCode_id=code.id
                 )
 
@@ -4241,7 +4241,7 @@ class ImportCartSheet(tk.Frame):
                         if record.code in distr_codes:
                             location_records = db.col_preview(
                                 db.DistrLocQuantity,
-                                'location_id', 'quantity',
+                                'id', 'location_id', 'quantity',
                                 distrCode_id=record.id)
                             for distr_location in location_records:
                                 # find correct fund
@@ -5731,27 +5731,34 @@ class OrderEdit(tk.Frame):
                         new_widget_row = []
                         for widget_row in previous_entry['distr'].itervalues():
                             if widget_row['distr_id'] is None:
-                                for_deletion.append(str(widget_row['removeBtn']))
+                                for_deletion.append(
+                                    str(widget_row['removeBtn']))
                                 for widget_key in ('fund', 'qty', 'location'):
-                                    entry_value = widget_row[widget_key].get().strip()
+                                    entry_value = widget_row[
+                                        widget_key].get().strip()
                                     if entry_value != '':
-                                        new_widget_row.append(str(widget_row['removeBtn']))
+                                        new_widget_row.append(
+                                            str(widget_row['removeBtn']))
                                         break
 
                         # destroy empty location widgets
                         for widget_id in for_deletion:
                             if widget_id not in new_widget_row:
-                                self.delete_distr(widget_id, self.previous_entry_id)
+                                self.delete_distr(
+                                    widget_id, self.previous_entry_id)
 
-                        # iterate again to disable widgets and take a snapshot of the content
+                        # iterate again to disable widgets and
+                        # take a snapshot of the content
                         for widget_row in previous_entry['distr'].itervalues():
                             for widget_key in widget_row:
                                 if widget_key == 'distr_id':
                                     pass
-                                elif widget_key == 'location' or widget_key == 'fund':
+                                elif widget_key == 'location' \
+                                        or widget_key == 'fund':
                                     widget_row[widget_key].state(['disabled'])
                                 else:
-                                    widget_row[widget_key]['state'] = tk.DISABLED
+                                    widget_row[
+                                        widget_key]['state'] = tk.DISABLED
                     elif key == 'bib_id' or key == 'ordSingle_id':
                         pass
                     elif key == 'frame' or key == 'distrFrm':
