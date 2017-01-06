@@ -64,7 +64,7 @@ class SheetManipulator:
 
         # reference legend area
         dr = 1
-        print kwargs['distrDetails']
+        # print kwargs['distrDetails']
         distrLegend = kwargs['distrDetails'].split('\n')
         for line in distrLegend[1:]:
             self.new_ws_cart.cell(row=dr, column=1).value = line
