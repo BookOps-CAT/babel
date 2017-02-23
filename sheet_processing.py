@@ -51,6 +51,7 @@ class SheetManipulator:
         return self.sheet_data
 
     def cart_sheet(self, fname, **kwargs):
+
         self.head_row = self.ws[
             'A' + str(kwargs['head_row']) +
             ':' + self.last_col + str(kwargs['head_row'])]
@@ -95,11 +96,17 @@ class SheetManipulator:
         codes_range = 'meta!A2:%s4' % (get_column_letter(c - 1))
         # headings row
         extra_columns = ()
+
+        if kwargs['z3950target'] is None:
+            target_name = 'no target'
+        else:
+            target_name = kwargs['z3950target']['name']
+
         standard_columns = (
             'Distribution',
             'Audience',
             'PO per line',
-            kwargs['z3950target']['name'],
+            target_name,
             'Branches',  # optional ask if needed
             'Total Qty',
             'Total Price')  # optional ask if needed
@@ -207,7 +214,7 @@ class SheetManipulator:
                 elif col == 'PO per line':
                     po_per_line_col = col_counter
                     new_values.append(None)
-                elif col == kwargs['z3950target']['name']:
+                elif col == target_name:
                     isbn_value = self.ws[
                         kwargs['isbn_col'] +
                         str(kwargs['head_row'] + row_counter)].value
