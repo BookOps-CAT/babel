@@ -1,6 +1,10 @@
 # finds and applies correct fund based on user specified rules
+import logging
 
 import babelstore as db
+
+# create logger
+module_logger = logging.getLogger('babel_logger.fund')
 
 
 def find_fund(library_id, funds_str, audn_id, matType_id, location_id):
@@ -57,6 +61,9 @@ def find_fund(library_id, funds_str, audn_id, matType_id, location_id):
     if len(ids) == 1:
         return (True, list(ids)[0])
     elif len(ids) == 0:
-        return (False, 'none of the funds matched')
+        module_logger.exception(
+            "FUND: fund(s) (%s) not applicable for this type of material" % fund_lst)
+        return (False, 'not able to correctly aplly one of the funds')
     else:
-        return (False, 'multiple, funds not exclusive')
+        module_logger.exception('FUND: applied funds (%s) are not exclusive' % fund_lst)
+        return (False, 'multiple fund matches, funds not exclusive')

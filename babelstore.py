@@ -116,6 +116,7 @@ class MatType(Base):
     locations = relationship("Location", cascade='all, delete-orphan')
     sheets = relationship("VendorSheetTemplate", cascade='all, delete-orphan')
     lib_joins = relationship("MatTypeLibraryJoiner",
+                             lazy='joined',
                              cascade='all, delete-orphan')
 
     def __repr__(self):
@@ -184,6 +185,7 @@ class DistrTemplate(Base):
     lang_id = Column(Integer, ForeignKey('lang.id'), nullable=False)
 
     distrCodes = relationship("DistrCode",
+                              lazy='joined',
                               cascade='all, delete-orphan')
 
     def __repr__(self):
@@ -201,6 +203,7 @@ class DistrCode(Base):
                               nullable=False)
 
     distrLocQtys = relationship("DistrLocQuantity",
+                                lazy='joined',
                                 cascade='all, delete-orphan')
 
     def __repr__(self):
@@ -342,15 +345,19 @@ class Order(Base):
     selector_id = Column(Integer, ForeignKey('selector.id'), nullable=False)
     matType_id = Column(Integer, ForeignKey('mattype.id'), nullable=False)
     wlo_range = Column(String(27))
+    blanketPO = Column(String(50))
 
     orderSingles = relationship('OrderSingle',
                                 cascade='all, delete-orphan')
 
     def __repr__(self):
         return "<Order(id='%s', name='%s', date='%s', library_id='%s', " \
-               "lang_id='%s', vendor_id='%s', selector_id='%s')>" % (
+               "lang_id='%s', vendor_id='%s', selector_id='%s', " \
+               "matType_id='%s', " \
+               "wlo_range='%s', blanketPO='%s')>" % (
                    self.id, self.name, self.date, self.library_id,
-                   self.lang_id, self.vendor_id, self.selector_id)
+                   self.lang_id, self.vendor_id, self.selector_id,
+                   self.matType_id, self.wlo_range, self.blanketPO)
 
 
 class OrderSingle(Base):
@@ -440,6 +447,28 @@ class UsedWlo(Base):
     def __repr__(self):
         return "<UsedWlo(id='%s', date='%s')>" % (
             self.id, self.date)
+
+
+class Z3950params(Base):
+    """
+    stores parameters of different Z3950 targets
+    """
+    __tablename__ = 'z3950params'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False)
+    host = Column(String(250), nullable=False)
+    port = Column(Integer, nullable=False)
+    database = Column(String(250), nullable=False)
+    user = Column(String(250))
+    password = Column(String(250))
+    syntax = Column(String(100), nullable=False)
+
+    def __repr__(self):
+        return "<z3950params(id='%s', name='%s', host='%s', port='%s', " \
+               "database='%s', user='%s', syntax='%s')>" % (
+                   self.id, self.name, self.host,
+                   self.port, self.database, self.user, self.syntax)
 
 
 def database_url():
