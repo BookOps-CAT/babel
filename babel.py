@@ -4189,8 +4189,8 @@ class CartSheet(tk.Frame):
                         'Output message', m):
                     os.startfile(cart_file)
 
-            except Exception as e:
-                main_logger.exception('Cart sheet error', str(e))
+            except:
+                main_logger.exception('Cart sheet error:')
                 cur_manager.notbusy()
 
             self.reset_values()
@@ -5211,9 +5211,9 @@ class OrderBrowse(tk.Frame):
                 tkMessageBox.showinfo(
                     'Output info', 'MARC file has been created')
                 cur_manager.notbusy()
-            except Exception, e:
+            except:
                 cur_manager.notbusy()
-                main_logger.exception('MARC file error: %s' % str(e))
+                main_logger.exception('MARC file error:')
                 tkMessageBox.showerror(
                     'Output error', 'not able to create MARC file')
 
@@ -5316,9 +5316,9 @@ class OrderBrowse(tk.Frame):
                     data.append(self.blanketPO)
                     data_set.append(data)
                 cur_manager.notbusy()
-            except Exception as e:
+            except:
                 cur_manager.notbusy()
-                main_logger.exception('DB read error: %s' % str(e))
+                main_logger.exception('DB read error:')
                 m = 'not able to retrieve orders\n' \
                     'from the database'
                 tkMessageBox.showerror('database error', m)
@@ -5327,10 +5327,10 @@ class OrderBrowse(tk.Frame):
                 cur_manager.busy()
                 res = sh.create_order(fh, library, data_set)
                 cur_manager.notbusy()
-            except Exception as e:
+            except:
                 cur_manager.notbusy()
                 res = None
-                main_logger.exception('Order creation error %s' % str(e))
+                main_logger.exception('Order creation error:')
 
             if res is not None:
                 # add here file name & number of records
@@ -6507,15 +6507,14 @@ class OrderEdit(tk.Frame):
                     self.orderName.get(),
                     read_time))
                 cur_manager.notbusy()
-            except Exception, e:
+            except Exception as e:
                 cur_manager.notbusy()
                 main_logger.exception(
-                    '%s |loading %s order: exception raised : %s' % (
+                    '%s |loading %s order: exception raised:' % (
                         datetime.datetime.now(),
-                        self.orderName.get(),
-                        str(e)))
+                        self.orderName.get())
                 m = 'not able to retrieve records\n' \
-                    'from database'
+                    'from database\n\n%s' % str(e)
                 tkMessageBox.showerror('database error', m)
 
 
