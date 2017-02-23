@@ -30,6 +30,10 @@ def query(target=None, keyword=None, qualifier=qualifiers['keyword'],
         syntax = target['syntax']
         user = target['user']
         password = target['password']
+        if user == '':
+            user = None
+        if password == '':
+            password = None
 
         try:
             if user is not None \
