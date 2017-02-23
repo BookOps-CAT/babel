@@ -216,6 +216,8 @@ class MARCGenerator():
         # 001 field
         tags.append(Field(tag='001', data=order_data['wlo']))
         # 008 field
+        # needs to take into account differences between different
+        # non-print formats
         dateCreated = datetime.strftime(date.today(), '%y%m%d')
         tag008 = dateCreated + r's        xx            000 u ' + \
             order_data['lang'] + r' d'
@@ -275,7 +277,7 @@ class MARCGenerator():
         elif MARCmatType == 'i':
             order_data['title'] += ' (Audiobook)'
         elif MARCmatType == 'j':
-            order_data['title'] == ' (CD)'
+            order_data['title'] += ' (CD)'
 
         linked = False
         if author_present:
