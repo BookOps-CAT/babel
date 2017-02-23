@@ -6512,7 +6512,7 @@ class OrderEdit(tk.Frame):
                 main_logger.exception(
                     '%s |loading %s order: exception raised:' % (
                         datetime.datetime.now(),
-                        self.orderName.get())
+                        self.orderName.get()))
                 m = 'not able to retrieve records\n' \
                     'from database\n\n%s' % str(e)
                 tkMessageBox.showerror('database error', m)
