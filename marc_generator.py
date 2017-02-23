@@ -383,9 +383,9 @@ class MARCGenerator():
         subfield_I = ['i', order_data['wlo']]
         if order_data['po_per_line'] is not None:
             subfield_H = ['h', order_data['po_per_line']]
-            subfield_M = ['m', order_data['blanketPO']]
             subfields.extend(subfield_H)
-            subfields.extend(subfield_M)
+        subfield_M = ['m', order_data['blanketPO']]
+        subfields.extend(subfield_M)
         subfields.extend(subfield_I)
         tags.append(Field(tag='961',
                           indicators=[' ', ' '],
