@@ -2,13 +2,18 @@
 import re
 
 
-def parse_year(date_str):
-    try:
-        date_str.encode(encoding='UTF-8', errors='ignore')
-    except:
-        return None
+def parse_year(date):
+
+    if type(date) is int or type(date) is float or \
+            type(date) is long:
+        date = str(date)
+    else:
+        try:
+            date = date.encode(encoding='UTF-8', errors='ignore')
+        except:
+            return None
     pattern = re.compile(r'[12]\d\d\d')
-    match = re.search(pattern, date_str)
+    match = re.search(pattern, date)
     if match:
         return match.group(0)
     else:
@@ -42,7 +47,7 @@ def parse_isbn(isbn):
 
 
 if __name__ == '__main__':
-    year_test = parse_year('2016-19-12')
+    year_test = parse_year(2012)
     print year_test
     isbn_test = parse_isbn(unicode('  9780973879826'))
     print isbn_test

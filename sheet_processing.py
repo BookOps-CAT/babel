@@ -6,6 +6,8 @@ from openpyxl.styles import Font, PatternFill
 import os.path
 
 from convert_price import dollars2cents, cents2dollars
+from celldata_parser import parse_isbn, parse_year
+from Z3950_communicator import query
 
 
 class SheetManipulator:
@@ -56,9 +58,13 @@ class SheetManipulator:
             kwargs['head_row'] + 1) + ':' + str(
             get_column_letter(self.max_c)) + str(
             self.max_r + 1)
+
+        # define cart sheet
         self.new_wb = Workbook()
         self.new_ws_cart = self.new_wb.active
         self.new_ws_cart.title = 'cart'
+
+        # define meta sheet
         self.new_ws_meta = self.new_wb.create_sheet('meta')
         self.new_ws_meta.protection.set_password('babel')
 
@@ -70,18 +76,17 @@ class SheetManipulator:
             self.new_ws_cart.cell(row=dr, column=1).value = line
             self.new_ws_cart.cell(row=dr, column=1).font = self.font
             dr += 1
-        ar = 1
         audnLegend = [
-            'audience:',
             'empty cell = adult',
-            'j = juvenile', 'y = young adult']
-        for line in audnLegend:
-            self.new_ws_cart.cell(row=ar, column=5).value = line
-            self.new_ws_cart.cell(row=ar, column=5).font = self.font
-            ar += 1
+            'j = juvenile',
+            'y = young adult']
+        dr += 1
+        self.new_ws_cart.cell(row=dr, column=1).value = '; '.join(
+            audnLegend)
+        self.new_ws_cart.cell(row=dr, column=1).font = self.font
+
         c = 1
         for key, value in kwargs['codeTotalQntBranch'].items():
-            # change font to white and protect to hide
             self.new_ws_meta.cell(row=2, column=c).value = key
             self.new_ws_meta.cell(row=3, column=c).value = value[0]
             self.new_ws_meta.cell(row=4, column=c).value = value[1]
@@ -94,6 +99,7 @@ class SheetManipulator:
             'Distribution',
             'Audience',
             'PO per line',
+            kwargs['z3950target']['name'],
             'Branches',  # optional ask if needed
             'Total Qty',
             'Total Price')  # optional ask if needed
@@ -107,43 +113,40 @@ class SheetManipulator:
                 + len(extra_columns) + len(standard_columns)
             shifted_price_col = get_column_letter(shifted_price_col_num)
         distr_col = len(extra_columns) + 1
-        total_qty_col = len(extra_columns) + 5
-        total_price_col = len(extra_columns) + 6
+        # branches_col = len(extra_columns) + 5
+        total_qty_col = len(extra_columns) + 6
+        total_price_col = len(extra_columns) + 7
         extra_columns = extra_columns + standard_columns
         shift_index = len(extra_columns)
 
         # add sheet totals
-        if ar > dr:
-            lr = ar
-        else:
-            lr = dr
-        head_row = lr + 5
+        head_row = dr + 6
         # totals area
-        self.new_ws_cart.cell(row=lr + 1, column=1).value = '# of titles='
-        self.new_ws_cart.cell(row=lr + 1, column=1).font = self.font
-        self.new_ws_cart.cell(row=lr + 2, column=1).value = '# of copies='
-        self.new_ws_cart.cell(row=lr + 2, column=1).font = self.font
-        self.new_ws_cart.cell(row=lr + 3, column=1).value = 'total price='
-        self.new_ws_cart.cell(row=lr + 3, column=1).font = self.font
-        self.new_ws_cart.cell(row=lr + 1, column=2).value = \
+        self.new_ws_cart.cell(row=dr + 2, column=1).value = '# of titles='
+        self.new_ws_cart.cell(row=dr + 2, column=1).font = self.font
+        self.new_ws_cart.cell(row=dr + 3, column=1).value = '# of copies='
+        self.new_ws_cart.cell(row=dr + 3, column=1).font = self.font
+        self.new_ws_cart.cell(row=dr + 4, column=1).value = 'total price='
+        self.new_ws_cart.cell(row=dr + 4, column=1).font = self.font
+        self.new_ws_cart.cell(row=dr + 2, column=2).value = \
             "=COUNTA(%s%s:%s1000)" % (
             get_column_letter(distr_col),
             head_row + 1,
             get_column_letter(distr_col))
-        self.new_ws_cart.cell(row=lr + 1, column=2).font = self.red_font
-        self.new_ws_cart.cell(row=lr + 2, column=2).value = \
+        self.new_ws_cart.cell(row=dr + 2, column=2).font = self.red_font
+        self.new_ws_cart.cell(row=dr + 3, column=2).value = \
             '=SUMIF(%s%s:%s1000, ">0")' % (
             get_column_letter(total_qty_col),
             head_row + 1,
             get_column_letter(total_qty_col))
-        self.new_ws_cart.cell(row=lr + 2, column=2).font = self.red_font
-        self.new_ws_cart.cell(row=lr + 3, column=2).value = \
+        self.new_ws_cart.cell(row=dr + 3, column=2).font = self.red_font
+        self.new_ws_cart.cell(row=dr + 4, column=2).value = \
             '=SUMIF(%s%s:%s1000, ">0")' % (
             get_column_letter(total_price_col),
             head_row + 1,
             get_column_letter(total_price_col))
-        self.new_ws_cart.cell(row=lr + 3, column=2).font = self.red_font
-        self.new_ws_cart.cell(row=lr + 4, column=1).value = None
+        self.new_ws_cart.cell(row=dr + 4, column=2).font = self.red_font
+        self.new_ws_cart.cell(row=dr + 5, column=1).value = None
 
         new_headings = []
         for col in extra_columns:
@@ -204,6 +207,25 @@ class SheetManipulator:
                 elif col == 'PO per line':
                     po_per_line_col = col_counter
                     new_values.append(None)
+                elif col == kwargs['z3950target']['name']:
+                    isbn_value = self.ws[
+                        kwargs['isbn_col'] +
+                        str(kwargs['head_row'] + row_counter)].value
+                    isbn = parse_isbn(isbn_value)
+                    if isbn is not None and kwargs['z3950target'] is not None:
+                        catalog_query = query(
+                            target=kwargs['z3950target'],
+                            keyword=isbn,
+                            qualifier='isbn')
+                        if catalog_query[0]:
+                            if len(catalog_query[1]) > 0:
+                                query_result = 'found'
+                            else:
+                                query_result = None
+                    else:
+                        query_result = None
+
+                    new_values.append(query_result)
                 else:
                     new_values.append(None)
             old_values = []
@@ -329,13 +351,14 @@ class SheetManipulator:
                             self.metadata[key] + str(row_num)]
                         content = cell.value
                         order[key] = content
+
                         if key == 'priceDisc_col':
                             self.total_cost = self.total_cost + content
                         if key == 'distr_col':
                             try:
                                 order['distr_col'] = order['distr_col'].upper()
                             except:
-                                order['distr_col'] = order['distr_col']
+                                order['distr_col'] = order['distr_col']                
                     else:
                         order[key] = None
 
@@ -348,6 +371,7 @@ class SheetManipulator:
 
 def create_order(fname, library, data):
     font_bold = Font(bold=True)
+    red_font = Font(color='CC0000')
     fill_gray = PatternFill(fill_type='solid',
                             start_color='C4C5C6',
                             end_color='C4C5C6')
@@ -357,6 +381,17 @@ def create_order(fname, library, data):
     address_line1 = 'BookOps %s' % library
     address_line2 = '31-11 Thomson Avenue'
     address_line3 = 'Long Island City, NY 11101'
+
+    # set columns width
+    order_ws.column_dimensions['A'].width = 4
+    order_ws.column_dimensions['C'].width = 16
+    order_ws.column_dimensions['D'].width = 25
+    order_ws.column_dimensions['E'].width = 20
+    order_ws.column_dimensions['F'].width = 9
+    order_ws.column_dimensions['G'].width = 8
+    order_ws.column_dimensions['H'].width = 10
+    order_ws.column_dimensions['I'].width = 12
+    order_ws.column_dimensions['J'].width = 18
 
     order_ws.cell(row=2, column=1).value = address_line1
     order_ws.cell(row=2, column=1).font = font_bold
@@ -384,6 +419,8 @@ def create_order(fname, library, data):
     order_ws.cell(row=6, column=8).fill = fill_gray
     order_ws.cell(row=6, column=9).value = 'o Number'
     order_ws.cell(row=6, column=9).fill = fill_gray
+    order_ws.cell(row=6, column=10).value = 'blanket PO'
+    order_ws.cell(row=6, column=10).fill = fill_gray
 
     r = 1
     for title in data:
@@ -391,6 +428,8 @@ def create_order(fname, library, data):
         row.append(r)
         row.extend(title)
         order_ws.append(row)
+        order_ws.cell(row=6 + r, column=9).font = red_font
+        order_ws.cell(row=6 + r, column=10).font = red_font
         r += 1
     last_r = 6 + r
     order_ws.cell(row=last_r + 2, column=3).value = 'total copies='

@@ -6,7 +6,9 @@ import tkFileDialog
 import shelve
 import os.path
 from os import startfile, getcwd
+# import os.getcwd
 import logging  # more work needed to use this module for error reports, etc.
+import logging.handlers
 
 import babelstore as db
 import validator as validation
@@ -17,6 +19,9 @@ from fund_applicator import *
 from marc_generator import MARCGenerator
 from ids_parser import *
 from convert_price import dollars2cents, cents2dollars
+
+
+LOG_FILENAME = './logs/babellog.out'
 
 BTN_FONT = ('Helvetica', 10)
 HDG_FONT = ('Helvetica', 10, 'bold')
@@ -261,6 +266,7 @@ class MainApplication(tk.Tk):
                   DistributionBrowse, DistributionSingle,
                   FundBrowse, FundSingle,
                   VendorSheetBrowse, VendorSheetSingle,
+                  Z3950Settings,
                   CartSheet, ImportCartSheet,
                   OrderBrowse, OrderEdit, DefaultDirectories):
             page_name = F.__name__
@@ -329,7 +335,8 @@ class Settings(tk.Frame):
         self.rowconfigure(0, minsize=35)
         self.rowconfigure(1, minsize=35)
         self.rowconfigure(2, minsize=35)
-        self.rowconfigure(3, minsize=20)
+        self.rowconfigure(3, minsize=35)
+        self.rowconfigure(4, minsize=20)
 
         tk.Button(self, text='locations', font=BTN_FONT,
                   height=2,
@@ -386,11 +393,18 @@ class Settings(tk.Frame):
                   command=lambda: controller.show_frame(
                       'ShelfCodes')).grid(
             row=2, column=2, padx=10, pady=10)
+
+        tk.Button(self, text='Z3950', font=BTN_FONT,
+                  height=2,
+                  width=20,
+                  command=lambda: controller.show_frame(
+                        'Z3950Settings')).grid(
+            row=3, column=0, padx=10, pady=10)
         tk.Button(self, text='close', font=BTN_FONT,
                   # height=2,
                   width=15,
                   command=lambda: controller.show_frame('Main')).grid(
-            row=4, column=0, columnspan=3, padx=10, pady=10)
+            row=5, column=0, columnspan=3, padx=10, pady=10)
 
 
 class DefaultDirectories(tk.Frame):
@@ -1640,11 +1654,18 @@ class DistributionSingle(tk.Frame):
         self.distrCode_id = tk.IntVar()
         self.name = tk.StringVar()
         self.code = tk.StringVar()
+        self.code.trace('w', self.activate_code)
         self.location = tk.StringVar()
         self.quantity = tk.IntVar()
         self.quantity.set(1)
         self.lang = tk.StringVar()
         self.last_row = 0
+        self.format_filter = tk.StringVar()
+        self.format_filter.set('all')
+        self.format_filter.trace('w', self.dynamic_locations)
+        self.itemcode_filter = tk.StringVar()
+        self.itemcode_filter.set('all')
+        self.itemcode_filter.trace('w', self.dynamic_locations)
 
         self.lang_by_name = {}
         self.lang_by_id = {}
@@ -1709,6 +1730,28 @@ class DistributionSingle(tk.Frame):
             yscrollcommand=self.yscrollbar.set)
         self.preview_base.grid(
             row=3, column=1, columnspan=10, sticky='nsw', rowspan=15, padx=10)
+
+        # right panel filters frame
+        self.filterFrm = ttk.LabelFrame(self.mainFrm, text='location filters',
+                                        padding=5)
+        self.filterFrm.grid(
+            row=0, column=11, rowspan=3, columnspan=2, sticky='snew', padx=2)
+        self.formatCbx = ttk.Combobox(self.filterFrm,
+                                      textvariable=self.format_filter,
+                                      state='readonly',
+                                      width=15)
+        self.formatCbx.grid(
+            row=0, column=0, sticky='snw', padx=2, pady=2)
+        tk.Label(self.filterFrm, text='format', font=LBL_FONT).grid(
+            row=0, column=12, sticky='snw', padx=2, pady=2)
+        self.itemcodeCbx = ttk.Combobox(self.filterFrm,
+                                        textvariable=self.itemcode_filter,
+                                        state='readonly',
+                                        width=15)
+        self.itemcodeCbx.grid(
+            row=1, column=0, sticky='snw', padx=2, pady=2)
+        tk.Label(self.filterFrm, text='item code', font=LBL_FONT).grid(
+            row=1, column=12, sticky='snw', padx=2, pady=2)
 
         # right panel add new code frame
         self.codeFrm = ttk.LabelFrame(self.mainFrm, text='code', padding=5)
@@ -1805,7 +1848,6 @@ class DistributionSingle(tk.Frame):
             (0, 0), window=self.preview_frame, anchor="nw",
             tags="self.preview_frame")
         self.preview_frame.bind("<Configure>", self.onFrameConfigure)
-        # self.generate_preview()
 
     def onFrameConfigure(self, event):
         self.preview_base.config(scrollregion=self.preview_base.bbox('all'))
@@ -1892,15 +1934,16 @@ class DistributionSingle(tk.Frame):
             distr_for_removal = []
 
             for key, item in self.distr_data.iteritems():
-                # print item
                 if item['delete_code']:
+                    # delete any disribution codes and its locations
+                    # if marked for del
                     if item['code_data'][0].id is not None:
                         db.delete_record(
                             db.DistrCode,
                             id=item['code_data'][0].id)
                     codes_for_removal.append(key)
                 else:
-                    # delete any distributions marked for removal
+                    # delete any location marked for removal
                     new_distr = []
                     for distr in item['code_data'][1]:
                         if distr[2]:
@@ -1909,12 +1952,13 @@ class DistributionSingle(tk.Frame):
                             distr_for_removal.append(distr)
 
                     item['code_data'][0].distrLocQtys = new_distr
-                    # print item['code_data'][0], item['code_data'][0].distrLocQtys
                     db.merge_object(item['code_data'][0])
 
             for key in codes_for_removal:
                 self.distr_data.pop(key)
 
+            self.action.set('update')
+            self.observer()
             tkMessageBox.showinfo('Saving', 'distribution has been saved')
 
     def new_code(self):
@@ -1931,20 +1975,18 @@ class DistributionSingle(tk.Frame):
         self.code.set(''.join(code_chars))
 
         # check if already displayed
-        # print self.codeCbx['value']
-        if self.code.get() in self.codeCbx['value']:
+        if self.code.get() == '':
+            m = 'please provide code'
+            tkMessageBox.showwarning('Input error', m)
+        elif self.code.get() in self.codeCbx['values']:
             m = 'code already created'
             tkMessageBox.showwarning('Input error', m)
         else:
-            self.code.set(self.code.get().strip())
-            code_chars = []
-            for character in self.code.get():
-                try:
-                    character = character.upper()
-                    code_chars.append(character)
-                except:
-                    code_char.append(character)
-            self.code.set(''.join(code_chars))
+            if self.codeCbx['values'] == '':
+                self.codeCbx['values'] = (self.code.get(), )
+            else:
+                self.codeCbx['values'] = self.codeCbx['values'] + \
+                    (self.code.get(), )
             code_record = db.create_db_object(
                 db.DistrCode,
                 code=self.code.get(),
@@ -1952,6 +1994,24 @@ class DistributionSingle(tk.Frame):
             data = (code_record, [])
             active_widget = self.display_code(data, self.last_row + 1)
             self.active_code_id.set(active_widget)
+
+    def activate_code(self, *args):
+        code_chars = []
+        for character in self.code.get():
+            try:
+                character = character.upper()
+                code_chars.append(character)
+            except:
+                code_char.append(character)
+        self.code.set(''.join(code_chars))
+
+        if self.code.get() != '' and \
+                self.code.get() in self.codeCbx['values']:
+
+            for key, value in self.distr_data.iteritems():
+                if value['code_data'][0].code == self.code.get():
+                    self.active_code_id.set(key)
+            self.edit_code()
 
     def edit_code(self):
         # dynamically updates code & location list on the right panel
@@ -1968,7 +2028,9 @@ class DistributionSingle(tk.Frame):
             m = 'please select first code to be deleted'
             tkMessageBox.showinfo('deletion', m)
         else:
-            m = 'are you sure to delete the code?'
+            m = 'Are you sure to delete the code?\n' \
+                'This removes distribution code from being displayed only.\n' \
+                'Please save the template to make it permanent.'
             if tkMessageBox.askokcancel('deletion', m):
                 self.distr_data[
                     self.active_code_id.get()]['delete_code'] = True
@@ -1999,7 +2061,10 @@ class DistributionSingle(tk.Frame):
     def add_distr(self):
         # add validation for duplicate locations
         # find appropriate place
-        if self.location.get() in self.distr_data[
+        if self.location.get() == '':
+            m = 'please add location'
+            tkMessageBox.showwarning('Input error', m)
+        elif self.location.get() in self.distr_data[
                 self.active_code_id.get()]['distr_str']:
             m = 'location already added to the distribution'
             tkMessageBox.showwarning('Input error', m)
@@ -2026,28 +2091,67 @@ class DistributionSingle(tk.Frame):
                 self.active_code_id.get()]['distr_str'] = ','.join(items)
             self.edit_code()
 
-    def dynamic_codes(self):
+    def dynamic_codes(self, *args):
         # display dinamically distribution codes on the right panel
         codes = []
         for key, value in self.distr_data.iteritems():
             if value['delete_code'] is False:
                 codes.append(value['code_data'][0].code)
-        self.codeCbx['value'] = sorted(codes)
+        self.codeCbx['values'] = sorted(codes)
+
+    def dynamic_locations(self, *args):
+
+        if self.format_filter.get() != 'all':
+            format_id = self.matTypes_by_name[
+                self.format_filter.get()][0]
+        else:
+            format_id = None
+
+        if self.itemcode_filter.get() != 'all':
+            itemcode = self.itemcode_filter.get()
+        else:
+            itemcode = None
+
+        filters = {'library_id': self.library_id.get(),
+                   'matType_id': format_id ,
+                   'shelf': itemcode}
+        kwargs = {}
+        for key, value in filters.iteritems():
+            if value is not None:
+                kwargs[key] = value
+        records = db.col_preview(
+            db.Location,
+            'name',
+            **kwargs)
+
+        locations_filtered = ()
+        for row in records:
+            locations_filtered += (row.name, )
+        self.locationCbx['values'] = locations_filtered
 
     def observer(self, *args):
         if self.tier.get() == 'DistributionSingle':
+            try:
+                self.preview_frame.destroy()
+            except:
+                pass
+
             # reset indexes
+            self.distr_data = {}
             self.lang_by_name = {}
             self.lang_by_id = {}
             self.lang_choices = ()
             self.location_by_name = {}
-            self.codeCbx['value'] = ()
+            self.codeCbx['values'] = ()
+            self.format_filter.set('all')
+            self.itemcode_filter.set('all')
 
             # library
             if self.library_id.get() == 1:
                 self.library.set('BPL')
             if self.library_id.get() == 2:
                 self.library.set('NYPL')
+
             # create language index
             langs = db.col_preview(db.Lang, 'id',
                                    'code', 'name')
@@ -2057,17 +2161,39 @@ class DistributionSingle(tk.Frame):
                 self.lang_choices = self.lang_choices + (row.name, )
 
             self.langCbx['values'] = sorted(self.lang_choices)
+
             # available locations
             locations = ()
             records = db.col_preview(
                 db.Location, 'name', library_id=self.library_id.get())
             for row in records:
-                locations = locations + (row.name, )
+                locations += (row.name, )
                 self.location_by_name[row.name] = row.id
             self.locationCbx['values'] = sorted(locations)
 
-            # empty-out distribution data container
-            self.distr_data = {}
+            # itemcode filter options
+            itemcodes = ()
+            records = db.col_preview(
+                db.ShelfCode,
+                'code',
+                library_id=self.library_id.get()
+            )
+            for row in records:
+                itemcodes += (row.code, )
+            self.itemcodeCbx['values'] = sorted(itemcodes + ('all', ))
+
+            # matType filter options and index
+            self.matTypes_by_name = {}
+            matTypes = ()
+            records = db.retrieve_all(
+                db.MatType,
+                'lib_joins')
+            for record in records:
+                for row in record.lib_joins:
+                    if row.library_id == self.library_id.get():
+                        self.matTypes_by_name[record.name] = (record.id, )
+                        matTypes += (record.name, )
+            self.formatCbx['values'] = sorted(matTypes + ('all', ))
 
             # initiate preview frame
             self.preview()
@@ -2104,6 +2230,9 @@ class DistributionSingle(tk.Frame):
                     r += 1
                 # update codes in codeCbx list
                 self.dynamic_codes()
+            else:
+                self.reset_form()
+                self.preview()
 
     def reset_form(self):
         self.preview_frame.destroy()
@@ -3228,10 +3357,287 @@ class VendorSheetSingle(tk.Frame):
                 self.priceReg_col.set(record.priceRegCol)
 
 
+class Z3950Settings(tk.Frame):
+    """widget recording Z3950 targets"""
+
+    def __init__(self, parent, controller, **sharedData):
+        tk.Frame.__init__(self, parent)
+
+        # bind shared variables
+        self.controller = controller
+        self.tier = sharedData['tier']
+        self.tier.trace('w', self.observer)
+
+        # initiate local variables
+        self.target_id = tk.IntVar()
+        self.name = tk.StringVar()
+        self.host = tk.StringVar()
+        self.database = tk.StringVar()
+        self.port = tk.IntVar()
+        self.user = tk.StringVar()
+        self.password = tk.StringVar()
+        self.syntax = tk.StringVar()
+
+        # setup layout
+        # set browsing frame
+
+        tk.Button(self, text='back', font=BTN_FONT,
+                  width=15,
+                  command=lambda: controller.show_frame('Settings')).grid(
+            row=1, column=0, sticky='sw', padx=5, pady=10)
+
+        self.zBrowseFrm = ttk.LabelFrame(
+            self, text='Z3950 targets',
+            borderwidth=5,
+            padding=5)
+        self.zBrowseFrm.grid(
+            row=0, column=0, sticky='snew', padx=10, pady=10)
+        self.zBrowseFrm.columnconfigure(0, minsize=10)
+        self.zBrowseFrm.columnconfigure(3, minsize=10)
+
+        # browsing area
+        scrollbar = tk.Scrollbar(self.zBrowseFrm, orient=tk.VERTICAL)
+        scrollbar.grid(
+            row=0, column=2, sticky='nsw', rowspan=10, padx=2, pady=10)
+        self.targetLst = tk.Listbox(self.zBrowseFrm, font=REG_FONT,
+                                    width=35,
+                                    height=20,
+                                    yscrollcommand=scrollbar.set)
+        self.targetLst.bind('<Double-Button-1>', self.edit_target)
+        self.targetLst.grid(
+            row=0, column=1, rowspan=10, pady=10)
+        scrollbar['command'] = self.targetLst.yview
+
+        # menu buttons
+        tk.Button(self.zBrowseFrm, text='new', font=BTN_FONT,
+                  width=10,
+                  command=self.new_target).grid(
+            row=0, column=4, sticky='nw', padx=5, pady=5)
+        tk.Button(self.zBrowseFrm, text='edit', font=BTN_FONT,
+                  width=10,
+                  command=self.edit_target).grid(
+            row=1, column=4, sticky='nw', padx=5, pady=5)
+        tk.Button(self.zBrowseFrm, text='delete', font=BTN_FONT,
+                  width=10,
+                  command=self.delete_target).grid(
+            row=2, column=4, sticky='nw', padx=5, pady=5)
+
+        # editing area
+        self.zEditFrm = ttk.LabelFrame(
+            self, text='Z3950 parameters',
+            borderwidth=5,
+            padding=5)
+        self.zEditFrm.grid(
+            row=0, column=1, sticky='snew', padx=10, pady=10)
+        # self.zEditFrm.state(['disabled', 'readonly'])
+        self.zEditFrm.columnconfigure(0, minsize=10)
+        self.zEditFrm.rowconfigure(7, minsize=100)
+
+        tk.Entry(self.zEditFrm, textvariable=self.name).grid(
+            row=0, column=1, sticky='snwe', padx=5, pady=5)
+        tk.Label(self.zEditFrm, text='target name', font=LBL_FONT).grid(
+            row=0, column=2, sticky='nw', padx=5, pady=5)
+        tk.Entry(self.zEditFrm, textvariable=self.host).grid(
+            row=1, column=1, sticky='snwe', padx=5, pady=5)
+        tk.Label(self.zEditFrm, text='host', font=LBL_FONT).grid(
+            row=1, column=2, sticky='nw', padx=5, pady=5)
+        tk.Entry(self.zEditFrm, textvariable=self.database).grid(
+            row=2, column=1, sticky='snew', padx=5, pady=5)
+        tk.Label(self.zEditFrm, text='database', font=LBL_FONT).grid(
+            row=2, column=2, sticky='nw', padx=5, pady=5)
+        tk.Entry(self.zEditFrm, textvariable=self.port).grid(
+            row=3, column=1, sticky='snew', padx=5, pady=5)
+        tk.Label(self.zEditFrm, text='port', font=LBL_FONT).grid(
+            row=3, column=2, sticky='nw', padx=5, pady=5)
+        tk.Entry(self.zEditFrm, textvariable=self.user).grid(
+            row=4, column=1, sticky='snew', padx=5, pady=5)
+        tk.Label(self.zEditFrm, text='user', font=LBL_FONT).grid(
+            row=4, column=2, sticky='nw', padx=5, pady=5)
+        tk.Entry(self.zEditFrm, textvariable=self.password).grid(
+            row=5, column=1, sticky='snew', padx=5, pady=5)
+        tk.Label(self.zEditFrm, text='password', font=LBL_FONT).grid(
+            row=5, column=2, sticky='nw', padx=5, pady=5)
+        self.syntaxCbx = ttk.Combobox(self.zEditFrm, textvariable=self.syntax,
+                                      values=['MARC21', 'USMARC', 'XML'],
+                                      state='readonly')
+        self.syntaxCbx.grid(
+            row=6, column=1, sticky='snew', padx=5, pady=5)
+        tk.Label(self.zEditFrm, text='syntax', font=LBL_FONT).grid(
+            row=6, column=2, sticky='nw', padx=5, pady=5)
+
+        # buttons
+        tk.Button(self.zEditFrm, text='save', font=BTN_FONT,
+                  width=10,
+                  command=self.save).grid(
+            row=8, column=1, sticky='nw', padx=5, pady=5)
+        tk.Button(self.zEditFrm, text='cancel', font=BTN_FONT,
+                  width=10,
+                  command=self.cancel).grid(
+            row=8, column=2, sticky='nw', padx=5, pady=5)
+
+        # disable widgets
+        for child in self.zEditFrm.children.values():
+            if child.winfo_class() in ('Entry', 'Button'):
+                child['state'] = tk.DISABLED
+
+    def activate_widgets(self, parent_widget):
+        parent_widget.state(['!disabled'])
+        select_widgets = (
+            'Entry', 'Button', 'TCombobox')
+        for child in parent_widget.children.values():
+
+            if child.winfo_class() in select_widgets:
+                child['state'] = tk.NORMAL
+
+    def deactivate_widgets(self, parent_widget):
+        parent_widget.state(['disabled'])
+        select_widgets = (
+            'Entry', 'Button', 'TCombobox')
+        for child in parent_widget.children.values():
+            if child.winfo_class() in select_widgets:
+                child['state'] = tk.DISABLED
+
+    def new_target(self):
+        self.reset_values()
+        self.activate_widgets(self.zEditFrm)
+
+    def edit_target(self, *args):
+        if self.targetLst.get(tk.ANCHOR) == '':
+            m = 'please select target first'
+            tkMessageBox.showinfo('Info', m)
+        else:
+            record = db.retrieve_record(
+                db.Z3950params,
+                name=self.targetLst.get(tk.ANCHOR))
+            self.activate_widgets(self.zEditFrm)
+            self.name.set(record.name)
+            self.host.set(record.host)
+            self.database.set(record.database)
+            self.port.set(record.port)
+            self.user.set(record.user)
+            self.password.set(record.password)
+            self.syntax.set(record.syntax)
+
+            self.target_id.set(record.id)
+
+    def delete_target(self):
+        if self.targetLst.get(tk.ANCHOR) == '':
+            m = 'please select target for deletion'
+            tkMessageBox.showerror('Input error', m)
+        else:
+            m = "are you sure to delete '%s' target" % self.targetLst.get(tk.ANCHOR)
+            if tkMessageBox.askyesno('Warning', m):
+                db.delete_record(
+                    db.Z3950params,
+                    name=self.targetLst.get(tk.ANCHOR))
+                self.targetLst.delete(tk.ANCHOR)
+
+    def save(self):
+        # validate input
+        correct = True
+        if self.name.get() == '':
+            correct = False
+            m = 'name field cannot be empty'
+            tkMessageBox.showerror('Input error', m)
+        if self.host.get() == '':
+            correct = False
+            m = 'host field cannot be empty'
+            tkMessageBox.showerror('Input error', m)
+        if self.database.get() == '':
+            correct = False
+            m = 'database field cannot be empty'
+            tkMessageBox.showerror('Input error', m)
+        if self.port.get() == 0:
+            correct = False
+            m = 'port field cannot be 0'
+            tkMessageBox.showerror('Input error', m)
+        if type(self.port.get()) is not int:
+            correct = False
+            m = 'port value must be a number'
+            tkMessageBox.showerror('Input error', m)
+
+        if correct:
+            if self.target_id.get() == 0:
+                # save as new record
+                result = db.insert_record(
+                    db.Z3950params,
+                    name=self.name.get().strip(),
+                    host=self.host.get().strip(),
+                    database=self.database.get().strip(),
+                    port=self.port.get(),
+                    user=self.user.get().strip(),
+                    password=self.password.get().strip(),
+                    syntax=self.syntax.get().strip())
+
+                if result[0]:
+                    m = 'target saved'
+                    self.reset_values()
+                    self.deactivate_widgets(self.zEditFrm)
+                    tkMessageBox.showinfo('Info', m)
+                    self.observer()
+                elif result[0] is False:
+                    # duplicate
+                    m = "target '%s' already exists" % self.name.get()
+                    tkMessageBox.showerror('Database error', m)
+                elif result[0] is None:
+                    m = result[1]
+                    tkMessageBox.showerror('Database error', m)
+
+            else:
+                # update existing
+                try:
+                    db.update_record(
+                        db.Z3950params,
+                        id=self.target_id.get(),
+                        name=self.name.get().strip(),
+                        host=self.host.get().strip(),
+                        database=self.database.get().strip(),
+                        port=self.port.get(),
+                        user=self.user.get().strip(),
+                        password=self.password.get().strip(),
+                        syntax=self.syntax.get().strip())
+                    m = 'target has been updated'
+                    tkMessageBox.showinfo('Info', m)
+                except Exception as e:
+                    m = 'Database error: %s' % e
+                    tkMessageBox.showerror('Database error', m)
+            self.observer()
+
+    def cancel(self):
+        self.reset_values()
+        self.deactivate_widgets(self.zEditFrm)
+
+    def reset_values(self):
+        self.target_id.set(0)
+        self.name.set('')
+        self.host.set('')
+        self.database.set('')
+        self.port.set(0)
+        self.user.set('')
+        self.password.set('')
+        self.syntax.set('MARC21')
+        self.deactivate_widgets(self.zEditFrm)
+
+    def observer(self, *args):
+        if self.tier.get() == 'Z3950Settings':
+            # reset form
+            self.reset_values()
+            # wipe target list
+            self.targetLst.delete(0, tk.END)
+
+            # retrieved stored targets & display them
+            target_records = db.col_preview(
+                db.Z3950params,
+                'name')
+            for target in target_records:
+                self.targetLst.insert(tk.END, target.name)
+
+
 class CartSheet(tk.Frame):
     """
     Produces an empty cart sheet which is used for selection and records
     distribution
+    Module 
     """
 
     def __init__(self, parent, controller, **sharedData):
@@ -3247,6 +3653,7 @@ class CartSheet(tk.Frame):
 
         self.library_id = tk.IntVar()
         self.fh_name = tk.StringVar()
+        self.z3950target = tk.StringVar()
         self.sheet_template = tk.StringVar()
         self.sheet_template.trace('w', self.dynamic_sheetDetails)
         self.sheetDetails = tk.StringVar()
@@ -3256,6 +3663,7 @@ class CartSheet(tk.Frame):
         self.distribution = tk.StringVar()
         self.distribution.trace('w', self.dynamic_distribDetails)
         self.distrDetails = tk.StringVar()
+        self.distrDetailsShorten = tk.StringVar()
         self.price = tk.DoubleVar()
         self.priceDefault = False
         self.priceDefaultLbl = tk.StringVar()
@@ -3280,7 +3688,7 @@ class CartSheet(tk.Frame):
         self.baseFrm.columnconfigure(7, minsize=100)
         self.baseFrm.columnconfigure(8, minsize=10)
         self.baseFrm.columnconfigure(9, minsize=72)
-        self.baseFrm.columnconfigure(10, minsize=72)
+        self.baseFrm.columnconfigure(10, minsize=200)
         self.baseFrm.rowconfigure(4, minsize=200)
         self.baseFrm.rowconfigure(9, minsize=200)
 
@@ -3303,7 +3711,8 @@ class CartSheet(tk.Frame):
 
         # right panel
         tk.Button(self.baseFrm, text='new sheet template', font=REG_FONT,
-                  command=self.new_template).grid(
+                  command=self.new_template,
+                  width=15).grid(
             row=0, column=9, columnspan=2, sticky='snew', padx=10, pady=5)
         tk.Label(self.baseFrm, text='OR', font=LBL_FONT).grid(
             row=1, column=9, columnspan=2, sticky='snew', padx=10)
@@ -3318,20 +3727,25 @@ class CartSheet(tk.Frame):
         tk.Label(self.baseFrm, textvariable=self.sheetDetails, font=REG_FONT,
                  justify=tk.LEFT).grid(
             row=4, column=9, columnspan=2, rowspan=4, sticky='nw', padx=10)
-        tk.Label(self.baseFrm, text='average price?',
+
+        self.priceFrm = ttk.LabelFrame(self.baseFrm, text='price data')
+        self.priceFrm.grid(
+            row=7, column=9, rowspan=3, columnspan=2, sticky='snew', padx=10)
+        # self.priceFrm.columnconfigure(1, minsize=80)
+        tk.Label(self.priceFrm, text='average price?',
                  font=LBL_FONT).grid(
-            row=0, column=11, columnspan=2, sticky='snw', padx=10, pady=5)
-        tk.Label(self.baseFrm, text='discount?',
+            row=0, column=0, columnspan=2, sticky='snw', padx=10, pady=5)
+        tk.Label(self.priceFrm, text='discount?',
                  font=LBL_FONT).grid(
-            row=3, column=11, sticky='snw', padx=10, pady=5)
-        tk.Label(self.baseFrm, textvariable=self.priceDefaultLbl,
+            row=3, column=0, sticky='snw', padx=10, pady=5)
+        tk.Label(self.priceFrm, textvariable=self.priceDefaultLbl,
                  justify=tk.LEFT,
                  font=LBL_FONT).grid(
-            row=1, column=11, columnspan=2, rowspan=2, sticky='nw', padx=10)
-        tk.Label(self.baseFrm, textvariable=self.discountLbl,
+            row=1, column=0, columnspan=2, rowspan=2, sticky='nw', padx=10)
+        tk.Label(self.priceFrm, textvariable=self.discountLbl,
                  justify=tk.LEFT,
                  font=LBL_FONT).grid(
-            row=4, column=11, columnspan=2, rowspan=2, sticky='nw', padx=10)
+            row=4, column=0, columnspan=2, rowspan=2, sticky='nw', padx=10)
 
         # bottom panel
         tk.Button(self.baseFrm, text='load vendor sheet', font=BTN_FONT,
@@ -3341,7 +3755,16 @@ class CartSheet(tk.Frame):
         tk.Label(self.baseFrm, text='sheet name:', font=LBL_FONT).grid(
             row=6, column=2, sticky='snw', padx=10, pady=5)
         tk.Label(self.baseFrm, textvariable=self.fh_name, font=LBL_FONT).grid(
-            row=6, column=3, columnspan=7, sticky='snw', pady=5)
+            row=6, column=1, columnspan=4, sticky='sne', pady=5)
+        tk.Label(self.baseFrm, text='target:').grid(
+            row=6, column=6, sticky='ne', pady=5)
+        self.z3950targetCbx = ttk.Combobox(
+            self.baseFrm,
+            textvariable=self.z3950target,
+            state='readonly',
+            width=20)
+        self.z3950targetCbx.grid(
+            row=6, column=7, sticky='ne', padx=10, pady=5)
 
         tk.Label(self.baseFrm, text='collaborator template:',
                  font=LBL_FONT).grid(
@@ -3365,16 +3788,17 @@ class CartSheet(tk.Frame):
         tk.Button(self.baseFrm, text='create sheet', font=BTN_FONT,
                   width=15,
                   command=self.create_sheet).grid(
-            row=7, column=5, sticky='snw', padx=10, pady=5)
+            row=8, column=5, sticky='nw', padx=10)
         tk.Button(self.baseFrm, text='close', font=BTN_FONT,
                   width=15,
                   command=self.on_close).grid(
-            row=7, column=6, sticky='snw', padx=10, pady=5)
+            row=8, column=6, sticky='nw', padx=10)
 
         tk.Label(self.baseFrm, textvariable=self.collabDetails, font=REG_FONT,
                  justify=tk.LEFT).grid(
             row=9, column=1, sticky='nw', padx=10)
-        tk.Label(self.baseFrm, textvariable=self.distrDetails, font=REG_FONT,
+        tk.Label(self.baseFrm, textvariable=self.distrDetailsShorten,
+                 font=REG_FONT,
                  justify=tk.LEFT).grid(
             row=9, column=2, columnspan=20, sticky='nw', padx=10)
 
@@ -3482,7 +3906,7 @@ class CartSheet(tk.Frame):
                 db.DistrCode,
                 'id', 'code',
                 distrTemplate_id=distr_id)
-            c = ''
+            c = []
             self.codeTotalQntBranch = {}
             for code in distrCodes:
                 locQnts = db.col_preview(
@@ -3492,25 +3916,57 @@ class CartSheet(tk.Frame):
                 )
 
                 # define elements of distrDetails
-                locs = ''
+                locs = []
                 qnt = 0
                 branches = ''
                 for locQnt in locQnts:
                     loc = db.retrieve_record(
                         db.Location,
                         id=locQnt.location_id)
-                    locs = locs + '%s(%s),' % (loc.name, locQnt.quantity)
+                    locs.append('%s(%s)' % (loc.name, locQnt.quantity))
                     qnt += locQnt.quantity
                     # define elements of distribution-branch relationship
                     branch = db.retrieve_record(
                         db.Branch,
                         id=loc.branch_id)
                     branches = branches + branch.code + ','
-                c = c + 'code %s: %s\n' % (code.code, locs)
+
+                c.append((code.code, locs))
                 self.codeTotalQntBranch[code.code] = (qnt, branches)
 
-            d = ('library: %s\tlanguage: %s\n' + c) % (library.code, lang)
-            self.distrDetails.set(d)
+            codes_cart = []
+            codes_app = []
+            for distr in c:
+                # format codes for cart sheet legend
+                code = '%s: %s' % (distr[0], ','.join(distr[1]))
+                codes_cart.append(code)
+
+                # format codes for babel display
+                short_locs = []
+                if len(distr[1]) > 5:
+                    last_loc = distr[1][-1]
+                    short_locs = distr[1][:6]
+                    short_locs.append('...')
+                    short_locs.append(last_loc)
+                    code = '%s: %s' % (distr[0], ','.join(short_locs))
+                else:
+                    code = '%s: %s' % (distr[0], ','.join(distr[1]))
+                codes_app.append(code)
+
+            if len(codes_app) > 6:
+                last_code = codes_app[-1]
+                codes_app = codes_app[:6]
+                codes_app.append('...')
+                codes_app.append(last_code)
+
+            c_str = '\n'.join(codes_cart)
+            a_str = '\n'.join(codes_app)
+            d_cart = ('library: %s\tlanguage: %s\n' + c_str) % (
+                library.code, lang)
+            d_app = ('library: %s\tlanguage: %s\n' + a_str) % (
+                library.code, lang)
+            self.distrDetails.set(d_cart)
+            self.distrDetailsShorten.set(d_app)
             self.distr_record = distr
 
     def dynamic_sheetDetails(self, *args):
@@ -3687,6 +4143,10 @@ class CartSheet(tk.Frame):
             sheetTemp_id = self.sheet_template_by_name[
                 self.sheet_template.get()][0]
             distr_id = self.distr_by_name[self.distribution.get()][0]
+            if self.z3950target.get() == '':
+                target = None
+            else:
+                target = self.targets_by_name[self.z3950target.get()]
             kwargs = {
                 'collabs': collabs,
                 'head_row': self.head_row,
@@ -3704,8 +4164,10 @@ class CartSheet(tk.Frame):
                 'publisher_col': self.publisher_col,
                 'pubDate_col': self.pubDate_col,
                 'pubPlace_col': self.pubPlace_col,
-                'discount': self.discount_value.get()
+                'discount': self.discount_value.get(),
+                'z3950target': target
             }
+            # print kwargs['z3950target']
             user_data = shelve.open('user_data')
             if 'cart_dir' in user_data:
                 cart_dir = user_data['cart_dir']
@@ -3715,12 +4177,21 @@ class CartSheet(tk.Frame):
             file_date = datetime.datetime.strftime(
                 datetime.date.today(), '%y%m%d')
             fname = cart_dir + self.vendor + '-' + file_date
-            cart_file = self.sheet.cart_sheet(fname, **kwargs)
-            m = 'Cart sheet:\n %s \nhas been created\n\n' \
-                'Open created sheet?' % cart_file
-            if tkMessageBox.askyesno(
-                    'Output message', m):
-                os.startfile(cart_file)
+
+            # create cart sheet
+            cur_manager.busy()
+            try:
+                cart_file = self.sheet.cart_sheet(fname, **kwargs)
+                cur_manager.notbusy()
+                m = 'Cart sheet:\n %s \nhas been created\n\n' \
+                    'Open created sheet?' % cart_file
+                if tkMessageBox.askyesno(
+                        'Output message', m):
+                    os.startfile(cart_file)
+
+            except Exception as e:
+                main_logger.exception('Cart sheet error', str(e))
+                cur_manager.notbusy()
 
             self.reset_values()
 
@@ -3733,6 +4204,7 @@ class CartSheet(tk.Frame):
 
     def reset_values(self):
         self.price.set(0.0)
+        self.z3950target.set('')
         self.priceDefault = False
         self.priceDefaultLbl.set('NOT APPLIED')
         self.discountLbl.set('NOT APPLIED')
@@ -3742,6 +4214,7 @@ class CartSheet(tk.Frame):
         self.fh_name.set('')
         self.distrCbx.set('')
         self.distrDetails.set('')
+        self.distrDetailsShorten.set('')
         self.collabCbx.set('')
         self.collabDetails.set('')
         self.sheetTempCbx.set('')
@@ -3750,7 +4223,6 @@ class CartSheet(tk.Frame):
         self.sheetDetails.set('')
         self.collabDetails.set('')
         self.collaborator.set('')
-        self.distrDetails.set('')
         self.distribution.set('')
         self.reset_preview()
 
@@ -3808,6 +4280,35 @@ class CartSheet(tk.Frame):
             self.sheetTempCbx['values'] = self.sheet_template_choices
             self.collabCbx['values'] = self.collab_choices
             self.distrCbx['values'] = self.distr_choices
+
+            # z3950 targets index
+            targets = []
+            self.targets_by_name = {}
+
+            records = db.col_preview(
+                db.Z3950params,
+                'id',
+                'name',
+                'host',
+                'database',
+                'port',
+                'user',
+                'password',
+                'syntax')
+
+            for record in records:
+                targets.append(record.name)
+                self.targets_by_name[record.name] = {
+                    'name': record.name,
+                    'host': record.host,
+                    'database': record.database,
+                    'port': record.port,
+                    'user': record.user,
+                    'password': record.password,
+                    'syntax': record.syntax
+                }
+
+            self.z3950targetCbx['values'] = targets
 
 
 class ImportCartSheet(tk.Frame):
@@ -4123,6 +4624,8 @@ class ImportCartSheet(tk.Frame):
             m = 'please pick a selector to proceed'
             tkMessageBox.showwarning('Input error', m)
         else:
+            # error messages variable
+            error_msg = set()
             # record selector
             user_data = shelve.open('user_data')
             user_data['last_selector'] = self.selector.get()
@@ -4142,6 +4645,30 @@ class ImportCartSheet(tk.Frame):
 
             # insert order to babelstore
             cur_manager.busy()
+            # assign blanketPO
+            blanketPO_date = datetime.datetime.strftime(
+                datetime.datetime.now(), '%Y%m%d')
+            blanketPO_numbering = 0
+            vendor_record = db.retrieve_record(
+                db.Vendor,
+                id=self.vendor_id)
+            if vendor_record is not None:
+                if self.library_id == 1:
+                    blanketPO = vendor_record.bplCode + '-' + blanketPO_date
+                elif self.library_id == 2:
+                    blanketPO = vendor_record.nyplCode + '-' + blanketPO_date
+
+                exist = False
+                while exist is not None:
+                    blanketPO_numbering += 1
+                    test_blanketPO = blanketPO + '-' + str(blanketPO_numbering)
+                    exist = db.retrieve_record(
+                        db.Order,
+                        library_id=self.library_id,
+                        blanketPO=test_blanketPO)
+                else:
+                    blanketPO = test_blanketPO
+
             db.ignore_or_insert(
                 db.Order,
                 name=name,
@@ -4150,7 +4677,8 @@ class ImportCartSheet(tk.Frame):
                 lang_id=self.lang_id,
                 vendor_id=self.vendor_id,
                 selector_id=self.selector_id,
-                matType_id=self.matType_id)
+                matType_id=self.matType_id,
+                blanketPO=blanketPO)
             loaded_record = db.retrieve_last(
                 db.Order)
             order_id = loaded_record.id
@@ -4260,7 +4788,8 @@ class ImportCartSheet(tk.Frame):
                                         qty=distr_location.quantity)
                                     new_records.append(new)
                                 else:
-                                    print fund_search[1]
+                                    # add message insted to be displayed
+                                    error_msg.add(fund_search[1])
 
                     db.update_record(
                         db.OrderSingle,
@@ -4302,6 +4831,10 @@ class ImportCartSheet(tk.Frame):
                 order_id,
                 wlo_range=first_wlo + '-' + last_wlo)
 
+            # display errors if any
+            if len(error_msg) > 0:
+                tkMessageBox.showerror('Import errors', '\n'.join(error_msg))
+
             m = 'order saved as %s\n' \
                 'titles total=%s\n' \
                 'quantity total=%s\n' \
@@ -4319,6 +4852,7 @@ class ImportCartSheet(tk.Frame):
                                            cents2dollars(funds_used[fund_id]))
             m = m + f
 
+            # display summary message
             tkMessageBox.showinfo('Output message', m)
 
             self.reset_form()
@@ -4390,7 +4924,7 @@ class OrderBrowse(tk.Frame):
         self.orderId = 0
         self.selector_id = None
         self.vendor_id = None
-        self.orderDetails = tk.StringVar()
+        # self.orderDetails = tk.StringVar()
         self.date_sort = tk.StringVar()
         self.selector_filter = tk.StringVar()
         self.vendor_filter = tk.StringVar()
@@ -4410,7 +4944,7 @@ class OrderBrowse(tk.Frame):
         # self.columnconfigure(1, minsize=250)
         self.rowconfigure(4, minsize=5)
         self.rowconfigure(9, minsize=55)
-        self.rowconfigure(13, minsize=155)
+        self.rowconfigure(13, minsize=145)
 
         # initiate widgets
         ttk.Radiobutton(self, text='BPL',
@@ -4488,9 +5022,13 @@ class OrderBrowse(tk.Frame):
                   width=15,
                   command=self.on_load).grid(
             row=6, column=6, sticky='sne', padx=10, pady=5)
-        tk.Label(self, textvariable=self.orderDetails,
-                 font=REG_FONT,
-                 justify=tk.LEFT).grid(
+        self.orderDetailsTxt = tk.Text(
+            self,
+            font=REG_FONT,
+            state=tk.DISABLED,
+            background='SystemButtonFace',
+            borderwidth=0)
+        self.orderDetailsTxt.grid(
             row=6, column=7, rowspan=10, sticky='ne', padx=10, pady=5)
         tk.Button(self, text='edit', font=BTN_FONT,
                   width=15,
@@ -4530,7 +5068,9 @@ class OrderBrowse(tk.Frame):
                     library_id=self.library_id.get(),
                     name=self.orderName.get())
                 self.orderId = order_record.id
+                self.blanketPO = order_record.blanketPO
                 date = order_record.date
+                blanketPO = order_record.blanketPO
 
                 # date = date[:4] + '-' + date[4:6] + '-' + date[6:8] + '-' + \
                 #     date[8:10] + ':' + date[10:12] + '.' + date[12:]
@@ -4600,13 +5140,14 @@ class OrderBrowse(tk.Frame):
                           'language: %s\n' \
                           'vendor: %s\n' \
                           'material type: %s\n' \
+                          'blanket PO: %s\n' \
                           'wlo number range: %s\n' \
                           '----------------\n' \
                           'total titles: %s\n' \
                           'total copies: %s\n' \
                           'total cost: %s\n' \
                           '---------------\n' % (
-                              date, lang, self.vendor, matType,
+                              date, lang, self.vendor, matType, blanketPO,
                               wlo_range, total_titles, total_qty, total_cost)
 
                 details = details + f + \
@@ -4614,7 +5155,13 @@ class OrderBrowse(tk.Frame):
                 linked = 'linked to Sierra numbers?:\n' \
                           '%s' % linked_to_Sierra
                 details = details + linked
-                self.orderDetails.set(details)
+
+                # update display
+                self.orderDetailsTxt['state'] = tk.NORMAL
+                self.orderDetailsTxt.delete(1.0, tk.END)
+                self.orderDetailsTxt.insert(tk.END, details)
+                self.orderDetailsTxt['state'] = tk.DISABLED
+
                 cur_manager.notbusy()
         except Exception as e:
             cur_manager.notbusy()
@@ -4635,6 +5182,9 @@ class OrderBrowse(tk.Frame):
             else:
                 m = 'Please select order for deletion'
                 tkMessageBox.showwarning('Deletion', m)
+            self.orderDetailsTxt['state'] = tk.NORMAL
+            self.orderDetailsTxt.delete(1.0, tk.END)
+            self.orderDetailsTxt['state'] = tk.DISABLED
             cur_manager.notbusy()
 
         except:
@@ -4663,7 +5213,7 @@ class OrderBrowse(tk.Frame):
                 cur_manager.notbusy()
             except Exception, e:
                 cur_manager.notbusy()
-                print str(e)
+                main_logger.exception('MARC file error: %s' % str(e))
                 tkMessageBox.showerror(
                     'Output error', 'not able to create MARC file')
 
@@ -4742,6 +5292,7 @@ class OrderBrowse(tk.Frame):
             try:
                 cur_manager.busy()
                 data_set = []
+
                 for singleOrder in self.records:
                     data = []
                     bib = db.retrieve_record(
@@ -4762,19 +5313,25 @@ class OrderBrowse(tk.Frame):
                     data.append(total_qty)
                     data.append(total_cost)
                     data.append(singleOrder.oNumber)
+                    data.append(self.blanketPO)
                     data_set.append(data)
                 cur_manager.notbusy()
-            except:
+            except Exception as e:
                 cur_manager.notbusy()
+                main_logger.exception('DB read error: %s' % str(e))
                 m = 'not able to retrieve orders\n' \
                     'from the database'
                 tkMessageBox.showerror('database error', m)
+
             try:
                 cur_manager.busy()
                 res = sh.create_order(fh, library, data_set)
                 cur_manager.notbusy()
-            except:
+            except Exception as e:
                 cur_manager.notbusy()
+                res = None
+                main_logger.exception('Order creation error %s' % str(e))
+
             if res is not None:
                 # add here file name & number of records
                 tkMessageBox.showinfo(
@@ -4845,18 +5402,21 @@ class OrderBrowse(tk.Frame):
     def dynamic_details(self, *args):
         self.orderId = 0
         self.orderName.set('')
-        self.orderDetails.set('')
+        self.orderDetailsTxt['state'] = tk.NORMAL
+        self.orderDetailsTxt.delete(1.0, tk.END)
+        self.orderDetailsTxt['state'] = tk.DISABLED
 
     def reset_values(self):
         # self.library_id.set(0)
         self.orderId = 0
         self.orderName.set('')
-        self.orderDetails.set('')
+        self.orderDetailsTxt['state'] = tk.NORMAL
+        self.orderDetailsTxt.delete(1.0, tk.END)
+        self.orderDetailsTxt['state'] = tk.DISABLED
         self.selector_id = None
         self.vendor_id = None
         self.lang_id = None
         self.matType_id = None
-        # self.orderLst.delete(0, tk.END)
 
     def reset_filters(self):
         self.vendor_filter.set('all')
@@ -5824,7 +6384,6 @@ class OrderEdit(tk.Frame):
         if self.tier.get() == 'OrderEdit':
             self.reset_values()
             start_time = datetime.datetime.now()
-            logging.basicConfig(filename='babel.log', level=logging.DEBUG)
             # create controlled list for audn, locations, & funds
             self.audn_values = ()
             self.location_values = ()
@@ -5943,25 +6502,43 @@ class OrderEdit(tk.Frame):
                 end_time = datetime.datetime.now()
                 read_time = end_time - start_time
                 read_time = read_time.total_seconds()
-                logging.info('%s | loading %s order : %s seconds' % (
+                main_logger.info('%s | loading %s order : %s seconds' % (
                     datetime.datetime.now(),
                     self.orderName.get(),
                     read_time))
                 cur_manager.notbusy()
             except Exception, e:
                 cur_manager.notbusy()
-                logging.error('%s |loading %s order: exception raised' % (
-                    datetime.datetime.now(),
-                    self.orderName.get()))
-                print str(e)
+                main_logger.exception(
+                    '%s |loading %s order: exception raised : %s' % (
+                        datetime.datetime.now(),
+                        self.orderName.get(),
+                        str(e)))
                 m = 'not able to retrieve records\n' \
                     'from database'
                 tkMessageBox.showerror('database error', m)
 
 
 if __name__ == '__main__':
-    version = 'BABEL (beta v.0.7.0)'
+    version = 'BABEL (beta v.0.8.0)'
 
+    # setup log folder is does not exist
+    if not os.path.isdir('./logs'):
+        # create folder for logs
+        os.mkdir('logs')
+
+    # set up app logger
+    main_logger = logging.getLogger('babel_logger')
+    main_logger.setLevel(logging.DEBUG)
+    handler = logging.handlers.RotatingFileHandler(
+        LOG_FILENAME, maxBytes=1024 * 1024, backupCount=5)
+
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    main_logger.addHandler(handler)
+
+    # lounch application
     user_data = shelve.open('user_data')
     if 'db_config' in user_data:
         # pull db login details
@@ -5970,7 +6547,7 @@ if __name__ == '__main__':
         app.title(version)
         app.mainloop()
     else:
-        # db details form
+        # first time launch, show db details form
         setup_root = tk.Tk()
         setup_root.title("Database connection details")
         setup_app = DBSetup(setup_root)

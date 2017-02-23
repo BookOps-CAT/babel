@@ -52,6 +52,7 @@ class MARCGenerator():
             db.Order,
             id=order_id)
         self.order_name = self.order.name
+        self.blanketPO = self.order.blanketPO
         # find library MARC code
         if self.order.library_id == 1:
             self.library_code = 'BKL'
@@ -164,6 +165,7 @@ class MARCGenerator():
                     'selector': self.selector_code,
                     'matType_bib': self.matType_bib_code,
                     'matType_ord': self.matType_ord_code,
+                    'blanketPO': self.blanketPO,
                     'audn': audn_code,
                     'po_per_line': orderSingle.po_per_line,
                     'wlo': orderSingle.wlo_id,
@@ -191,11 +193,26 @@ class MARCGenerator():
         self.record_count += 1
 
     def make_bib(self, order_data):
-        """creates bib & order record in MARC21 format with UTF-8 encoded charset"""
+        """
+        creates bib & order record in MARC21 format 
+        with UTF-8 encoded charset"""
+
         record = Record()
         tags = []
+
         # MARC leader
-        record.leader = '00000nam a2200000u  4500'
+        if order_data['matType_bib'] in ('h', 'v'):
+            MARCmatType = 'g'
+        elif order_data['matType_bib'] in ('i', 'u'):
+            MARCmatType = 'i'
+        elif order_data['matType_bib'] in ('j', 'y'):
+            MARCmatType = 'j'
+        elif order_data['matType_bib'] == 'a':
+            MARCmatType = 'a'
+        else:
+            MARCmatType = 'a'
+
+        record.leader = '00000n%sm a2200000u  4500' % MARCmatType
         # 001 field
         tags.append(Field(tag='001', data=order_data['wlo']))
         # 008 field
@@ -252,6 +269,14 @@ class MARCGenerator():
                         subfields=subfields))
 
         # 245 field
+        # add format to title for non-print mat
+        if MARCmatType == 'g':
+            order_data['title'] += ' (DVD)'
+        elif MARCmatType == 'i':
+            order_data['title'] += ' (Audiobook)'
+        elif MARCmatType == 'j':
+            order_data['title'] == ' (CD)'
+
         linked = False
         if author_present:
             t245_ind1 = '1'
@@ -295,9 +320,18 @@ class MARCGenerator():
                           subfields=subfields))
 
         # 300 field
+        if MARCmatType == 'g':
+            container = 'videodisc ; 4 3/4 in.'
+        elif MARCmatType == 'i':
+            container = 'sound disc ; 4 3/4 in.'
+        elif MARCmatType == 'j':
+            container = 'sound disc ; 4 3/4 in.'
+        else:
+            container = 'pages ; cm.'
+
         tags.append(Field(tag='300',
                           indicators=[' ', ' '],
-                          subfields=['a', 'pages ; cm.']))
+                          subfields=['a', container]))
         # 940 field
         tags.append(Field(tag='940',
                           indicators=[' ', ' '],
@@ -349,7 +383,9 @@ class MARCGenerator():
         subfield_I = ['i', order_data['wlo']]
         if order_data['po_per_line'] is not None:
             subfield_H = ['h', order_data['po_per_line']]
+            subfield_M = ['m', order_data['blanketPO']]
             subfields.extend(subfield_H)
+            subfields.extend(subfield_M)
         subfields.extend(subfield_I)
         tags.append(Field(tag='961',
                           indicators=[' ', ' '],
