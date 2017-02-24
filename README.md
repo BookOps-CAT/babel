@@ -8,4 +8,4 @@ launch interface by running babel.py
 * openpyxl 2.4.0
 * pymarc 3.1.5
 * pymysql 0.7.9
-
+* PyZ3950 2.04
