@@ -215,28 +215,33 @@ class SheetManipulator:
                     po_per_line_col = col_counter
                     new_values.append(None)
                 elif col == target_name:
-                    isbn_value = self.ws[
-                        kwargs['isbn_col'] +
-                        str(kwargs['head_row'] + row_counter)].value
-                    isbn = parse_isbn(isbn_value)
-                    if isbn is not None and kwargs['z3950target'] is not None:
-                        catalog_query = query(
-                            target=kwargs['z3950target'],
-                            keyword=isbn,
-                            qualifier='isbn')
-                        if catalog_query[0]:
-                            if len(catalog_query[1]) > 0:
-                                query_result = 'found'
-                            else:
-                                query_result = None
-                    else:
-                        query_result = None
+                    if kwargs['isbn_col'] != '':
+                        isbn_value = self.ws[
+                            kwargs['isbn_col'] +
+                            str(kwargs['head_row'] + row_counter)].value
+                        isbn = parse_isbn(isbn_value)
+                        if isbn is not None and \
+                                kwargs['z3950target'] is not None:
+                            catalog_query = query(
+                                target=kwargs['z3950target'],
+                                keyword=isbn,
+                                qualifier='isbn')
+                            if catalog_query[0]:
+                                if len(catalog_query[1]) > 0:
+                                    query_result = 'found'
+                                else:
+                                    query_result = None
+                        else:
+                            query_result = None
 
-                    new_values.append(query_result)
+                        new_values.append(query_result)
                 else:
                     new_values.append(None)
             old_values = []
             for cell in row:
+                if cell.value == 'found':
+                    cell.hyperlink = kwargs['isbn_url']
+                    print cell.hyperlink
                 try:
                     content = cell.value.strip().replace(
                         '\n', ' ').replace('\t', ' ')

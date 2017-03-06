@@ -3377,6 +3377,7 @@ class Z3950Settings(tk.Frame):
         self.user = tk.StringVar()
         self.password = tk.StringVar()
         self.syntax = tk.StringVar()
+        self.isbn_url = tk.StringVar()
 
         # setup layout
         # set browsing frame
@@ -3431,7 +3432,7 @@ class Z3950Settings(tk.Frame):
             row=0, column=1, sticky='snew', padx=10, pady=10)
         # self.zEditFrm.state(['disabled', 'readonly'])
         self.zEditFrm.columnconfigure(0, minsize=10)
-        self.zEditFrm.rowconfigure(7, minsize=100)
+        self.zEditFrm.rowconfigure(8, minsize=100)
 
         tk.Entry(self.zEditFrm, textvariable=self.name).grid(
             row=0, column=1, sticky='snwe', padx=5, pady=5)
@@ -3464,16 +3465,20 @@ class Z3950Settings(tk.Frame):
             row=6, column=1, sticky='snew', padx=5, pady=5)
         tk.Label(self.zEditFrm, text='syntax', font=LBL_FONT).grid(
             row=6, column=2, sticky='nw', padx=5, pady=5)
+        tk.Entry(self.zEditFrm, textvariable=self.isbn_url).grid(
+            row=7, column=1, sticky='snew', padx=5, pady=5)
+        tk.Label(self.zEditFrm, text='ISBN search URL', font=LBL_FONT).grid(
+            row=7, column=2, sticky='nw', padx=5, pady=5)
 
         # buttons
         tk.Button(self.zEditFrm, text='save', font=BTN_FONT,
                   width=10,
                   command=self.save).grid(
-            row=8, column=1, sticky='nw', padx=5, pady=5)
+            row=9, column=1, sticky='nw', padx=5, pady=5)
         tk.Button(self.zEditFrm, text='cancel', font=BTN_FONT,
                   width=10,
                   command=self.cancel).grid(
-            row=8, column=2, sticky='nw', padx=5, pady=5)
+            row=9, column=2, sticky='nw', padx=5, pady=5)
 
         # disable widgets
         for child in self.zEditFrm.children.values():
@@ -3517,6 +3522,7 @@ class Z3950Settings(tk.Frame):
             self.user.set(record.user)
             self.password.set(record.password)
             self.syntax.set(record.syntax)
+            self.isbn_url.set(record.isbn_url)
 
             self.target_id.set(record.id)
 
@@ -3567,7 +3573,8 @@ class Z3950Settings(tk.Frame):
                     port=self.port.get(),
                     user=self.user.get().strip(),
                     password=self.password.get().strip(),
-                    syntax=self.syntax.get().strip())
+                    syntax=self.syntax.get().strip(),
+                    isbn_url=self.isbn_url.get().strip())
 
                 if result[0]:
                     m = 'target saved'
@@ -3595,7 +3602,8 @@ class Z3950Settings(tk.Frame):
                         port=self.port.get(),
                         user=self.user.get().strip(),
                         password=self.password.get().strip(),
-                        syntax=self.syntax.get().strip())
+                        syntax=self.syntax.get().strip(),
+                        isbn_url=self.isbn_url.get().strip())
                     m = 'target has been updated'
                     tkMessageBox.showinfo('Info', m)
                 except Exception as e:
@@ -3616,6 +3624,7 @@ class Z3950Settings(tk.Frame):
         self.user.set('')
         self.password.set('')
         self.syntax.set('MARC21')
+        self.isbn_url.set('')
         self.deactivate_widgets(self.zEditFrm)
 
     def observer(self, *args):
@@ -4294,7 +4303,8 @@ class CartSheet(tk.Frame):
                 'port',
                 'user',
                 'password',
-                'syntax')
+                'syntax',
+                'isbn_url')
 
             for record in records:
                 targets.append(record.name)
@@ -4305,7 +4315,8 @@ class CartSheet(tk.Frame):
                     'port': record.port,
                     'user': record.user,
                     'password': record.password,
-                    'syntax': record.syntax
+                    'syntax': record.syntax,
+                    'isbn_url': record.isbn_url
                 }
 
             self.z3950targetCbx['values'] = targets
