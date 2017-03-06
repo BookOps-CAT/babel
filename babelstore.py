@@ -463,12 +463,14 @@ class Z3950params(Base):
     user = Column(String(250))
     password = Column(String(250))
     syntax = Column(String(100), nullable=False)
+    isbn_url = Column(String(250))
 
     def __repr__(self):
         return "<z3950params(id='%s', name='%s', host='%s', port='%s', " \
-               "database='%s', user='%s', syntax='%s')>" % (
+               "database='%s', user='%s', syntax='%s', isbn_url='%s')>" % (
                    self.id, self.name, self.host,
-                   self.port, self.database, self.user, self.syntax)
+                   self.port, self.database, self.user, self.syntax,
+                   self.isbn_url)
 
 
 def database_url():

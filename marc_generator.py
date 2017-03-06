@@ -21,7 +21,7 @@ from convert_price import cents2dollars
 BPL_ORDERS = {'acqType': 'p',
               'currency': '1',
               'orderType': 'f',
-              'status': 'o',  # for funds to be encumbered post-load status must be 'o' on order
+              'status': '1',  # for funds to be encumbered post-load status must be 'o' on order
               'tloc': 'p'}
 
 NYPL_ORDERS = {'acqType': 'p',
@@ -30,7 +30,7 @@ NYPL_ORDERS = {'acqType': 'p',
                'currency': '1',
                'orderType': 'f',
                'volumes': '1',
-               'status': 'o',  # for funds to be encumbered post-load status must be 'o' on order
+               'status': '1',  # for funds to be encumbered post-load status must be 'o' on order
                'tloc': 'p'}  # chekc proper code
 
 # investigate further for complete applicable list of codes
