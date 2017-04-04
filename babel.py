@@ -6530,7 +6530,7 @@ class OrderEdit(tk.Frame):
 
 
 if __name__ == '__main__':
-    version = 'BABEL (beta v.0.8.0)'
+    version = 'BABEL (beta v.0.8.1)'
 
     # setup log folder is does not exist
     if not os.path.isdir('./logs'):
