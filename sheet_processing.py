@@ -121,7 +121,7 @@ class SheetManipulator:
             shifted_price_col = get_column_letter(shifted_price_col_num)
         distr_col = len(extra_columns) + 1
         # branches_col = len(extra_columns) + 5
-        total_qty_col = len(extra_columns) + 6
+        total_qty_col = len(extra_columns) + 6  # leaves space for fixed cols
         total_price_col = len(extra_columns) + 7
         extra_columns = extra_columns + standard_columns
         shift_index = len(extra_columns)
@@ -201,12 +201,13 @@ class SheetManipulator:
                             kwargs['priceReg_col'] +
                             str(kwargs['head_row'] + row_counter)
                         ].value
-                        if list_price is None:
+
+                        if list_price is None or type(list_price) is not float:
                             list_price = 0.0
-                        else:
-                            disc_price = list_price - (list_price * discount)
-                            disc_price = dollars2cents(disc_price)
-                            disc_price = cents2dollars(disc_price)
+
+                        disc_price = list_price - (list_price * discount)
+                        disc_price = dollars2cents(disc_price)
+                        disc_price = cents2dollars(disc_price)
                         new_values.append(disc_price)
                 elif col == 'Audience':
                     audn_col = col_counter
@@ -233,15 +234,13 @@ class SheetManipulator:
                                     query_result = None
                         else:
                             query_result = None
-
-                        new_values.append(query_result)
+                    else:
+                        query_result = None
+                    new_values.append(query_result)
                 else:
                     new_values.append(None)
             old_values = []
             for cell in row:
-                if cell.value == 'found':
-                    cell.hyperlink = kwargs['isbn_url']
-                    print cell.hyperlink
                 try:
                     content = cell.value.strip().replace(
                         '\n', ' ').replace('\t', ' ')

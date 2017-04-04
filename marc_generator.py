@@ -176,6 +176,7 @@ class MARCGenerator():
                     'author': bib.author,
                     'author_trans': bib.author_trans,
                     'isbn': bib.isbn,
+                    'venNo': bib.venNo,
                     'publisher': bib.publisher,
                     'publisher_trans': bib.publisher_trans,
                     'pubDate': bib.pubDate,
@@ -230,6 +231,12 @@ class MARCGenerator():
             tags.append(Field(tag='020',
                               indicators=[' ', ' '],
                               subfields=['a', order_data['isbn']]))
+        # 024 field
+        if order_data['venNo'] is not None:
+            tags.append(Field(tag='024',
+                              indicators=['8', ' '],
+                              subfields=['a', order_data['venNo']]))
+
         # 040 field
         tags.append(Field(tag='040',
                           indicators=[' ', ' '],
