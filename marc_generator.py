@@ -53,6 +53,8 @@ class MARCGenerator():
             id=order_id)
         self.order_name = self.order.name
         self.blanketPO = self.order.blanketPO
+        self.orderDate = datetime.strftime(self.order.date, '%m-%d-%Y')
+
         # find library MARC code
         if self.order.library_id == 1:
             self.library_code = 'BKL'
@@ -184,7 +186,8 @@ class MARCGenerator():
                     'pubPlace_trans': bib.pubPlace_trans,
                     'locQty': distr_locations_str,  # order of locQty must reflect order of funds
                     'funds': distr_funds_str, # order of locQty must reflect order of funds
-                    'copies': str(qty)}
+                    'copies': str(qty),
+                    'orderDate': self.orderDate}
             self.make_bib(data)
 
     def save2marc(self, record):
@@ -366,6 +369,7 @@ class MARCGenerator():
             subfields.extend(subfield_Y)
             subfields.extend(subfield_E)
         subfield_O = ['o', order_data['copies']]
+        subfield_Q = ['q', order_data['orderDate']]
         subfield_S = ['s', order_data['priceDisc']]
         subfield_T = ['t', order_data['locQty']]
         subfield_U = ['u', order_data['funds']]
@@ -376,6 +380,7 @@ class MARCGenerator():
         subfields.extend(subfield_M)
         subfields.extend(subfield_N)
         subfields.extend(subfield_O)
+        subfields.extend(subfield_Q)
         subfields.extend(subfield_S)
         subfields.extend(subfield_T)
         subfields.extend(subfield_U)
