@@ -1,15 +1,18 @@
 # defines and initiates local DB that stores Babel data
 
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, and_, or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.engine.url import URL
+from sqlalchemy.sql import func
 import shelve
 
 from prepopulated_tables import *
+from convert_price import cents2dollars
+
 
 DB_DIALECTS = ('mysql', )
 DB_DRIVERS = ('pymysql', )
@@ -29,6 +32,10 @@ class Library(Base):
     matTypes = relationship('MatTypeLibraryJoiner',
                             cascade='all, delete-orphan')
     funds = relationship('Fund', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return "<Library(id='%s', code='%s')>" % (
+            self.id, self.code)
 
 
 class Vendor(Base):
@@ -424,7 +431,7 @@ class BibRec(Base):
     venNo = Column(String(50))
 
     def __repr__(self):
-        return "<BibRec(id='%s, title_trans='%s', " \
+        return "<BibRec(id='%s, title_trans='%s'" \
                "author_trans='%s', publisher_trans='%s', pubDate='%s', " \
                "pubPlace_trans='%s', audn_id='%s', isbn='%s'," \
                "venNo='%s'" % (
@@ -615,6 +622,195 @@ def retrieve_all(model, related, **kwargs):
         subqueryload(related)).filter_by(**kwargs).order_by(model.id).all()
     session.close()
     return instances
+
+
+def id_search(id_type, id):
+
+    session = db_connection()
+    instances = session.query(OrderSingle,
+                              BibRec,
+                              Order,
+                              Vendor,
+                              Library,
+                              Lang,
+                              MatType,
+                              Selector).\
+        filter(OrderSingle.bibRec_id == BibRec.id).\
+        filter(OrderSingle.order_id == Order.id).\
+        filter(Order.vendor_id == Vendor.id).\
+        filter(Order.library_id == Library.id).\
+        filter(Order.lang_id == Lang.id).\
+        filter(Order.matType_id == MatType.id).\
+        filter(Order.selector_id == Selector.id).\
+        filter(id_type == id).\
+        all()
+
+    hits = []
+    for h in instances:
+        locations = []
+        qty = 0
+        for loc in h[0].orderSingleLocations:
+            qty += loc.qty
+            try:
+                instance = session.query(Location, Fund).\
+                    filter(loc.location_id == Location.id).\
+                    filter(loc.fund_id == Fund.id).\
+                    one()
+                copy = '{}({})/{}'.format(
+                    instance[0].name, str(loc.qty), instance[1].code)
+                locations.append(copy)
+            except MultipleResultsFound:
+                copy = 'e(e)/e'
+                locations.append(copy)
+        unit = {
+            'title': h[1].title,
+            'title_trans': h[1].title_trans,
+            'author': h[1].author,
+            'author_trans': h[1].author_trans,
+            'isbn': h[1].isbn,
+            'venNo': h[1].venNo,
+            'pubPlace': h[1].pubPlace,
+            'publisher': h[1].publisher,
+            'pubDate': h[1].pubDate,
+            'library': h[4].code,
+            'oNumber': h[0].oNumber,
+            'bNumber': h[0].bNumber,
+            'wlo_id': h[0].wlo_id,
+            'blanketPO': h[2].blanketPO,
+            'date': h[2].date,
+            'locations': locations,
+            'qty': qty,
+            'priceDisc': cents2dollars(h[0].priceDisc),
+            'lang': h[5].name,
+            'vendor': h[3].name,
+            'matType': h[6].name,
+            'selector': h[7].name,
+        }
+        hits.append(unit)
+
+    session.close()
+    return hits
+
+
+def keyword_search(title_query, title_query_type, author_query,
+                   vendor_id, date1, date2, library_id, lang_id,
+                   matType_id, selector_id):
+    session = db_connection()
+    criteria = []
+    hits = []
+
+    if title_query_type == 'title keyword':
+        if title_query is not None:
+            criteria.extend(
+                [BibRec.title.ilike('%{0}%'.format(q)) for q in title_query])
+    else:
+        if title_query is not None:
+            criteria.append(BibRec.title.ilike('%{}%'.format(title_query)))
+
+    if author_query is not None:
+        criteria.extend(
+            [BibRec.author.ilike('%{0}%'.format(q)) for q in author_query])
+
+    if vendor_id is not None:
+        criteria.append(Vendor.id == vendor_id)
+
+    if library_id is not None:
+        criteria.append(Library.id == library_id)
+
+    if lang_id is not None:
+        criteria.append(Lang.id == lang_id)
+
+    if matType_id is not None:
+        criteria.append(MatType.id == matType_id)
+
+    if selector_id is not None:
+        criteria.append(Selector.id == selector_id)
+
+    instances = session.query(OrderSingle,
+                              BibRec,
+                              Order,
+                              Vendor,
+                              Library,
+                              Lang,
+                              MatType,
+                              Selector).\
+        filter(OrderSingle.bibRec_id == BibRec.id).\
+        filter(OrderSingle.order_id == Order.id).\
+        filter(Order.lang_id == Lang.id).\
+        filter(Order.vendor_id == Vendor.id).\
+        filter(Order.library_id == Library.id).\
+        filter(Order.matType_id == MatType.id).\
+        filter(Order.selector_id == Selector.id).\
+        filter(and_(*criteria)).\
+        filter(func.date(Order.date).between(date1, date2)).\
+        yield_per(100).enable_eagerloads(False)
+
+    # find applicable unique location and fund ids
+    locs = set()
+    funds = set()
+    for instance in instances:
+        qty = 0
+        for loc in instance[0].orderSingleLocations:
+            locs.add(loc.location_id)
+            funds.add(loc.fund_id)
+            qty += loc.qty
+
+    # compile criteria for Location and Fund tables query
+    loc_criteria = [Location.id == l for l in locs]
+    fund_criteria = [Fund.id == f for f in funds]
+    if library_id is not None:
+        loc_criteria.append(Location.library_id == library_id)
+        fund_criteria.append(Fund.library_id == library_id)
+    if matType_id is not None:
+        loc_criteria.append(Location.matType_id == matType_id)
+
+    # query Location and Fund tables
+    loc_records = session.query(Location.id, Location.name).\
+        filter(or_(*loc_criteria)).all()
+    loc_records = dict(loc_records)
+
+    fund_records = session.query(Fund.id, Fund.code).\
+        filter(or_(*fund_criteria)).all()
+    fund_records = dict(fund_records)
+
+    # stich Location & Fund data to retrieved ealier records
+    for instance in instances:
+        qty = 0
+        locations = []
+        for loc in instance[0].orderSingleLocations:
+            qty += loc.qty
+            copy = '{}({})/{}'.format(
+                loc_records[loc.location_id],
+                str(loc.qty),
+                fund_records[loc.fund_id])
+            locations.append(copy)
+
+        unit = {'title': instance[1].title,
+                'title_trans': instance[1].title_trans,
+                'author': instance[1].author,
+                'author_trans': instance[1].author_trans,
+                'isbn': instance[1].isbn,
+                'venNo': instance[1].venNo,
+                'pubPlace': instance[1].pubPlace,
+                'publisher': instance[1].publisher,
+                'pubDate': instance[1].pubDate,
+                'library': instance[4].code,
+                'oNumber': instance[0].oNumber,
+                'bNumber': instance[0].bNumber,
+                'wlo_id': instance[0].wlo_id,
+                'blanketPO': instance[2].blanketPO,
+                'date': instance[2].date,
+                'locations': locations,
+                'qty': qty,
+                'priceDisc': cents2dollars(instance[0].priceDisc),
+                'lang': instance[5].name,
+                'vendor': instance[3].name,
+                'matType': instance[6].name,
+                'selector': instance[7].name}
+        hits.append(unit)
+
+    session.close()
+    return hits
 
 
 def count_all(model, **kwargs):
