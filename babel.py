@@ -24,9 +24,10 @@ from convert_price import dollars2cents, cents2dollars
 LOG_FILENAME = './logs/babellog.out'
 
 BTN_FONT = ('Helvetica', 10)
-HDG_FONT = ('Helvetica', 10, 'bold')
+HDG_FONT = ('Helvetica', 12, 'bold')
 LBL_FONT = ('Helvetica', 10, 'italic')
 REG_FONT = ('Helvetica', 10)
+LRG_FONT = ('Helvetica', 12)
 REG_BOLD = ('Helvetica', 10, 'bold')
 
 
@@ -259,16 +260,29 @@ class MainApplication(tk.Tk):
 
         # spawn Babel frames
         self.frames = {}
-        for F in (Main, Settings, VendorBrowse, VendorSingle,
-                  CollaboratorBrowse, CollaboratorSingle,
-                  LocationBrowse, LocationSingle,
-                  ShelfCodes,
-                  DistributionBrowse, DistributionSingle,
-                  FundBrowse, FundSingle,
-                  VendorSheetBrowse, VendorSheetSingle,
-                  Z3950Settings,
-                  CartSheet, ImportCartSheet,
-                  OrderBrowse, OrderEdit, DefaultDirectories):
+        for F in (
+                CartSheet,
+                CollaboratorBrowse,
+                CollaboratorSingle,
+                DefaultDirectories,
+                DistributionBrowse,
+                DistributionSingle,
+                FundBrowse,
+                FundSingle,
+                ImportCartSheet,
+                LocationBrowse,
+                LocationSingle,
+                Main,
+                OrderBrowse,
+                OrderEdit,
+                Search,
+                Settings,
+                ShelfCodes,
+                VendorBrowse,
+                VendorSheetBrowse,
+                VendorSheetSingle,
+                VendorSingle,
+                Z3950Settings):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
                       **self.sharedData)
@@ -293,6 +307,8 @@ class MainApplication(tk.Tk):
         navig_menu.add_separator()
         navig_menu.add_command(label='exit', command=self.quit)
         menubar.add_cascade(label='Menu', menu=navig_menu)
+        search_menu = tk.Menu(menubar, font=REG_FONT, tearoff=0)
+        menubar.add_checkbutton(label='Search', command=lambda: self.show_frame('Search'))
         report_menu = tk.Menu(menubar, font=REG_FONT, tearoff=0)
         report_menu.add_command(label='reports', command=None)
         menubar.add_cascade(label='Reports', menu=report_menu)
@@ -6527,6 +6543,620 @@ class OrderEdit(tk.Frame):
                 m = 'not able to retrieve records\n' \
                     'from database\n\n%s' % str(e)
                 tkMessageBox.showerror('database error', m)
+
+
+class Search(tk.Frame):
+
+    """Search widget"""
+
+    def __init__(self, parent, controller, **sharedData):
+        tk.Frame.__init__(self, parent)
+
+        # bind shared variables
+        self.controller = controller
+        self.tier = sharedData['tier']
+        self.tier.trace('w', self.observer)
+
+        # register entry validation
+        vd = (self.register(self.validate_date), '%d', '%i', '%S')
+
+        # bind local variables
+        self.id_type = tk.StringVar()
+        self.id_query = tk.StringVar()
+        self.title_query = tk.StringVar()
+        self.title_query_type = tk.StringVar()
+        self.author_query = tk.StringVar()
+        self.vendor = tk.StringVar()
+        self.date1 = tk.StringVar()
+        self.date2 = tk.StringVar()
+        self.library = tk.StringVar()
+        self.lang = tk.StringVar()
+        self.matType = tk.StringVar()
+        self.selector = tk.StringVar()
+
+        # search results variables
+        self.current_page = tk.IntVar()
+        self.total_pages = 0
+        self.hits = []
+        self.total_hits = 0
+        self.summary = tk.StringVar()
+
+        # configure layout
+        self.columnconfigure(0, minsize=50)
+        self.columnconfigure(2, minsize=50)
+        self.rowconfigure(0, minsize=10)
+        self.rowconfigure(4, minsize=10)
+
+        # initiate widgets
+
+        # simple search
+        self.simpleFrm = ttk.LabelFrame(self, text='simple search')
+        self.simpleFrm.grid(
+            row=1, column=1, sticky='snew', padx=5, pady=5)
+        self.simpleFrm.columnconfigure(0, minsize=10)
+        self.simpleFrm.columnconfigure(2, minsize=10)
+        self.simpleFrm.columnconfigure(4, minsize=20)
+        self.simpleFrm.columnconfigure(6, minsize=10)
+        self.simpleFrm.rowconfigure(1, minsize=10)
+        self.id_typeCbx = ttk.Combobox(self.simpleFrm,
+                                       state='readonly',
+                                       textvariable=self.id_type,
+                                       width=15,
+                                       height=6)
+        self.id_typeCbx.grid(
+            row=0, column=1, sticky='snw', pady=5)
+        self.id_queryEnt = ttk.Entry(self.simpleFrm,
+                                     textvariable=self.id_query,
+                                     width=25)
+        self.id_queryEnt.grid(
+            row=0, column=3, sticky='snw', pady=5)
+        tk.Button(self.simpleFrm, text='search', font=BTN_FONT,
+                  width=15,
+                  height=1,
+                  command=self.simple_search).grid(
+            row=0, column=5, sticky='sew', padx=5, pady=5)
+
+        tk.Label(self, text='OR', font=LBL_FONT).grid(
+            row=2, column=1, sticky='snw', padx=5, pady=5)
+
+        # advanced search
+        self.advFrm = ttk.LabelFrame(self, text='advanced search')
+        self.advFrm.grid(
+            row=3, column=1, sticky='snew', padx=5, pady=5)
+        self.advFrm.columnconfigure(0, minsize=10)
+        # self.advFrm.columnconfigure(5, minsize=10)
+        self.advFrm.rowconfigure(3, minsize=10)
+        self.advFrm.rowconfigure(10, minsize=10)
+        self.advFrm.rowconfigure(11, minsize=10)
+
+        self.title_queryEnt = ttk.Entry(self.advFrm,
+                                        textvariable=self.title_query,
+                                        width=50)
+        self.title_queryEnt.grid(
+            row=0, column=1, columnspan=3, sticky='snw', pady=2)
+        self.titleTypeCbx = ttk.Combobox(self.advFrm,
+                                         state='readonly',
+                                         textvariable=self.title_query_type,
+                                         values=[
+                                             'title keyword',
+                                             'title phrase'],
+                                         width=12)
+        self.titleTypeCbx.grid(
+            row=0, column=4, columnspan=2, sticky='sne', pady=2)
+
+        tk.Label(self.advFrm, text='AND', font=LBL_FONT).grid(
+            row=0, column=7, columnspan=2, sticky='sne', padx=5, pady=5)
+        self.authorEnt = ttk.Entry(self.advFrm,
+                                   textvariable=self.author_query,
+                                   width=28)
+        self.authorEnt.grid(
+            row=1, column=1, columnspan=3, sticky='snw', pady=2)
+        tk.Label(self.advFrm, text='author', font=LBL_FONT).grid(
+            row=1, column=2, sticky='sne', pady=5)
+        tk.Label(self.advFrm, text='AND', font=LBL_FONT).grid(
+            row=1, column=7, sticky='sne', pady=5)
+        self.vendorCbx = ttk.Combobox(self.advFrm,
+                                      state='readonly',
+                                      textvariable=self.vendor,
+                                      width=25)
+        self.vendorCbx.grid(
+            row=2, column=1, columnspan=3, sticky='snw', pady=2)
+        tk.Label(self.advFrm, text='vendor', font=LBL_FONT).grid(
+            row=2, column=2, sticky='sne', pady=5)
+        tk.Label(self.advFrm, text='limit to:', font=LBL_FONT).grid(
+            row=4, column=1, columnspan=4, sticky='snw', pady=5)
+        tk.Label(self.advFrm, text='date created between',
+                 font=LBL_FONT).grid(
+            row=5, column=1, sticky='sne', padx=5, pady=5)
+        self.date1Ent = ttk.Entry(self.advFrm,
+                                  textvariable=self.date1,
+                                  validate='key',
+                                  validatecommand=vd,
+                                  width=15)
+        self.date1Ent.grid(
+            row=5, column=2, sticky='snw', pady=2)
+        tk.Label(self.advFrm, text='and', font=LBL_FONT).grid(
+            row=5, column=3, sticky='snw', padx=5, pady=5)
+        self.date2Ent = ttk.Entry(self.advFrm,
+                                  validate='key',
+                                  validatecommand=vd,
+                                  textvariable=self.date2,
+                                  width=15)
+        self.date2Ent.grid(
+            row=5, column=4, sticky='snw', pady=2)
+        tk.Label(self.advFrm, text='MM/DD/YYYY', font=LBL_FONT).grid(
+            row=6, column=2, sticky='snw', pady=2)
+        tk.Label(self.advFrm, text='MM/DD/YYYY', font=LBL_FONT).grid(
+            row=6, column=4, sticky='snw', pady=2)
+        tk.Label(self.advFrm, text='library', font=LBL_FONT).grid(
+            row=7, column=1, sticky='sne', padx=5, pady=5)
+        self.libraryCbx = ttk.Combobox(self.advFrm,
+                                       state='readonly',
+                                       textvariable=self.library,
+                                       width=12,
+                                       height=2)
+        self.libraryCbx.grid(
+            row=7, column=2, sticky='snw', pady=2)
+
+        tk.Label(self.advFrm, text='language', font=LBL_FONT).grid(
+            row=8, column=1, sticky='sne', padx=5, pady=5)
+        self.langCbx = ttk.Combobox(self.advFrm,
+                                    state='readonly',
+                                    textvariable=self.lang,
+                                    width=12,
+                                    height=15)
+        self.langCbx.grid(
+            row=8, column=2, sticky='snw', pady=2)
+
+        tk.Label(self.advFrm, text='material type', font=LBL_FONT).grid(
+            row=9, column=1, sticky='sne', padx=5, pady=5)
+        self.matTypeCbx = ttk.Combobox(self.advFrm,
+                                       state='readonly',
+                                       textvariable=self.matType,
+                                       width=12)
+        self.matTypeCbx.grid(
+            row=9, column=2, sticky='snw', pady=2)
+
+        tk.Label(self.advFrm, text='selector', font=LBL_FONT).grid(
+            row=10, column=1, sticky='sne', padx=5, pady=5)
+        self.selectorCbx = ttk.Combobox(self.advFrm,
+                                        state='readonly',
+                                        textvariable=self.selector,
+                                        width=12)
+        self.selectorCbx.grid(
+            row=10, column=2, sticky='snw', pady=2)
+
+        tk.Button(self.advFrm, text='search', font=BTN_FONT,
+                  command=self.adv_search,
+                  width=15,
+                  height=1).grid(
+            row=12, column=1, sticky='snw', padx=5, pady=5)
+
+        tk.Button(self.advFrm, text='reset', font=BTN_FONT,
+                  command=self.reset,
+                  width=15,
+                  height=1).grid(
+            row=12, column=2, sticky='sne', padx=5, pady=5)
+
+    def simple_search(self):
+        id_type = self.id_type.get()
+        query = self.id_query.get().strip()
+        if id_type != '' and query != '':
+            cur_manager.busy()
+            if id_type == '.o number':
+                self.hits = db.id_search(db.OrderSingle.oNumber, query)
+            elif id_type == '.b number':
+                self.hits = db.id_search(db.OrderSingle.bNumber, query)
+            elif id_type == 'wlo number':
+                self.hits = db.id_search(db.OrderSingle.wlo_id, query)
+            elif id_type == 'ISBN':
+                self.hits = db.id_search(db.BibRec.isbn, query)
+            elif id_type == 'vendor number':
+                self.hits = db.id_search(db.BibRec.venNo, query)
+            elif id_type == 'blanket PO':
+                self.hits = db.id_search(db.Order.blanketPO, query)
+
+            self.activate_display()
+            cur_manager.notbusy()
+        else:
+            m = 'Please select type of search and enter your query'
+            tk.MessageBox.showwarning('Input error', m)
+
+    def adv_search(self):
+
+        if (len(self.title_query.get().strip()) == 0 and
+            len(self.author_query.get().strip()) == 0 and
+                self.vendor.get() == 'any'):
+            # empty search
+
+            m = 'Please enter title or author or select specific vendor'
+            tk.MessageBox.showwarning('Input error', m)
+        else:
+            cur_manager.busy()
+            # find critieria babelstore id to be passed to query
+
+            if self.title_query_type.get() == 'title keyword':
+                if self.title_query.get().strip() == '':
+                    title_query = None
+                else:
+                    title_query = self.title_query.get().strip().split(' ')
+            else:
+                if self.title_query.get().strip() == '':
+                    title_query = None
+                else:
+                    title_query = self.title_query.get().strip()
+
+            if self.author_query.get().strip() == '':
+                author_query = None
+            else:
+                author_query = self.author_query.get().strip().split(' ')
+
+            if self.vendor.get() == 'any':
+                vendor_id = None
+            else:
+                vendor_id = self.vendor_by_name[self.vendor.get()]
+
+            if self.library.get() == 'any':
+                library_id = None
+            else:
+                library_id = self.library_by_name[self.library.get()]
+
+            if self.matType.get() == 'any':
+                matType_id = None
+            else:
+                matType_id = self.matType_by_name[self.matType.get()]
+
+            if self.lang.get() == 'any':
+                lang_id = None
+            else:
+                lang_id = self.lang_by_name[self.lang.get()]
+
+            if self.selector.get() == 'any':
+                selector_id = None
+            else:
+                selector_id = self.selector_by_name[self.selector.get()]
+
+            # create datetime object to be passed to query
+            if self.date1.get() == '':
+                date1 = datetime.datetime.strptime('01/01/1900', '%m/%d/%Y')
+            else:
+                date1 = datetime.datetime.strptime(
+                    self.date1.get(), '%m/%d/%Y')
+            if self.date2.get() == '':
+                date2 = datetime.datetime.strptime('12/31/3000', '%m/%d/%Y')
+            else:
+                date2 = datetime.datetime.strptime(
+                    self.date2.get(), '%m/%d/%Y')
+
+            self.hits = db.keyword_search(
+                title_query,
+                self.title_query_type.get(),
+                author_query,
+                vendor_id,
+                date1,
+                date2,
+                library_id,
+                lang_id,
+                matType_id,
+                selector_id)
+            self.activate_display()
+            cur_manager.notbusy()
+
+    def result_pagination(self):
+        self.total_hits = len(self.hits)
+        self.pages = {}
+        if self.total_hits <= 100:
+            self.pages[1] = self.hits
+            p = 1
+        else:
+            for p in range(1, self.total_hits // 100 + 1):
+                self.pages[p] = self.hits[(p - 1) * 100:(p * 100)]
+            if self.total_hits % 100 > 0:
+                self.pages[p + 1] = self.hits[(p * 100):]
+                p += 1
+        self.total_pages = p
+        self.current_page.set(1)
+
+    def activate_display(self):
+        self.result_pagination()
+
+        self.top = tk.Toplevel(self)
+        self.top.minsize(width=1000, height=500)
+        self.top.title('Search results')
+        self.top.columnconfigure(0, minsize=10)
+        self.top.columnconfigure(2, minsize=800)
+        self.top.rowconfigure(4, minsize=400)
+        self.top.columnconfigure(13, minsize=10)
+        self.top.rowconfigure(12, minsize=10)
+
+        query = []
+        filters = []
+        if self.title_query.get() != '':
+            query.append('{}("{}")'.format(
+                self.title_query_type.get(), self.title_query.get()))
+        if self.author_query.get() != '':
+            query.append('author("{}")'.format(self.author_query.get()))
+        if self.vendor.get() != 'any':
+            query.append('vendor("{}")'.format(self.vendor.get()))
+        if self.date1.get() != '':
+            filters.append('from date("{}")'.format(self.date1.get()))
+        if self.date2.get() != '':
+            filters.append('to date("{}")'.format(self.date2.get()))
+        if self.library.get() != 'any':
+            filters.append('library("{}")'.format(self.library.get()))
+        if self.lang.get() != 'any':
+            filters.append('language("{}")'.format(self.lang.get()))
+        if self.matType.get() != 'any':
+            filters.append('mat type("{}")'.format(self.matType.get()))
+        if self.selector.get() != 'any':
+            filters.append('selector("{}")'.format(self.selector.get()))
+
+        query = '&'.join(query)
+        filters = '&'.join(filters)
+
+        ttk.Label(self.top, textvariable=self.summary, font=LBL_FONT,
+                  justify=tk.LEFT).grid(
+            row=0, column=1, columnspan=10, sticky='snw', padx=5, pady=5)
+        ttk.Label(self.top, text=(
+            'query: ' + query + '\n' + 'filters: ' + filters), font=LBL_FONT,
+                  justify=tk.LEFT).grid(
+            row=1, column=1, columnspan=10, sticky='snw', padx=5, pady=5)
+
+        self.nextBtn = tk.Button(self.top, text='next', font=BTN_FONT,
+                                 width=15,
+                                 height=1,
+                                 command=self.next_page)
+        self.nextBtn.grid(
+            row=2, column=12, sticky='nw', padx=5, pady=5)
+
+        self.previousBtn = tk.Button(self.top, text='previous', font=BTN_FONT,
+                                     width=15,
+                                     height=1,
+                                     command=self.previous_page)
+        self.previousBtn.grid(
+            row=3, column=12, sticky='nw', padx=5, pady=5)
+
+        tk.Button(self.top, text='export', font=BTN_FONT,
+                  width=15,
+                  height=1,
+                  command=self.export).grid(
+            row=5, column=12, sticky='nw', padx=5, pady=5)
+
+        tk.Button(self.top, text='close', font=BTN_FONT,
+                  width=15,
+                  height=1,
+                  command=self.top.destroy).grid(
+            row=6, column=12, sticky='nw', padx=5, pady=5)
+
+        self.yscrollbar = tk.Scrollbar(self.top, orient=tk.VERTICAL)
+        self.yscrollbar.grid(
+            row=2, column=1, rowspan=10, sticky='nse', padx=2)
+        self.base = tk.Canvas(
+            self.top,
+            yscrollcommand=self.yscrollbar.set)
+        self.base.grid(
+            row=2, column=2, columnspan=10, rowspan=10, sticky='snew', padx=5)
+
+        self.display_frame()
+        self.display_hits()
+
+    def display_frame(self):
+        self.dispFrame = tk.Frame(
+            self.base)
+        # self.xscrollbar.config(command=self.base.xview)
+        self.yscrollbar.config(command=self.base.yview)
+        self.base.create_window(
+            (0, 0), window=self.dispFrame, anchor="nw",
+            tags="self.dispFrame")
+        self.dispFrame.bind("<Configure>", self.onFrameConfigure)
+
+    def onFrameConfigure(self, event):
+        self.base.config(scrollregion=self.base.bbox('all'))
+
+    def next_page(self):
+        if self.current_page.get() < self.total_pages:
+            self.dispFrame.destroy()
+            self.display_frame()
+            self.current_page.set(self.current_page.get() + 1)
+            self.display_hits()
+
+    def previous_page(self):
+        if self.current_page.get() > 1:
+            self.dispFrame.destroy()
+            self.display_frame()
+            self.current_page.set(self.current_page.get() - 1)
+            self.display_hits()
+
+    def display_hits(self):
+        # disable next & previous buttons accordingly
+        self.navigation()
+
+        # display 100 results only
+        n = (self.current_page.get() - 1) * 100
+        sn = n + 1
+
+        for hit in self.pages[self.current_page.get()]:
+            unitFrm = ttk.LabelFrame(
+                self.dispFrame, text=('hit ' + str(n + 1)))
+            unitFrm.grid(
+                row=n, column=0, sticky='snew', padx=5, pady=5)
+
+            # calculate space for locations, each line has 5 locations
+            loc_lines = []
+            for i in range(0, len(hit['locations']), 5):
+                loc_lines.append(','.join(hit['locations'][i:i + 5]))
+            tr = 7 + len(loc_lines)
+
+            title = tk.Text(
+                unitFrm,
+                font=LRG_FONT,
+                state=tk.DISABLED,
+                width=200,
+                height=tr,
+                background='SystemButtonFace',
+                borderwidth=0)
+            title.grid(
+                row=0, column=0, sticky='nw', padx=5, pady=5)
+            title['state'] = tk.NORMAL
+            # title.delete(1.0, tk.END)
+            unit = u'{title} / {author}. ' \
+                   u'{pubPlace} : {publisher}, {pubDate}.\n' \
+                   u'ISBN: {isbn}\n' \
+                   u'{lang}\t\t{matType}\n' \
+                   u'vendor: {vendor}\t\tvendor no: {venNo}\n' \
+                   u'order date: {date}\t\tlibrary: {library}' \
+                   u'\t\tselector: {selector}\n' \
+                   u'quantity: {qty}\t\tdisc. price: ${priceDisc}\n' \
+                   u'bNumber: {bNumber}\t\toNumber: {oNumber}\t\tBabel #: {wlo_id}' \
+                   u'\t\tblanket PO: {blanketPO}\n'.format(**hit)
+            unit = unit.replace('None', '[ ]')
+
+            title.insert(tk.END, unit)
+            title.insert(tk.END, 'locations: ')
+            title.insert(tk.END, '\n\t'.join(loc_lines))
+            title.tag_add('heading', '1.0', '1.100')
+            title.tag_config('heading', font=HDG_FONT)
+
+            title['state'] = tk.DISABLED
+            n += 1
+        self.summary.set('displaying {}-{} out of {} hits'.format(sn, n, self.total_hits))
+
+    def export(self):
+        dir_opt = options = {}
+        options['initialdir'] = os.path.expanduser('~/Documents')
+        options['defaultextension'] = '.xlsx'
+        options['initialfile'] = 'search_export.xlsx'
+        filename = tkFileDialog.asksaveasfilename(**dir_opt)
+        if filename:
+            cur_manager.busy()
+            file = sh.export_search(filename, self.hits)
+            cur_manager.notbusy()
+            if file is None:
+                m = 'not able to save the file'
+                tkMessageBox.showerror('error', m)
+            else:
+                tkMessageBox.showinfo('info', 'export saved')
+
+    def reset(self):
+        self.title_query.set('')
+        self.title_query_type.set('title keyword')
+        self.author_query.set('')
+        self.vendor.set('any')
+        self.date1.set('')
+        self.date2.set('')
+        self.library.set('any')
+        self.lang.set('any')
+        self.matType.set('any')
+        self.selector.set('any')
+        self.current_page.set(0)
+
+    def validate_date(self, d, i, S):
+        res = True
+        if d == '1':
+            for c in S:
+                if i == '0':
+                    if c not in '01':
+                        res = False
+                if i == '1':
+                    if c not in '0123456789':
+                        res = False
+                if i in '25':
+                    if c != '/':
+                        res = False
+                if i == '3':
+                    if c not in '0123':
+                        res = False
+                if i in '6789':
+                    if not c.isdigit():
+                        res = False
+                if int(i) > 9:
+                    res = False
+        return res
+
+    def navigation(self, *args):
+        if self.current_page.get() > 0:
+            if self.current_page.get() >= self.total_pages:
+                self.nextBtn['state'] = tk.DISABLED
+            else:
+                self.nextBtn['state'] = tk.NORMAL
+                self.previousBtn['state'] = tk.NORMAL
+            if self.current_page.get() == 1:
+                self.previousBtn['state'] = tk.DISABLED
+
+    def observer(self, *args):
+        if self.tier.get() == 'Search':
+            self.reset()
+
+            # create indexes and populate drop-down comboboxes
+            libraries = ()
+            self.library_by_name = {}
+            vendors = ()
+            self.vendor_by_name = {}
+            matTypes = ()
+            self.matType_by_name = {}
+            langs = ()
+            self.lang_by_name = {}
+            selectors = ()
+            self.selector_by_name = {}
+
+            self.title_query_type.set('title keyword')
+
+            records = db.col_preview(
+                db.Library,
+                'id', 'code')
+            for record in records:
+                libraries = libraries + (record.code, )
+                self.library_by_name[record.code] = record.id
+            self.libraryCbx['values'] = libraries + ('any', )
+            self.libraryCbx.set('any')
+
+            records = db.col_preview(
+                db.Vendor,
+                'id', 'name')
+            for record in records:
+                vendors = vendors + (record.name, )
+                self.vendor_by_name[record.name] = record.id
+            self.vendorCbx['values'] = sorted(vendors + ('any', ))
+            self.vendorCbx.set('any')
+
+            records = db.col_preview(
+                db.MatType,
+                'id', 'name')
+            for record in records:
+                matTypes = matTypes + (record.name, )
+                self.matType_by_name[record.name] = record.id
+            self.matTypeCbx['values'] = matTypes + ('any', )
+            self.matTypeCbx.set('any')
+
+            records = db.col_preview(
+                db.Selector,
+                'id', 'name')
+            for record in records:
+                selectors = selectors + (record.name, )
+                self.selector_by_name[record.name] = record.id
+            self.selectorCbx['values'] = sorted(selectors + ('any', ))
+            self.selectorCbx.set('any')
+
+            records = db.col_preview(
+                db.Lang,
+                'id', 'name')
+            for record in records:
+                langs = langs + (record.name, )
+                self.lang_by_name[record.name] = record.id
+            self.langCbx['values'] = sorted(langs + ('any', ))
+            self.langCbx.set('any')
+
+            id_types = (
+                '.o number',
+                '.b number',
+                'wlo number',
+                'ISBN',
+                'vendor number',
+                'blanket PO'
+            )
+
+            self.id_typeCbx['values'] = id_types
+            self.id_typeCbx.set('.o number')
 
 
 if __name__ == '__main__':

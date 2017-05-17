@@ -4,10 +4,23 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.utils import get_column_letter, column_index_from_string
 from openpyxl.styles import Font, PatternFill
 import os.path
+import logging
+import datetime
 
 from convert_price import dollars2cents, cents2dollars
 from celldata_parser import parse_isbn, parse_year
 from Z3950_communicator import query
+
+
+module_logger = logging.getLogger('babel_logger.sheet')
+
+
+FONT_BOLD = Font(bold=True)
+FILL_GRAY = PatternFill(fill_type='solid',
+                        start_color='C4C5C6',
+                        end_color='C4C5C6')
+
+
 
 
 class SheetManipulator:
@@ -381,11 +394,7 @@ class SheetManipulator:
 
 
 def create_order(fname, library, data):
-    font_bold = Font(bold=True)
     red_font = Font(color='CC0000')
-    fill_gray = PatternFill(fill_type='solid',
-                            start_color='C4C5C6',
-                            end_color='C4C5C6')
     order_wb = Workbook()
     order_ws = order_wb.active
     # title_count = 0
@@ -405,33 +414,33 @@ def create_order(fname, library, data):
     order_ws.column_dimensions['J'].width = 18
 
     order_ws.cell(row=2, column=1).value = address_line1
-    order_ws.cell(row=2, column=1).font = font_bold
+    order_ws.cell(row=2, column=1).font = FONT_BOLD
     order_ws.cell(row=3, column=1).value = address_line2
-    order_ws.cell(row=3, column=1).font = font_bold
+    order_ws.cell(row=3, column=1).font = FONT_BOLD
     order_ws.cell(row=4, column=1).value = address_line3
-    order_ws.cell(row=4, column=1).font = font_bold
+    order_ws.cell(row=4, column=1).font = FONT_BOLD
 
     # headers
     order_ws.cell(row=6, column=1).value = '#'
-    order_ws.cell(row=6, column=1).fill = fill_gray
+    order_ws.cell(row=6, column=1).fill = FILL_GRAY
     order_ws.cell(row=6, column=2).value = 'SKU'
-    order_ws.cell(row=6, column=2).fill = fill_gray
+    order_ws.cell(row=6, column=2).fill = FILL_GRAY
     order_ws.cell(row=6, column=3).value = 'ISBN'
-    order_ws.cell(row=6, column=3).fill = fill_gray
+    order_ws.cell(row=6, column=3).fill = FILL_GRAY
     order_ws.cell(row=6, column=4).value = 'Title'
-    order_ws.cell(row=6, column=4).fill = fill_gray
+    order_ws.cell(row=6, column=4).fill = FILL_GRAY
     order_ws.cell(row=6, column=5).value = 'Author'
-    order_ws.cell(row=6, column=5).fill = fill_gray
+    order_ws.cell(row=6, column=5).fill = FILL_GRAY
     order_ws.cell(row=6, column=6).value = 'Unit Price'
-    order_ws.cell(row=6, column=6).fill = fill_gray
+    order_ws.cell(row=6, column=6).fill = FILL_GRAY
     order_ws.cell(row=6, column=7).value = 'Copies'
-    order_ws.cell(row=6, column=7).fill = fill_gray
+    order_ws.cell(row=6, column=7).fill = FILL_GRAY
     order_ws.cell(row=6, column=8).value = 'Total Price'
-    order_ws.cell(row=6, column=8).fill = fill_gray
+    order_ws.cell(row=6, column=8).fill = FILL_GRAY
     order_ws.cell(row=6, column=9).value = 'o Number'
-    order_ws.cell(row=6, column=9).fill = fill_gray
+    order_ws.cell(row=6, column=9).fill = FILL_GRAY
     order_ws.cell(row=6, column=10).value = 'blanket PO'
-    order_ws.cell(row=6, column=10).fill = fill_gray
+    order_ws.cell(row=6, column=10).fill = FILL_GRAY
 
     r = 1
     for title in data:
@@ -444,15 +453,15 @@ def create_order(fname, library, data):
         r += 1
     last_r = 6 + r
     order_ws.cell(row=last_r + 2, column=3).value = 'total copies='
-    order_ws.cell(row=last_r + 2, column=3).fill = fill_gray
+    order_ws.cell(row=last_r + 2, column=3).fill = FILL_GRAY
     order_ws.cell(row=last_r + 2, column=4).value = \
         '=SUM(G7:G' + str(last_r) + ')'
-    order_ws.cell(row=last_r + 2, column=4).fill = fill_gray
+    order_ws.cell(row=last_r + 2, column=4).fill = FILL_GRAY
     order_ws.cell(row=last_r + 3, column=3).value = 'total cost='
-    order_ws.cell(row=last_r + 3, column=3).fill = fill_gray
+    order_ws.cell(row=last_r + 3, column=3).fill = FILL_GRAY
     order_ws.cell(row=last_r + 3, column=4).value = \
         '=SUM(H7:H' + str(last_r) + ')'
-    order_ws.cell(row=last_r + 3, column=4).fill = fill_gray
+    order_ws.cell(row=last_r + 3, column=4).fill = FILL_GRAY
 
     # determine if new file name needed
     n = 0
@@ -466,4 +475,113 @@ def create_order(fname, library, data):
         order_wb.save(filename=filehandle)
         return filehandle
     except:
+        return None
+
+
+def export_search(fh, data):
+    # saves search results to Excel spreadsheet
+    result_wb = Workbook()
+    result_ws = result_wb.active
+
+    headings = [
+        'library',
+        'language',
+        'vendor',
+        'mat type',
+        'title',
+        'title trans.',
+        'author',
+        'author trans.',
+        'ISBN',
+        'vendor #',
+        'pub place',
+        'publisher',
+        'pub date',
+        'qty',
+        'disc. price',
+        'blanket PO',
+        'wlo #',
+        'oNumber',
+        'bNumber',
+        'locations',
+        'selector',
+        'order date'
+    ]
+
+    # headings row
+    c = 1
+    for heading in headings:
+        result_ws.cell(row=1, column=c).value = heading
+        result_ws.cell(row=1, column=c).font = FONT_BOLD
+        result_ws.cell(row=1, column=c).fill = FILL_GRAY
+        c += 1
+
+    col_short = ['A', 'B', 'D', 'F', 'H', 'J', 'K', 'M', 'N', 'O']
+    for col in col_short:
+        result_ws.column_dimensions[col].width = 8
+    col_long = ['E', 'G', 'I', 'T', 'V']
+    for col in col_long:
+        result_ws.column_dimensions[col].width = 15
+    col_medium = ['C', 'P', 'Q', 'R', 'S', 'U']
+    for col in col_medium:
+        result_ws.column_dimensions[col].width = 12
+
+    r = 2
+    for order in data:
+        for key, value in order.iteritems():
+            if key == 'library':
+                c = 1
+            if key == 'lang':
+                c = 2
+            if key == 'vendor':
+                c = 3
+            if key == 'matType':
+                c = 4
+            if key == 'title':
+                c = 5
+            if key == 'title_trans':
+                c = 6
+            if key == 'author':
+                c = 7
+            if key == 'author_trans':
+                c = 8
+            if key == 'isbn':
+                c = 9
+            if key == 'venNo':
+                c = 10
+            if key == 'pubPlace':
+                c = 11
+            if key == 'publisher':
+                c = 12
+            if key == 'pubDate':
+                c = 13
+            if key == 'qty':
+                c = 14
+            if key == 'priceDisc':
+                c = 15
+            if key == 'blanketPO':
+                c = 16
+            if key == 'wlo_id':
+                c = 17
+            if key == 'oNumber':
+                c = 18
+            if key == 'bNumber':
+                c = 19
+            if key == 'locations':
+                c = 20
+                value = ','.join(value)
+            if key == 'selector':
+                c = 21
+            if key == 'date':
+                c = 22
+                value = value.strftime('%d/%m/%Y')
+
+            result_ws.cell(row=r, column=c).value = value
+        r += 1
+
+    try:
+        result_wb.save(filename=fh)
+        return fh
+    except IOError:
+        module_logger.exception('Search export error')
         return None
