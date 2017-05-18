@@ -6,7 +6,7 @@ import tkFileDialog
 import shelve
 import os.path
 from os import startfile, getcwd
-# import os.getcwd
+from subprocess import call
 import logging  # more work needed to use this module for error reports, etc.
 import logging.handlers
 
@@ -314,12 +314,49 @@ class MainApplication(tk.Tk):
         menubar.add_cascade(label='Reports', menu=report_menu)
         help_menu = tk.Menu(menubar, font=REG_FONT, tearoff=0)
         help_menu.add_command(label='help index', command=None)
+        help_menu.add_command(label='updates', command=self.updates)
         help_menu.add_command(label='about...', command=None)
         menubar.add_cascade(label='Help', menu=help_menu)
         self.config(menu=menubar)
 
         # lift to the top main window
         self.show_frame('Main')
+
+    def updates(self):
+        user_data = shelve.open('user_data')
+        if 'version' in user_data:
+            app_version = user_data['version']
+        else:
+            app_version = None
+
+        if 'update_dir' in user_data:
+            update_dir = user_data['update_dir']
+            if os.path.isfile(update_dir + 'version.txt'):
+                print 'trigger'
+                fh = update_dir + 'version.txt'
+                f = open(fh, 'r')
+                update_version = f.readline(0)
+                if app_version != update_version:
+                    m = 'A new version ({}) of Babel has been found.\n' \
+                        'Would you like to run the update?'
+                    if tkMessageBox.askyesno('update info', m):
+                        user_data['version'] = update_version
+                        # launch updater & quit main app
+                        call('update.exe', update_dir)
+                        self.quit()
+            else:
+                m = 'Update files not found.\n' \
+                    'Please provide update directory\n' \
+                    'Go to:\n' \
+                    'settings>default directories>update folder'
+                tkMessageBox.showwarning('missing files', m)          
+
+        else:
+            m = 'please provide update directory\n' \
+                'Go to:\n' \
+                'settings>default directories>update folder'
+            tkMessageBox.showwarning('missing directory', m)
+        user_data.close()            
 
     def show_frame(self, page_name):
         """show frame for the given page name"""
@@ -470,6 +507,11 @@ class DefaultDirectories(tk.Frame):
                   command=self.marc_records).grid(
             row=5, column=0, sticky='snw', padx=10, pady=10)
 
+        tk.Button(self.dirFrm, text='update folder', font=BTN_FONT,
+                  width=15,
+                  command=self.update_folder).grid(
+            row=6, column=0, sticky='snw', padx=10, pady=10)
+
         tk.Button(self, text='close', font=BTN_FONT,
                   width=15,
                   command=lambda: controller.show_frame(
@@ -529,6 +571,13 @@ class DefaultDirectories(tk.Frame):
         folder = self.directory()
         user_data = shelve.open('user_data')
         user_data['marc_dir'] = folder + '/'
+        user_data.close()
+
+    def update_folder(self):
+        self.widget_title = 'Folder to check for updates'
+        folder = self.directory()
+        user_data = shelve.open('user_data')
+        user_data['update_dir'] = folder + '/'
         user_data.close()
 
     def local_db(self):
@@ -7180,6 +7229,8 @@ if __name__ == '__main__':
 
     # lounch application
     user_data = shelve.open('user_data')
+    if 'version' in user_data:
+        version = user_data['version']
     if 'db_config' in user_data:
         # pull db login details
         app = MainApplication()
