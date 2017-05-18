@@ -7067,7 +7067,7 @@ class Search(tk.Frame):
             title.insert(tk.END, 'locations: ')
             title.insert(tk.END, '\n\t'.join(loc_lines))
             title.tag_add('heading', '1.0', '1.100')
-            title.tag_config('heading', background='yellow')
+            title.tag_config('heading', font=LRG_FONT)
 
             title['state'] = tk.DISABLED
             n += 1
