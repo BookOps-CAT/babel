@@ -335,15 +335,18 @@ class MainApplication(tk.Tk):
                 print 'trigger'
                 fh = update_dir + 'version.txt'
                 f = open(fh, 'r')
-                update_version = f.readline(0)
+                update_version = f.read()
                 if app_version != update_version:
                     m = 'A new version ({}) of Babel has been found.\n' \
-                        'Would you like to run the update?'
+                        'Would you like to run the update?.'.format(update_version)
                     if tkMessageBox.askyesno('update info', m):
                         user_data['version'] = update_version
                         # launch updater & quit main app
                         call('update.exe', update_dir)
                         self.quit()
+                else:
+                    m = 'Babel is up-to-date'
+                    tkMessageBox.info('info', m)
             else:
                 m = 'Update files not found.\n' \
                     'Please provide update directory\n' \
