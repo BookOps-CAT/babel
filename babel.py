@@ -4,9 +4,8 @@ import tkMessageBox
 import datetime
 import tkFileDialog
 import shelve
-import os.path
-from os import startfile, getcwd
-from subprocess import call
+import os
+# from os import startfile, getcwd
 import logging  # more work needed to use this module for error reports, etc.
 import logging.handlers
 
@@ -341,12 +340,13 @@ class MainApplication(tk.Tk):
                         'Would you like to run the update?.'.format(update_version)
                     if tkMessageBox.askyesno('update info', m):
                         user_data['version'] = update_version
+                        user_data.close()
                         # launch updater & quit main app
-                        call('update.exe', update_dir)
-                        self.quit()
+                        args = '{} {}'.format('updater.exe', update_dir)
+                        os.system(args)
                 else:
                     m = 'Babel is up-to-date'
-                    tkMessageBox.info('info', m)
+                    tkMessageBox.showinfo('info', m)
             else:
                 m = 'Update files not found.\n' \
                     'Please provide update directory\n' \
@@ -7052,22 +7052,22 @@ class Search(tk.Frame):
             title['state'] = tk.NORMAL
             # title.delete(1.0, tk.END)
             unit = u'{title} / {author}. ' \
-                   u'{pubPlace} : {publisher}, {pubDate}.\n' \
-                   u'ISBN: {isbn}\n' \
-                   u'{lang}\t\t{matType}\n' \
-                   u'vendor: {vendor}\t\tvendor no: {venNo}\n' \
-                   u'order date: {date}\t\tlibrary: {library}' \
-                   u'\t\tselector: {selector}\n' \
-                   u'quantity: {qty}\t\tdisc. price: ${priceDisc}\n' \
-                   u'bNumber: {bNumber}\t\toNumber: {oNumber}\t\tBabel #: {wlo_id}' \
-                   u'\t\tblanket PO: {blanketPO}\n'.format(**hit)
+                   '{pubPlace} : {publisher}, {pubDate}.\n' \
+                   'ISBN: {isbn}\n' \
+                   '{lang}\t\t{matType}\n' \
+                   'vendor: {vendor}\t\tvendor no: {venNo}\n' \
+                   'order date: {date}\t\tlibrary: {library}' \
+                   '\t\tselector: {selector}\n' \
+                   'quantity: {qty}\t\tdisc. price: ${priceDisc}\n' \
+                   'bNumber: {bNumber}\t\toNumber: {oNumber}\t\tBabel #: {wlo_id}' \
+                   '\t\tblanket PO: {blanketPO}\n'.format(**hit)
             unit = unit.replace('None', '[ ]')
 
             title.insert(tk.END, unit)
             title.insert(tk.END, 'locations: ')
             title.insert(tk.END, '\n\t'.join(loc_lines))
             title.tag_add('heading', '1.0', '1.100')
-            title.tag_config('heading', font=HDG_FONT)
+            title.tag_config('heading', background='yellow')
 
             title['state'] = tk.DISABLED
             n += 1

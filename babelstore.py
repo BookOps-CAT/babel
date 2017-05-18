@@ -417,18 +417,18 @@ class BibRec(Base):
     __tablename__ = 'bibrec'
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(250), nullable=False)
+    title = Column(String(length=250, collation='utf8_bin'), nullable=False)
     title_trans = Column(String(250))
-    author = Column(String(250))
+    author = Column(String(length=250, collation='utf8_bin'))
     author_trans = Column(String(250))
-    publisher = Column(String(250))
+    publisher = Column(String(length=250, collation='utf8_bin'))
     publisher_trans = Column(String(250))
     pubDate = Column(String(7))
-    pubPlace = Column(String(250))
+    pubPlace = Column(String(length=250, collation='utf8_bin'))
     pubPlace_trans = Column(String(250))
     audn_id = Column(Integer, ForeignKey('audn.id'), nullable=False)
     isbn = Column(String(13))
-    venNo = Column(String(50))
+    venNo = Column(String(length=50, collation='utf8_bin'))
 
     def __repr__(self):
         return "<BibRec(id='%s, title_trans='%s'" \
@@ -743,7 +743,7 @@ def keyword_search(title_query, title_query_type, author_query,
         filter(Order.selector_id == Selector.id).\
         filter(and_(*criteria)).\
         filter(func.date(Order.date).between(date1, date2)).\
-        yield_per(100).enable_eagerloads(False)
+        all()
 
     # find applicable unique location and fund ids
     locs = set()
