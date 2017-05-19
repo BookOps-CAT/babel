@@ -702,14 +702,14 @@ def keyword_search(title_query, title_query_type, author_query,
     if title_query_type == 'title keyword':
         if title_query is not None:
             criteria.extend(
-                [BibRec.title.ilike('%{0}%'.format(q)) for q in title_query])
+                [BibRec.title.ilike(u'%{0}%'.format(q)) for q in title_query])
     else:
         if title_query is not None:
-            criteria.append(BibRec.title.ilike('%{}%'.format(title_query)))
+            criteria.append(BibRec.title.ilike(u'%{}%'.format(title_query)))
 
     if author_query is not None:
         criteria.extend(
-            [BibRec.author.ilike('%{0}%'.format(q)) for q in author_query])
+            [BibRec.author.ilike(u'%{0}%'.format(q)) for q in author_query])
 
     if vendor_id is not None:
         criteria.append(Vendor.id == vendor_id)

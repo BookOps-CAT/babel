@@ -6925,12 +6925,12 @@ class Search(tk.Frame):
         query = []
         filters = []
         if self.title_query.get() != '':
-            query.append('{}("{}")'.format(
+            query.append(u'{}("{}")'.format(
                 self.title_query_type.get(), self.title_query.get()))
         if self.author_query.get() != '':
-            query.append('author("{}")'.format(self.author_query.get()))
+            query.append(u'author("{}")'.format(self.author_query.get()))
         if self.vendor.get() != 'any':
-            query.append('vendor("{}")'.format(self.vendor.get()))
+            query.append(u'vendor("{}")'.format(self.vendor.get()))
         if self.date1.get() != '':
             filters.append('from date("{}")'.format(self.date1.get()))
         if self.date2.get() != '':
