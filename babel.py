@@ -7239,7 +7239,7 @@ if __name__ == '__main__':
         # pull db login details
         app = MainApplication()
         cur_manager = BusyManager(app)
-        app.title(version)
+        app.title('Babel v.' + str(version))
         app.mainloop()
     else:
         # first time launch, show db details form
