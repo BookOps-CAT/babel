@@ -339,10 +339,9 @@ class MainApplication(tk.Tk):
                     m = 'A new version ({}) of Babel has been found.\n' \
                         'Would you like to run the update?.'.format(update_version)
                     if tkMessageBox.askyesno('update info', m):
-                        user_data['version'] = update_version
-                        user_data.close()
                         # launch updater & quit main app
-                        args = '{} {}'.format('updater.exe', update_dir)
+                        user_data.close()
+                        args = '{} {} {}'.format('updater.exe', update_dir, update_version)
                         os.system(args)
                 else:
                     m = 'Babel is up-to-date'
@@ -359,7 +358,7 @@ class MainApplication(tk.Tk):
                 'Go to:\n' \
                 'settings>default directories>update folder'
             tkMessageBox.showwarning('missing directory', m)
-        user_data.close()            
+        user_data.close()    
 
     def show_frame(self, page_name):
         """show frame for the given page name"""
