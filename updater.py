@@ -4,11 +4,14 @@ import os
 import sys
 import time
 import shelve
+import subprocess
 
 
 def run_update(directory, update_version):
     if os.path.isfile('babel.exe'):
-        os.system("TASKKILL /F /IM babel.exe")
+        CREATE_NO_WINDOW = 0x08000000
+        subprocess.call(
+            "TASKKILL /F /IM babel.exe", creationflags=CREATE_NO_WINDOW)
         time.sleep(1)
         os.remove('babel.exe')
         shutil.copy2(directory + 'babel.exe', 'babel.exe')

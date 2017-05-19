@@ -5,6 +5,7 @@ import datetime
 import tkFileDialog
 import shelve
 import os
+import subprocess
 # from os import startfile, getcwd
 import logging  # more work needed to use this module for error reports, etc.
 import logging.handlers
@@ -342,7 +343,8 @@ class MainApplication(tk.Tk):
                         # launch updater & quit main app
                         user_data.close()
                         args = '{} {} {}'.format('updater.exe', update_dir, update_version)
-                        os.system(args)
+                        CREATE_NO_WINDOW = 0x08000000
+                        subprocess.call(args, creationflags=CREATE_NO_WINDOW)
                 else:
                     m = 'Babel is up-to-date'
                     tkMessageBox.showinfo('info', m)
