@@ -624,6 +624,74 @@ def retrieve_all(model, related, **kwargs):
     return instances
 
 
+def order_search(order_name):
+    session = db_connection()
+    instances = session.query(
+        Order,
+        OrderSingle,
+        BibRec,
+        Audn).\
+        filter(Order.id == OrderSingle.order_id).\
+        filter(OrderSingle.bibRec_id == BibRec.id).\
+        filter(OrderSingle.audn_id == Audn.id).\
+        filter(Order.name == order_name).\
+        all()
+
+    # find applicable unique location and fund ids
+    locs = set()
+    funds = set()
+    for instance in instances:
+        for loc in instance[1].orderSingleLocations:
+            locs.add(loc.location_id)
+            funds.add(loc.fund_id)
+
+    # compile criteria for Location and Fund tables query
+    loc_criteria = [Location.id == l for l in locs]
+    fund_criteria = [Fund.id == f for f in funds]
+
+    # query Location and Fund tables
+    loc_records = session.query(Location.id, Location.name).\
+        filter(or_(*loc_criteria)).all()
+    loc_records = dict(loc_records)
+
+    fund_records = session.query(Fund.id, Fund.code).\
+        filter(or_(*fund_criteria)).all()
+    fund_records = dict(fund_records)
+
+    order_records = []
+    for instance in instances:
+        distr = []
+        for loc in instance[1].orderSingleLocations:
+            distr_code = {
+                'id': loc.id,
+                'location': loc_records[loc.location_id],
+                'qty': loc.qty,
+                'fund': fund_records[loc.fund_id]}
+            distr.append(distr_code)
+
+        entry_data = {
+            'bib_id': instance[2].id,
+            'ordSingle_id': instance[1].id,
+            'title': instance[2].title,
+            'title_trans': instance[2].title_trans,
+            'author': instance[2].author,
+            'author_trans': instance[2].author_trans,
+            'isbn': instance[2].isbn,
+            'venNo': instance[2].venNo,
+            'publisher': instance[2].publisher,
+            'date': instance[2].pubDate,
+            'place': instance[2].pubPlace,
+            'price': instance[1].priceDisc,
+            'oNumber': instance[1].oNumber,
+            'bNumber': instance[1].bNumber,
+            'wloNumber': instance[1].wlo_id,
+            'audn': instance[3].code,
+            'po_per_line': instance[1].po_per_line,
+            'distr': distr}
+        order_records.append(entry_data)
+    return order_records
+
+
 def id_search(id_type, id):
 
     session = db_connection()
@@ -645,49 +713,64 @@ def id_search(id_type, id):
         filter(id_type == id).\
         all()
 
-    hits = []
-    for h in instances:
-        locations = []
-        qty = 0
-        for loc in h[0].orderSingleLocations:
-            qty += loc.qty
-            try:
-                instance = session.query(Location, Fund).\
-                    filter(loc.location_id == Location.id).\
-                    filter(loc.fund_id == Fund.id).\
-                    one()
-                copy = '{}({})/{}'.format(
-                    instance[0].name, str(loc.qty), instance[1].code)
-                locations.append(copy)
-            except MultipleResultsFound:
-                copy = 'e(e)/e'
-                locations.append(copy)
-        unit = {
-            'title': h[1].title,
-            'title_trans': h[1].title_trans,
-            'author': h[1].author,
-            'author_trans': h[1].author_trans,
-            'isbn': h[1].isbn,
-            'venNo': h[1].venNo,
-            'pubPlace': h[1].pubPlace,
-            'publisher': h[1].publisher,
-            'pubDate': h[1].pubDate,
-            'library': h[4].code,
-            'oNumber': h[0].oNumber,
-            'bNumber': h[0].bNumber,
-            'wlo_id': h[0].wlo_id,
-            'blanketPO': h[2].blanketPO,
-            'date': h[2].date,
-            'locations': locations,
-            'qty': qty,
-            'priceDisc': cents2dollars(h[0].priceDisc),
-            'lang': h[5].name,
-            'vendor': h[3].name,
-            'matType': h[6].name,
-            'selector': h[7].name,
-        }
-        hits.append(unit)
+    # find applicable unique location and fund ids
+    locs = set()
+    funds = set()
+    for instance in instances:
+        for loc in instance[0].orderSingleLocations:
+            locs.add(loc.location_id)
+            funds.add(loc.fund_id)
 
+    # compile criteria for Location and Fund tables query
+    loc_criteria = [Location.id == l for l in locs]
+    fund_criteria = [Fund.id == f for f in funds]
+
+    # query Location and Fund tables
+    loc_records = session.query(Location.id, Location.name).\
+        filter(or_(*loc_criteria)).all()
+    loc_records = dict(loc_records)
+
+    fund_records = session.query(Fund.id, Fund.code).\
+        filter(or_(*fund_criteria)).all()
+    fund_records = dict(fund_records)
+
+
+    hits = []
+    # stich Location & Fund data to retrieved ealier records
+    for instance in instances:
+        qty = 0
+        locations = []
+        for loc in instance[0].orderSingleLocations:
+            qty += loc.qty
+            copy = '{}({})/{}'.format(
+                loc_records[loc.location_id],
+                str(loc.qty),
+                fund_records[loc.fund_id])
+            locations.append(copy)
+
+        unit = {'title': instance[1].title,
+                'title_trans': instance[1].title_trans,
+                'author': instance[1].author,
+                'author_trans': instance[1].author_trans,
+                'isbn': instance[1].isbn,
+                'venNo': instance[1].venNo,
+                'pubPlace': instance[1].pubPlace,
+                'publisher': instance[1].publisher,
+                'pubDate': instance[1].pubDate,
+                'library': instance[4].code,
+                'oNumber': instance[0].oNumber,
+                'bNumber': instance[0].bNumber,
+                'wlo_id': instance[0].wlo_id,
+                'blanketPO': instance[2].blanketPO,
+                'date': instance[2].date,
+                'locations': locations,
+                'qty': qty,
+                'priceDisc': cents2dollars(instance[0].priceDisc),
+                'lang': instance[5].name,
+                'vendor': instance[3].name,
+                'matType': instance[6].name,
+                'selector': instance[7].name}
+        hits.append(unit)
     session.close()
     return hits
 
@@ -726,14 +809,15 @@ def keyword_search(title_query, title_query_type, author_query,
     if selector_id is not None:
         criteria.append(Selector.id == selector_id)
 
-    instances = session.query(OrderSingle,
-                              BibRec,
-                              Order,
-                              Vendor,
-                              Library,
-                              Lang,
-                              MatType,
-                              Selector).\
+    instances = session.query(
+        OrderSingle,
+        BibRec,
+        Order,
+        Vendor,
+        Library,
+        Lang,
+        MatType,
+        Selector).\
         filter(OrderSingle.bibRec_id == BibRec.id).\
         filter(OrderSingle.order_id == Order.id).\
         filter(Order.lang_id == Lang.id).\
@@ -749,11 +833,9 @@ def keyword_search(title_query, title_query_type, author_query,
     locs = set()
     funds = set()
     for instance in instances:
-        qty = 0
         for loc in instance[0].orderSingleLocations:
             locs.add(loc.location_id)
             funds.add(loc.fund_id)
-            qty += loc.qty
 
     # compile criteria for Location and Fund tables query
     loc_criteria = [Location.id == l for l in locs]

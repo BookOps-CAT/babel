@@ -6,9 +6,9 @@ import tkFileDialog
 import shelve
 import os
 import subprocess
-# from os import startfile, getcwd
 import logging  # more work needed to use this module for error reports, etc.
 import logging.handlers
+import hashlib
 
 import babelstore as db
 import validator as validation
@@ -3715,7 +3715,6 @@ class CartSheet(tk.Frame):
     """
     Produces an empty cart sheet which is used for selection and records
     distribution
-    Module 
     """
 
     def __init__(self, parent, controller, **sharedData):
@@ -5941,8 +5940,9 @@ class OrderEdit(tk.Frame):
                     'ordSingle_id': item['ordSingle_id']}
             r += 1
 
+
     def take_snapshot(self, entry_id=None):
-        snapshot = ''
+        snapshot = hashlib.md5()
         if entry_id is None:
             entry_id = self.entry_id.get()
         entry = self.entries[entry_id]
@@ -5950,9 +5950,9 @@ class OrderEdit(tk.Frame):
         # take a snapshot of distribution data
         for distr_widgets in entry['distr'].itervalues():
             # need to verify that disabled widgets can be read!
-            snapshot += str(distr_widgets['location'].current())
-            snapshot += distr_widgets['qty'].get()
-            snapshot += str(distr_widgets['fund'].current())
+            snapshot.update(str(distr_widgets['location'].current()))
+            snapshot.update(str(distr_widgets['qty'].get()))
+            snapshot.update(str(distr_widgets['fund'].current()))
 
         # tak a snapshot of bib and order data
         for key in entry:
@@ -5961,15 +5961,15 @@ class OrderEdit(tk.Frame):
             elif key == 'frame' or key == 'distrFrm':
                 pass
             elif key == 'audn':
-                snapshot += str(entry[key].current())
+                snapshot.update(str(entry[key].current()))
             else:
                 if entry[key].winfo_class() != 'Button':
-                    snapshot += unicode(entry[key].get())
-        return snapshot
+                    snapshot.update(entry[key].get().encode('utf-8'))
+
+        return snapshot.digest()
 
     def edit_entry(self):
         # activate all widgets and take a snapshot their content
-        self.snapshot = ''
         active_entry = self.entries[self.entry_id.get()]
 
         for key in active_entry:
@@ -6464,6 +6464,7 @@ class OrderEdit(tk.Frame):
         if self.tier.get() == 'OrderEdit':
             self.reset_values()
             start_time = datetime.datetime.now()
+
             # create controlled list for audn, locations, & funds
             self.audn_values = ()
             self.location_values = ()
@@ -6521,63 +6522,9 @@ class OrderEdit(tk.Frame):
                     db.MatType,
                     id=order.matType_id)
                 self.matType.set('material type: ' + matType_record.name)
-                orderSingle_records = db.retrieve_all(
-                    db.OrderSingle,
-                    'orderSingleLocations',
-                    order_id=order.id)
 
                 # create  objects to be displayed
-                self.order_data = []
-                for ordSingle_rec in orderSingle_records:
-                    audn_rec = db.retrieve_record(
-                        db.Audn,
-                        id=ordSingle_rec.audn_id)
-
-                    distr = []
-                    for distr_rec in ordSingle_rec.orderSingleLocations:
-                        # find item code
-                        location_rec = db.retrieve_record(
-                            db.Location,
-                            id=distr_rec.location_id)
-
-                        # find fund code
-                        fund_rec = db.retrieve_record(
-                            db.Fund,
-                            id=distr_rec.fund_id)
-                        fund = fund_rec.code
-                        # find quantity
-                        qty = distr_rec.qty
-                        distr_code = {'id': distr_rec.id,
-                                      'location': location_rec.name,
-                                      'qty': qty,
-                                      'fund': fund}
-                        distr.append(distr_code)
-
-                    bib = db.retrieve_record(
-                        db.BibRec,
-                        id=ordSingle_rec.bibRec_id)
-
-                    entry_data = {'bib_id': bib.id,
-                                  'ordSingle_id': ordSingle_rec.id,
-                                  'title': bib.title,
-                                  'title_trans': bib.title_trans,
-                                  'author': bib.author,
-                                  'author_trans': bib.author_trans,
-                                  'isbn': bib.isbn,
-                                  'venNo': bib.venNo,
-                                  'publisher': bib.publisher,
-                                  'date': bib.pubDate,
-                                  'place': bib.pubPlace,
-                                  'price': ordSingle_rec.priceDisc,
-                                  'oNumber': ordSingle_rec.oNumber,
-                                  'bNumber': ordSingle_rec.bNumber,
-                                  'wloNumber': ordSingle_rec.wlo_id,
-                                  'audn': audn_rec.code,
-                                  'po_per_line': ordSingle_rec.po_per_line,
-                                  'distr': distr}
-
-                    self.order_data.append(entry_data)
-
+                self.order_data = db.order_search(self.orderName.get())
                 self.display_orders(self.order_data)
                 end_time = datetime.datetime.now()
                 read_time = end_time - start_time
@@ -6924,6 +6871,9 @@ class Search(tk.Frame):
 
         query = []
         filters = []
+        if self.id_query.get() != '':
+            query.append(u'{}("{}")'.format(
+                self.id_type.get(), self.id_query.get().strip()))
         if self.title_query.get() != '':
             query.append(u'{}("{}")'.format(
                 self.title_query_type.get(), self.title_query.get()))
@@ -7060,7 +7010,8 @@ class Search(tk.Frame):
                    'order date: {date}\t\tlibrary: {library}' \
                    '\t\tselector: {selector}\n' \
                    'quantity: {qty}\t\tdisc. price: ${priceDisc}\n' \
-                   'bNumber: {bNumber}\t\toNumber: {oNumber}\t\tBabel #: {wlo_id}' \
+                   'bNumber: {bNumber}\t\toNumber: {oNumber}\t\t' \
+                   'Babel #: {wlo_id}' \
                    '\t\tblanket PO: {blanketPO}\n'.format(**hit)
             unit = unit.replace('None', '[ ]')
 
@@ -7072,7 +7023,8 @@ class Search(tk.Frame):
 
             title['state'] = tk.DISABLED
             n += 1
-        self.summary.set('displaying {}-{} out of {} hits'.format(sn, n, self.total_hits))
+        self.summary.set(
+            'displaying {}-{} out of {} hits'.format(sn, n, self.total_hits))
 
     def export(self):
         dir_opt = options = {}
