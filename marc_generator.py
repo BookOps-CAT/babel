@@ -8,8 +8,7 @@ from pymarc import MARCWriter, Record, Field
 from datetime import date, datetime
 import os.path
 import shelve
-# import logging
-
+from patches import mm_patch
 
 import babelstore as db
 from convert_price import cents2dollars
@@ -151,6 +150,7 @@ class MARCGenerator():
                     loc_str = branch.code + audn_code + location_record.shelf
                 else:
                     loc_str = branch.code + location_record.shelf
+
                 distr_locations.append(loc_str + '/' + str(distr_record.qty))
 
                 fund_record = db.retrieve_record(
@@ -159,6 +159,12 @@ class MARCGenerator():
                 distr_funds.append(
                     fund_record.code + '/' + str(distr_record.qty))
                 distr_locations_str = ','.join(distr_locations)
+
+                # temp MM patch
+                if self.library_code == 'NYP':
+                    distr_locations_str = mm_patch(
+                        distr_locations_str)
+
                 distr_funds_str = ','.join(distr_funds)
 
             data = {'library': self.library_code,
@@ -398,8 +404,9 @@ class MARCGenerator():
         if order_data['po_per_line'] is not None:
             subfield_H = ['h', order_data['po_per_line']]
             subfields.extend(subfield_H)
-        subfield_M = ['m', order_data['blanketPO']]
-        subfields.extend(subfield_M)
+        if order_data['blanketPO'] is not None:
+            subfield_M = ['m', order_data['blanketPO']]
+            subfields.extend(subfield_M)
         subfields.extend(subfield_I)
         tags.append(Field(tag='961',
                           indicators=[' ', ' '],
