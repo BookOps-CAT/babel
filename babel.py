@@ -99,9 +99,9 @@ class DBSetup(tk.Frame):
 
         # info
         mysql_info = 'MYSQL\n' \
-               'database dialect: mysql\n' \
-               'connection driver: pymysql\n' \
-               'character encoding: uft8\n'
+                     'database dialect: mysql\n' \
+                     'connection driver: pymysql\n' \
+                     'character encoding: uft8\n'
         sqlite_info = 'SQLite (not supported at this momement)\n' \
                       'database dialect: sqlite\n' \
                       'connection driver: empty\n' \
