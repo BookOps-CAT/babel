@@ -206,6 +206,7 @@ BRANCH = [
     (2, 'wt', "Westchester Square"),
     (2, 'yv', "Yorkville"),
     (2, 'ft', "53rd Street"),
+    (2, 'ls', "Library Services Center")
 ]
 
 MATERIAL = [
