@@ -332,7 +332,7 @@ class SelectorCode(Base):
 
     selector_id = Column(Integer, ForeignKey('selector.id'), primary_key=True)
     library_id = Column(Integer, ForeignKey('library.id'), primary_key=True)
-    code = Column(String(1), unique=True, nullable=False)
+    code = Column(String(1), nullable=False)
 
     def __repr__(self):
         return "<SelectorCode(selector_id='%s', library_id='%s', " \
@@ -511,6 +511,17 @@ def db_connection():
 def update_record(model, id, **kwargs):
     session = db_connection()
     instance = session.query(model).filter_by(id=id).one()
+    for key, value in kwargs.iteritems():
+        setattr(instance, key, value)
+        session.commit()
+    session.close()
+
+
+def update_selector_code(model, selector_id, library_id, **kwargs):
+    session = db_connection()
+    instance = session.query(model).filter_by(
+        selector_id=selector_id).filter_by(
+        library_id=library_id).one()
     for key, value in kwargs.iteritems():
         setattr(instance, key, value)
         session.commit()
@@ -734,7 +745,6 @@ def id_search(id_type, id):
         filter(or_(*fund_criteria)).all()
     fund_records = dict(fund_records)
 
-
     hits = []
     # stich Location & Fund data to retrieved ealier records
     for instance in instances:
@@ -947,7 +957,7 @@ def initiateDB():
         ignore_or_insert(Lang, code=item[0], name=item[1])
 
     for item in BRANCH:
-        ignore_or_insert(Branch, library_id=item[0],
+        res = ignore_or_insert(Branch, library_id=item[0],
                          code=item[1], name=item[2])
     for item in MATERIAL:
         ignore_or_insert(MatType,
