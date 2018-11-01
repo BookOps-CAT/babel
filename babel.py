@@ -282,7 +282,8 @@ class MainApplication(tk.Tk):
                 VendorSheetBrowse,
                 VendorSheetSingle,
                 VendorSingle,
-                Z3950Settings):
+                Z3950Settings,
+                Selectors):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
                       **self.sharedData)
@@ -332,7 +333,6 @@ class MainApplication(tk.Tk):
         if 'update_dir' in user_data:
             update_dir = user_data['update_dir']
             if os.path.isfile(update_dir + 'version.txt'):
-                print 'trigger'
                 fh = update_dir + 'version.txt'
                 f = open(fh, 'r')
                 update_version = f.read()
@@ -457,6 +457,14 @@ class Settings(tk.Frame):
                   command=lambda: controller.show_frame(
                         'Z3950Settings')).grid(
             row=3, column=0, padx=10, pady=10)
+
+        tk.Button(self, text='selectors', font=BTN_FONT,
+                  height=2,
+                  width=20,
+                  command=lambda: controller.show_frame(
+                        'Selectors')).grid(
+            row=3, column=2, padx=10, pady=10)
+
         tk.Button(self, text='close', font=BTN_FONT,
                   # height=2,
                   width=15,
@@ -3709,6 +3717,270 @@ class Z3950Settings(tk.Frame):
                 'name')
             for target in target_records:
                 self.targetLst.insert(tk.END, target.name)
+
+
+class Selectors(tk.Frame):
+
+    def __init__(self, parent, controller, **sharedData):
+        tk.Frame.__init__(self, parent)
+
+        # set shared between widgets variables
+        self.controller = controller
+        self.tier = sharedData['tier']
+        self.action = sharedData['action']
+        self.selectedItem_1 = sharedData['selectedItem_1']
+        self.tier.trace('w', self.observer)
+
+        # local variable
+        self.selector_id = None
+        self.name = tk.StringVar()
+        self.nypCode = tk.StringVar()
+        self.bplCode = tk.StringVar()
+
+        # configure layout
+        self.columnconfigure(0, minsize=72)
+        self.columnconfigure(1, minsize=72)
+        self.columnconfigure(2, minsize=10)
+        self.columnconfigure(3, minsize=50)
+        self.columnconfigure(4, minsize=20)
+        self.columnconfigure(7, minsize=124)
+        self.rowconfigure(9, minsize=50)
+
+        # initiate widgets
+        tk.Label(self, text='selectors:', font=LBL_FONT).grid(
+            row=0, column=0, sticky='snw')
+        scrollbar = tk.Scrollbar(self, orient=tk.VERTICAL)
+        scrollbar.grid(
+            row=1, column=2, sticky='nsw', rowspan=10, padx=2, pady=10)
+        self.selectorLst = tk.Listbox(
+            self, font=REG_FONT,
+            selectmode=tk.SINGLE,
+            yscrollcommand=scrollbar.set)
+        self.selectorLst.bind('<Double-Button-1>', self.show_entry)
+        self.selectorLst.bind('Button-1', self.disable_entry)
+        self.selectorLst.grid(
+            row=1, column=0, columnspan=2, sticky='snew', rowspan=10, pady=10)
+        scrollbar['command'] = self.selectorLst.yview
+        tk.Button(self, text='new', font=BTN_FONT,
+                  command=self.add_new,
+                  width=15).grid(
+            row=1, column=3, sticky='snew', padx=10, pady=10)
+        tk.Button(self, text='edit', font=BTN_FONT,
+                  command=self.edit_entry,
+                  width=15).grid(
+            row=2, column=3, sticky='snew', padx=10, pady=10)
+        tk.Button(self, text='delete', font=BTN_FONT,
+                  command=self.delete_entry,
+                  width=15).grid(
+            row=3, column=3, sticky='snew', padx=10, pady=10)
+        tk.Button(self, text='close', font=BTN_FONT,
+                  command=lambda: controller.show_frame('Settings'),
+                  width=15).grid(
+            row=10, column=3, sticky='snew', padx=10, pady=10)
+
+        # individual records display
+        self.selFrm = ttk.LabelFrame(self, text='details')
+        self.selFrm.grid(
+            row=0, rowspan=11, column=5, columnspan=3,
+            sticky='snew', padx=5, pady=5)
+        self.selFrm.rowconfigure(9, minsize=75)
+
+        tk.Label(self.selFrm, text='name').grid(
+            row=0, column=0, sticky='snw', padx=10, pady=10)
+        tk.Label(self.selFrm, text='NYPL code').grid(
+            row=1, column=0, sticky='snw', padx=10, pady=10)
+        tk.Label(self.selFrm, text='BPL code').grid(
+            row=2, column=0, sticky='snw', padx=10, pady=10)
+
+        self.nameEnt = tk.Entry(
+            self.selFrm, textvariable=self.name, font=REG_FONT)
+        self.nameEnt.grid(
+            row=0, column=1, columnspan=2, sticky='snw', padx=10, pady=10)
+        self.nypCodeEnt = tk.Entry(
+            self.selFrm, textvariable=self.nypCode, font=REG_FONT,
+            width=5)
+        self.nypCodeEnt.grid(
+            row=1, column=1, sticky='snw', padx=10, pady=10)
+        self.bplCodeEnt = tk.Entry(
+            self.selFrm, textvariable=self.bplCode, font=REG_FONT,
+            width=5)
+        self.bplCodeEnt.grid(
+            row=2, column=1, sticky='snw', padx=10, pady=10)
+
+        self.saveBtn = tk.Button(self.selFrm, text='save', font=BTN_FONT,
+            command=self.save_entry, width=15)
+        self.saveBtn.grid(
+            row=10, column=1, sticky='snew', padx=10, pady=10)
+
+    def show_entry(self, *args):
+        name = self.selectorLst.get(tk.ACTIVE)
+        records = db.retrieve_all(
+            db.Selector,
+            'selector_codes',
+            name=name)
+        try:
+            record = records[0]
+            # keep track of record id for updates
+            self.name.set(record.name)
+            self.selector_id = record.id
+            for code in record.selector_codes:
+                if code.library_id == 1:
+                    self.bplCode.set(code.code)
+                elif code.library_id == 2:
+                    self.nypCode.set(code.code)
+                else:
+                    m = 'Record for {} is corrupted'.format(
+                        self.name.get())
+                    tkMessageBox.showerror(
+                        'Database Error', m)
+        except IndexError:
+            pass
+        finally:
+            self.disable_entry()
+
+    def add_new(self):
+        self.reset()
+        self.enable_entry()
+
+    def reset(self):
+        self.selector_id = None
+        self.name.set('')
+        self.nypCode.set('')
+        self.bplCode.set('')
+        self.disable_entry()
+
+    def save_entry(self):
+        # library codes default to blank
+        if self.name.get() == '':
+            m = 'please enter name'
+            tkMessageBox.showwarning('Input error', m)
+        else:
+            # determine Sierra's codes
+            default = '-'
+            if self.bplCode.get() != '':
+                bpl_code = self.bplCode.get().strip()
+            else:
+                bpl_code = default
+            if self.nypCode.get() != '':
+                nyp_code = self.nypCode.get().strip()
+            else:
+                nyp_code = default
+
+            if self.selector_id:
+                # update scenario
+                try:
+                    db.update_record(
+                        db.Selector,
+                        self.selector_id,
+                        name=self.name.get().strip())
+
+                    db.update_selector_code(
+                        db.SelectorCode,
+                        self.selector_id,
+                        1,
+                        code=bpl_code)
+                    db.update_selector_code(
+                        db.SelectorCode,
+                        self.selector_id,
+                        2,
+                        code=nyp_code)
+                    self.bplCode.set(bpl_code)
+                    self.nypCode.set(nyp_code)
+                except Exception as e:
+                    tkMessageBox.showerror('Database error', e)
+                finally:
+                    self.disable_entry()
+
+            else:
+                # new record scenario
+                try:
+                    result = db.ignore_or_insert(
+                        db.Selector,
+                        name=self.name.get().strip())
+                    if result:
+                        loaded_record = db.retrieve_last(
+                            db.Selector)
+                        selector_id = loaded_record.id
+
+                        db.ignore_or_insert(
+                            db.SelectorCode,
+                            selector_id=selector_id,
+                            library_id=1,
+                            code=bpl_code)
+
+                        db.ignore_or_insert(
+                            db.SelectorCode,
+                            selector_id=selector_id,
+                            library_id=2,
+                            code=nyp_code)
+
+                        self.reset()
+
+                except Exception as e:
+                    tkMessageBox.showerror('Database error', e)
+
+            self.reloadLst()
+
+    def edit_entry(self, *args):
+        self.enable_entry()
+        if self.selector_id:
+            records = db.retrieve_all(
+                db.Selector,
+                'selector_codes',
+                id=self.selector_id)
+            record = records[0]
+            # keep track of record id for updates
+            for code in record.selector_codes:
+                if code.library_id == 1:
+                    self.bplCode.set(code.code)
+                elif code.library_id == 2:
+                    self.nypCode.set(code.code)
+                else:
+                    m = 'Record for {} is corrupted'.format(
+                        self.name.get())
+                    tkMessageBox.showerror(
+                        'Database Error', m)
+        else:
+            msg = 'Please select name from the list'
+            tkMessageBox.showwarning('Input Error', msg)
+
+    def delete_entry(self):
+        if self.selectorLst.get(tk.ANCHOR) != '':
+            if tkMessageBox.askokcancel(
+                    'deleting vendor',
+                    'are you sure to delete {}?'.format(
+                        self.selectorLst.get(tk.ANCHOR))):
+                delete_name = self.selectorLst.get(tk.ANCHOR)
+                db.delete_record(db.Selector, name=delete_name)
+                self.selectorLst.delete(tk.ANCHOR)
+                self.reset()
+        else:
+            msg = 'Please select name on the list'
+            tkMessageBox.showwarning('Input Error', msg)
+
+    def reloadLst(self):
+        self.selectorLst.delete(0, tk.END)
+        # col_preview returns resutls in alphabetical order by *args
+        records = db.col_preview(db.Selector, 'name')
+        for row in records:
+            self.selectorLst.insert(tk.END, row.name)
+
+    def disable_entry(self, *args):
+        self.nameEnt['state'] = tk.DISABLED
+        self.nypCodeEnt['state'] = tk.DISABLED
+        self.bplCodeEnt['state'] = tk.DISABLED
+        self.saveBtn['state'] = tk.DISABLED
+
+    def enable_entry(self):
+        self.nameEnt['state'] = tk.NORMAL
+        self.nypCodeEnt['state'] = tk.NORMAL
+        self.bplCodeEnt['state'] = tk.NORMAL
+        self.saveBtn['state'] = tk.NORMAL
+
+    def observer(self, *args):
+        if self.tier.get() == 'Selectors':
+            self.disable_entry()
+            self.reloadLst()
 
 
 class CartSheet(tk.Frame):
