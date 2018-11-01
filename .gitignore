@@ -99,3 +99,4 @@ ENV/
 .mypy_cache/
 user_data
 *.out
+PyZ3950_parsetab.py
