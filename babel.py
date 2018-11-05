@@ -19,6 +19,7 @@ from fund_applicator import *
 from marc_generator import MARCGenerator
 from ids_parser import *
 from convert_price import dollars2cents, cents2dollars
+import reports as rpt
 
 
 LOG_FILENAME = './logs/babellog.out'
@@ -4848,9 +4849,12 @@ class ImportCartSheet(tk.Frame):
                 tkMessageBox.showwarning('File type error', msg)
             else:
                 self.fh_name.set(fh_name)
-                self.sheet = sh.SheetManipulator(fh)
-                self.column_letters = self.sheet.get_column_letters()
-                self.data = self.sheet.extract_data()
+                try:
+                    self.sheet = sh.SheetManipulator(fh)
+                    self.column_letters = self.sheet.get_column_letters()
+                    self.data = self.sheet.extract_data()
+                except Exception as e:
+                    tkMessageBox.showerror('Import Error', e)
                 try:
                     self.meta = self.sheet.extract_meta()
                     correct_sheet = True
@@ -5422,9 +5426,7 @@ class OrderBrowse(tk.Frame):
                 self.blanketPO = order_record.blanketPO
                 date = order_record.date
                 blanketPO = order_record.blanketPO
-
-                # date = date[:4] + '-' + date[4:6] + '-' + date[6:8] + '-' + \
-                #     date[8:10] + ':' + date[10:12] + '.' + date[12:]
+                wlo_range = order_record.wlo_range
 
                 record = db.retrieve_record(
                     db.Lang,
@@ -5438,54 +5440,13 @@ class OrderBrowse(tk.Frame):
                     db.MatType,
                     id=order_record.matType_id)
                 matType = record.name
-                wlo_range = order_record.wlo_range
 
-                # find totals
-                total_titles = db.count_all(
-                    db.OrderSingle,
-                    order_id=order_record.id)
-                total_qty = 0
-                self.records = db.retrieve_all(
-                    db.OrderSingle,
-                    'orderSingleLocations',
-                    order_id=order_record.id)
-                total_cost = 0.0
-                linked_o = 0
-                linked_b = 0
-                funds_used = {}
-                for singleOrder_record in self.records:
-                    if singleOrder_record.oNumber is not None:
-                        linked_o += 1
-                    if singleOrder_record.bNumber is not None:
-                        linked_b += 1
-                    for related_record in singleOrder_record.orderSingleLocations:
-                        total_cost = total_cost + (
-                            related_record.qty * singleOrder_record.priceDisc)
-                        total_qty = total_qty + related_record.qty
-
-                        fund_id = related_record.fund_id
-                        if fund_id in funds_used:
-                            funds_used[fund_id] = funds_used[fund_id] + (
-                                related_record.qty * singleOrder_record.priceDisc)
-                        else:
-                            funds_used[fund_id] = related_record.qty * singleOrder_record.priceDisc
-                total_cost = cents2dollars(total_cost)
-
-                if total_titles == linked_o and total_titles == linked_b:
-                    linked_to_Sierra = 'Yes. All orders linked to Sierra records'
-                else:
-                    linked_to_Sierra = '\t%s o. numbers\n' \
-                                       '\t%s b. numbers\n' \
-                                       '\tare linked (out of %s total titles)' % (
-                        linked_o, linked_b, total_titles)
-
-                f = ''
-                for fund_id in funds_used:
-                    fund_record = db.retrieve_record(
-                        db.Fund,
-                        id=fund_id)
-                    f = f + 'fund %s=$%s\n' % (fund_record.code,
-                                               cents2dollars(funds_used[fund_id]))
+                session = db.db_connection()
+                stmn = db.order_breakdown_sql_stmn(order_record.id)
+                df = rpt.pull_table_to_dataframe(stmn, session)
+                total_titles = rpt.find_total_titles(df)
+                total_qty = rpt.find_total_copies(df)
+                total_cost = cents2dollars(rpt.find_total_cost(df))
 
                 details = 'date loaded: %s\n' \
                           'language: %s\n' \
@@ -5493,19 +5454,49 @@ class OrderBrowse(tk.Frame):
                           'material type: %s\n' \
                           'blanket PO: %s\n' \
                           'wlo number range: %s\n' \
-                          '----------------\n' \
+                          '--------totals--------\n' \
                           'total titles: %s\n' \
                           'total copies: %s\n' \
-                          'total cost: %s\n' \
-                          '---------------\n' % (
+                          'total cost: %s\n' % (
                               date, lang, self.vendor, matType, blanketPO,
                               wlo_range, total_titles, total_qty, total_cost)
 
-                details = details + f + \
-                          '---------------\n'
-                linked = 'linked to Sierra numbers?:\n' \
-                          '%s' % linked_to_Sierra
-                details = details + linked
+                details += '---funds breakdown----\n'
+
+                # fund by audn breakdown
+                details += 'titles:\n'
+                for f in rpt.title_per_fund_breakdown(df):
+                    fund, audn, count = f
+                    if audn == 'j':
+                        a = 'juvenile'
+                    elif audn == 'y':
+                        a = 'young adult'
+                    else:
+                        a = 'adult'
+                    details += '\t{} - {} - {} title(s)\n'.format(
+                        fund, a, count)
+                details += 'copies:\n'
+                for f in rpt.copies_per_fund_breakdown(df):
+                    fund, audn, count = f
+                    if audn == 'j':
+                        a = 'juvenile'
+                    elif audn == 'y':
+                        a = 'young adult'
+                    else:
+                        a = 'adult'
+                    details += '\t{} - {} - {} copie(s)\n'.format(
+                        fund, a, count)
+                details += 'cost:\n'
+                for f in rpt.cost_per_fund_breakdown(df):
+                    fund, audn, amount = f
+                    if audn == 'j':
+                        a = 'juvenile'
+                    elif audn == 'y':
+                        a = 'young adult'
+                    else:
+                        a = 'adult'
+                    details += '\t{} - {} - ${}\n'.format(
+                        fund, a, cents2dollars(amount))
 
                 # update display
                 self.orderDetailsTxt['state'] = tk.NORMAL

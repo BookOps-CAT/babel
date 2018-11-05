@@ -7,8 +7,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.engine.url import URL
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, text
 import shelve
+from collections import defaultdict
+from sqlalchemy.inspection import inspect
 
 from prepopulated_tables import *
 from convert_price import cents2dollars
@@ -912,6 +914,15 @@ def count_all(model, **kwargs):
     return total_count
 
 
+def order_breakdown_sql_stmn(order_id):
+    stmn = text("""
+        SELECT o_id, osl_id, qty, os_id, price, fcode, acode
+        FROM order_fund_audn
+        WHERE o_id = :id
+        """)
+    return stmn.bindparams(id=order_id)
+
+
 def delete_record(model, **kwargs):
     session = db_connection()
     instance = session.query(model).filter_by(**kwargs).one()
@@ -957,8 +968,9 @@ def initiateDB():
         ignore_or_insert(Lang, code=item[0], name=item[1])
 
     for item in BRANCH:
-        res = ignore_or_insert(Branch, library_id=item[0],
-                         code=item[1], name=item[2])
+        res = ignore_or_insert(
+            Branch, library_id=item[0],
+            code=item[1], name=item[2])
     for item in MATERIAL:
         ignore_or_insert(MatType,
                          name=item[0])
@@ -1006,6 +1018,18 @@ def initiateDB():
         update_record(Selector,
                       id=loaded_record.id,
                       selector_codes=codes)
+
+    print('creating order_fund_audn view...')
+    stmn = """
+        DROP VIEW IF EXISTS order_fund_audn;
+        CREATE VIEW order_fund_audn AS
+            SELECT ordersingle.order_id AS o_id, ordersingleloc.id AS osl_id, ordersingleloc.qty AS qty, ordersingle.id AS os_id, ordersingle.priceDisc AS price, fund.code AS fcode, audn.code AS acode
+            FROM ordersingle
+                JOIN ordersingleloc ON ordersingleloc.ordersingle_id = ordersingle.id
+                JOIN fund ON ordersingleloc.fund_id = fund.id
+                JOIN audn ON ordersingle.audn_id = audn.id
+        """
+    session.execute(stmn)
 
     session.close()
     print 'DB set-up complete.'
