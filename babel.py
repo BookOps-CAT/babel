@@ -4766,6 +4766,16 @@ class ImportCartSheet(tk.Frame):
                   command=self.on_apply).grid(
             row=1, column=4, sticky='snw', padx=10, pady=5)
 
+        # progress bar
+        tk.Label(self.baseFrm, text='import progress:').grid(
+            row=10, column=5, sticky='sw', padx=10, pady=10)
+        self.progbar = ttk.Progressbar(
+            self.baseFrm,
+            mode='determinate',
+            orient=tk.HORIZONTAL,)
+        self.progbar.grid(
+            row=10, column=6, sticky='sew', padx=10, pady=10)
+
         # import & close buttons
         tk.Button(self.baseFrm, text='import', font=BTN_FONT,
                   width=15,
@@ -5004,215 +5014,231 @@ class ImportCartSheet(tk.Frame):
             blanketPO_date = datetime.datetime.strftime(
                 datetime.datetime.now(), '%Y%m%d')
             blanketPO_numbering = 0
-            vendor_record = db.retrieve_record(
-                db.Vendor,
-                id=self.vendor_id)
-            if vendor_record is not None:
-                if self.library_id == 1:
-                    blanketPO = vendor_record.bplCode + '-' + blanketPO_date
-                elif self.library_id == 2:
-                    blanketPO = vendor_record.nyplCode + '-' + blanketPO_date
+            try:
+                with db.session_scope() as session:
+                    vendor_record = db.retrieve_record_in_session(
+                        session,
+                        db.Vendor,
+                        id=self.vendor_id)
+                    session.flush()
 
-                exist = False
-                while exist is not None:
-                    blanketPO_numbering += 1
-                    test_blanketPO = blanketPO + '-' + str(blanketPO_numbering)
-                    exist = db.retrieve_record(
-                        db.Order,
-                        library_id=self.library_id,
-                        blanketPO=test_blanketPO)
-                else:
-                    blanketPO = test_blanketPO
+                    if vendor_record is not None:
+                        if self.library_id == 1:
+                            blanketPO = vendor_record.bplCode + '-' + blanketPO_date
+                        elif self.library_id == 2:
+                            blanketPO = vendor_record.nyplCode + '-' + blanketPO_date
 
-            db.ignore_or_insert(
-                db.Order,
-                name=name,
-                date=date,
-                library_id=self.library_id,
-                lang_id=self.lang_id,
-                vendor_id=self.vendor_id,
-                selector_id=self.selector_id,
-                matType_id=self.matType_id,
-                blanketPO=blanketPO)
-            loaded_record = db.retrieve_last(
-                db.Order)
-            order_id = loaded_record.id
+                        # something fishy here, don't understand this
+                        exist = False
+                        while exist is not None:
+                            blanketPO_numbering += 1
+                            test_blanketPO = blanketPO + '-' + str(blanketPO_numbering)
+                            exist = db.retrieve_record_in_session(
+                                session,
+                                db.Order,
+                                library_id=self.library_id,
+                                blanketPO=test_blanketPO)
+                            session.flush()
+                        else:
+                            blanketPO = test_blanketPO
 
-            # find selected rows
-            # and determine if distr code in column mateches
-            # applied distrTemplate
-            results = self.sheet.find_orders(self.distr_codes)
+                        loaded_record = db.ignore_or_insert_in_session(
+                            session,
+                            db.Order,
+                            name=name,
+                            date=date,
+                            library_id=self.library_id,
+                            lang_id=self.lang_id,
+                            vendor_id=self.vendor_id,
+                            selector_id=self.selector_id,
+                            matType_id=self.matType_id,
+                            blanketPO=blanketPO)
+                        session.flush()
+                        order_id = loaded_record.id
 
-            # insert new orderSingle record
-            for order in results['orders']:
-                # determine if add as new or attached as dup
-                if order['isbn_col'] != '':
-                    isbn = input_parser.parse_isbn(order['isbn_col'])
-                else:
-                    isbn = None
+                        # find selected rows
+                        # and determine if distr code in column mateches
+                        # applied distrTemplate
+                        results = self.sheet.find_orders(self.distr_codes)
 
-                # convert to cents for storing
-                priceDisc = dollars2cents(order['priceDisc_col'])
+                        # set maximum for progbar
+                        self.progbar['maximum'] = results['qty']
 
-                if order['priceReg_col'] is not None:
-                    priceReg = dollars2cents(order['priceReg_col'])
-                else:
-                    priceReg = None
+                        # insert new orderSingle record
+                        n = 0
+                        for order in results['orders']:
+                            n += 1
+                            # determine if add as new or attached as dup
+                            if order['isbn_col'] != '':
+                                isbn = input_parser.parse_isbn(order['isbn_col'])
+                            else:
+                                isbn = None
 
-                # insert new bibRec
-                title = order['title_col']
-                author = order['author_col']
-                publisher = order['publisher_col']
-                # parse pubDate
-                pubDate = input_parser.parse_year(order['pubDate_col'])
-                pubPlace = order['pubPlace_col']
-                venNo = order['venNum_col']
-                audn = order['audn_col']
-                po_per_line = order['po_per_line_col']
-                distr_codes = str(order['distr_col'])
+                            # convert to cents for storing
+                            priceDisc = dollars2cents(order['priceDisc_col'])
 
-                # better be replaced by parsed id from db
-                if audn == 'y' or audn == 'Y':
-                    audn_id = 2
-                elif audn == 'j' or audn == 'J':
-                    audn_id = 1
-                else:
-                    audn_id = 3
-                result = db.insert_record(
-                    db.BibRec,
-                    title=title,
-                    author=author,
-                    publisher=publisher,
-                    pubDate=pubDate,
-                    pubPlace=pubPlace,
-                    audn_id=audn_id,
-                    isbn=isbn,
-                    venNo=venNo)
+                            if order['priceReg_col'] is not None:
+                                priceReg = dollars2cents(order['priceReg_col'])
+                            else:
+                                priceReg = None
 
-                if result[0] is False:
-                    loaded_bib = result[1]
-                elif result[0] is True:
-                    loaded_bib = db.retrieve_last(
-                        db.BibRec)
-                else:
-                    loaded_bib = None
-                    m = result[1]
-                    tkMessageBox.showerror('Database error', m)
-                if loaded_bib is not None:
-                    # insert OrderSingle record to localstore
-                    db.ignore_or_insert(
-                        db.OrderSingle,
-                        wlo_id=wlo_generator.get_new_number(),
-                        bibRec_id=loaded_bib.id,
-                        order_id=order_id,
-                        audn_id=audn_id,
-                        po_per_line=po_per_line,
-                        priceDisc=priceDisc,
-                        priceReg=priceReg)
+                            # insert new bibRec
+                            title = order['title_col']
+                            author = order['author_col']
+                            publisher = order['publisher_col']
+                            # parse pubDate
+                            pubDate = input_parser.parse_year(order['pubDate_col'])
+                            pubPlace = order['pubPlace_col']
+                            venNo = order['venNum_col']
+                            audn = order['audn_col']
+                            po_per_line = order['po_per_line_col']
+                            distr_codes = str(order['distr_col'])
 
-                    loaded_record = db.retrieve_last(
-                        db.OrderSingle)
-                    orderSingle_id = loaded_record.id
+                            # better be replaced by parsed id from db
+                            if audn == 'y' or audn == 'Y':
+                                audn_id = 2
+                            elif audn == 'j' or audn == 'J':
+                                audn_id = 1
+                            else:
+                                audn_id = 3
+                            loaded_bib = db.ignore_or_insert_in_session(
+                                session,
+                                db.BibRec,
+                                title=title,
+                                author=author,
+                                publisher=publisher,
+                                pubDate=pubDate,
+                                pubPlace=pubPlace,
+                                audn_id=audn_id,
+                                isbn=isbn,
+                                venNo=venNo)
+                            session.flush()
 
-                    # find locations & funds that apply to them
-                    # applied funds are parsed by find_fund()
-                    distr_code_records = db.col_preview(
-                        db.DistrCode,
-                        'id', 'code',
-                        distrTemplate_id=self.distrTemplate_id)
-                    new_records = []
-                    for record in distr_code_records:
-                        if record.code in distr_codes:
-                            location_records = db.col_preview(
-                                db.DistrLocQuantity,
-                                'id', 'location_id', 'quantity',
-                                distrCode_id=record.id)
-                            for distr_location in location_records:
-                                # find correct fund
-                                fund_search = find_fund(
-                                    self.library_id, self.funds.get(),
-                                    audn_id, self.matType_id,
-                                    distr_location.location_id)
-                                if fund_search[0]:
-                                    fund_id = fund_search[1]
-                                    new = db.create_db_object(
-                                        db.OrderSingleLoc,
-                                        orderSingle_id=orderSingle_id,
-                                        location_id=distr_location.location_id,
-                                        fund_id=fund_id,
-                                        qty=distr_location.quantity)
-                                    new_records.append(new)
-                                else:
-                                    # add message insted to be displayed
-                                    error_msg.add(fund_search[1])
+                            # insert OrderSingle record to localstore
+                            loaded_order = db.ignore_or_insert_in_session(
+                                session,
+                                db.OrderSingle,
+                                wlo_id=wlo_generator.get_new_number(),
+                                bibRec_id=loaded_bib.id,
+                                order_id=order_id,
+                                audn_id=audn_id,
+                                po_per_line=po_per_line,
+                                priceDisc=priceDisc,
+                                priceReg=priceReg)
 
-                    db.update_record(
-                        db.OrderSingle,
-                        id=orderSingle_id,
-                        orderSingleLocations=new_records)
+                            orderSingle_id = loaded_order.id
 
-            # summarize order
-            loaded_records = db.retrieve_all(
-                db.OrderSingle,
-                'orderSingleLocations',
-                order_id=order_id)
-            total_qty = 0
-            total_titles = 0
-            total_cost = 0
-            first_wlo = None
-            funds_used = {}
-            for record in loaded_records:
-                if first_wlo is None:
-                    first_wlo = record.wlo_id
-                total_titles += 1
-                for related_record in record.orderSingleLocations:
-                    total_qty = total_qty + \
-                        related_record.qty
-                    total_cost = total_cost + \
-                        record.priceDisc * related_record.qty
-                    fund_id = related_record.fund_id
-                    if fund_id in funds_used:
-                        funds_used[fund_id] = funds_used[fund_id] + (
-                            related_record.qty * record.priceDisc)
-                    else:
-                        funds_used[fund_id] = related_record.qty * record.priceDisc
-            total_cost = cents2dollars(total_cost)
+                            # find locations & funds that apply to them
+                            # applied funds are parsed by find_fund()
+                            distr_code_records = db.col_preview_in_session(
+                                session,
+                                db.DistrCode,
+                                'id', 'code',
+                                distrTemplate_id=self.distrTemplate_id)
+                            session.flush()
+                            new_records = []
+                            for record in distr_code_records:
+                                if record.code in distr_codes:
+                                    location_records = db.col_preview_in_session(
+                                        session,
+                                        db.DistrLocQuantity,
+                                        'id', 'location_id', 'quantity',
+                                        distrCode_id=record.id)
+                                    session.flush()
+                                    for distr_location in location_records:
+                                        # find correct fund
+                                        fund_search = find_fund(
+                                            self.library_id, self.funds.get(),
+                                            audn_id, self.matType_id,
+                                            distr_location.location_id)
+                                        if fund_search[0]:
+                                            fund_id = fund_search[1]
+                                            new = db.create_db_object(
+                                                db.OrderSingleLoc,
+                                                orderSingle_id=orderSingle_id,
+                                                location_id=distr_location.location_id,
+                                                fund_id=fund_id,
+                                                qty=distr_location.quantity)
+                                            new_records.append(new)
+                                        else:
+                                            # add message insted to be displayed
+                                            error_msg.add(fund_search[1])
 
-            last_wlo = wlo_generator.get_last_number()
+                            db.update_record_in_session(
+                                session,
+                                db.OrderSingle,
+                                id=orderSingle_id,
+                                orderSingleLocations=new_records)
+                            session.flush()
 
-            # update order record
-            db.update_record(
-                db.Order,
-                order_id,
-                wlo_range=first_wlo + '-' + last_wlo)
+                            self.progbar['value'] = n
+                            self.progbar.update()
 
-            # display errors if any
-            if len(error_msg) > 0:
-                tkMessageBox.showerror('Import errors', '\n'.join(error_msg))
+                # summarize order
+                loaded_records = db.retrieve_all(
+                    db.OrderSingle,
+                    'orderSingleLocations',
+                    order_id=order_id)
+                total_qty = 0
+                total_titles = 0
+                total_cost = 0
+                first_wlo = None
+                funds_used = {}
+                for record in loaded_records:
+                    if first_wlo is None:
+                        first_wlo = record.wlo_id
+                    total_titles += 1
+                    for related_record in record.orderSingleLocations:
+                        total_qty = total_qty + \
+                            related_record.qty
+                        total_cost = total_cost + \
+                            record.priceDisc * related_record.qty
+                        fund_id = related_record.fund_id
+                        if fund_id in funds_used:
+                            funds_used[fund_id] = funds_used[fund_id] + (
+                                related_record.qty * record.priceDisc)
+                        else:
+                            funds_used[fund_id] = related_record.qty * record.priceDisc
+                total_cost = cents2dollars(total_cost)
 
-            m = 'order saved as %s\n' \
-                'titles total=%s\n' \
-                'quantity total=%s\n' \
-                'cost total=$%s\n' \
-                'wlo range: %s-%s\n' % (
-                    name, total_titles, total_qty,
-                    total_cost, first_wlo, last_wlo)
+                last_wlo = wlo_generator.get_last_number()
 
-            f = '--------------\n'
-            for fund_id in funds_used:
-                fund_record = db.retrieve_record(
-                    db.Fund,
-                    id=fund_id)
-                f = f + 'fund %s=$%s\n' % (fund_record.code,
-                                           cents2dollars(funds_used[fund_id]))
-            m = m + f
+                # update order record
+                db.update_record(
+                    db.Order,
+                    order_id,
+                    wlo_range=first_wlo + '-' + last_wlo)
 
-            # display summary message
-            tkMessageBox.showinfo('Output message', m)
+                # display errors if any
+                if len(error_msg) > 0:
+                    tkMessageBox.showerror('Import errors', '\n'.join(error_msg))
 
-            self.reset_form()
-            self.reset_preview()
-            cur_manager.notbusy()
+                m = 'order saved as %s\n' \
+                    'titles total=%s\n' \
+                    'quantity total=%s\n' \
+                    'cost total=$%s\n' \
+                    'wlo range: %s-%s\n' % (
+                        name, total_titles, total_qty,
+                        total_cost, first_wlo, last_wlo)
+
+                f = '--------------\n'
+                for fund_id in funds_used:
+                    fund_record = db.retrieve_record(
+                        db.Fund,
+                        id=fund_id)
+                    f = f + 'fund %s=$%s\n' % (fund_record.code,
+                                               cents2dollars(funds_used[fund_id]))
+                m = m + f
+
+                # display summary message
+                tkMessageBox.showinfo('Output message', m)
+                self.reset_form()
+                self.reset_preview()
+
+            except Exception as e:
+                tkMessageBox.showerror('Error', e)
+            finally:
+                cur_manager.notbusy()
 
     def on_close(self):
         self.reset_preview()
@@ -5224,6 +5250,7 @@ class ImportCartSheet(tk.Frame):
         self.sheet_meta.set('')
         self.funds.set('')
         self.fund.set('')
+        self.progbar['value'] = 0
 
     def observer(self, *args):
         if self.tier.get() == 'ImportCartSheet':

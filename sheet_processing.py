@@ -388,9 +388,7 @@ class SheetManipulator:
 
             self.orders.append(order)
             self.order_qty = len(selected_rows)
-        # summary can serve to check if selected = added to db
-        # at this moment did not pursue it
-        return {'summary': None, 'orders': self.orders}
+        return {'qty': self.order_qty, 'orders': self.orders}
 
 
 def create_order(fname, library, data):

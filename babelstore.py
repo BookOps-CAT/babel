@@ -1,5 +1,6 @@
 # defines and initiates local DB that stores Babel data
 
+from contextlib import contextmanager
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, and_, or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
@@ -9,8 +10,8 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import func, text
 import shelve
-from collections import defaultdict
-from sqlalchemy.inspection import inspect
+# from collections import defaultdict
+# from sqlalchemy.inspection import inspect
 
 from prepopulated_tables import *
 from convert_price import cents2dollars
@@ -519,6 +520,12 @@ def update_record(model, id, **kwargs):
     session.close()
 
 
+def update_record_in_session(session, model, id, **kwargs):
+    instance = session.query(model).filter_by(id=id).one()
+    for key, value in kwargs.iteritems():
+        setattr(instance, key, value)
+
+
 def update_selector_code(model, selector_id, library_id, **kwargs):
     session = db_connection()
     instance = session.query(model).filter_by(
@@ -555,6 +562,22 @@ def ignore_or_insert(model, **kwargs):
             return "Database integrity error: {0}".format(IE)
     session.close()
     return True
+
+
+def ignore_or_insert_in_session(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).first()
+    if not instance:
+        instance = model(**kwargs)
+        session.add(instance)
+    return instance
+
+
+def retrieve_record_in_session(session, model, **kwargs):
+    try:
+        instance = session.query(model).filter_by(**kwargs).one()
+        return instance
+    except NoResultFound:
+        return None
 
 
 def insert_record(model, **kwargs):
@@ -616,6 +639,12 @@ def col_preview(model, *args, **kwargs):
     instances = session.query(model).filter_by(**kwargs).options(
         load_only(*args)).order_by(*args).all()
     session.close()
+    return instances
+
+
+def col_preview_in_session(session, model, *args, **kwargs):
+    instances = session.query(model).filter_by(**kwargs).options(
+        load_only(*args)).order_by(*args).all()
     return instances
 
 
@@ -1033,6 +1062,34 @@ def initiateDB():
 
     session.close()
     print 'DB set-up complete.'
+
+
+class DataAccessLayer:
+    def __init__(self):
+        self.conn_string = database_url()
+        self.engine = None
+        self.session = None
+
+    def connect(self):
+        self.engine = create_engine(self.conn_string)
+        self.Session = sessionmaker(bind=self.engine)
+
+
+dal = DataAccessLayer()
+
+
+@contextmanager
+def session_scope():
+    dal.connect()
+    session = dal.Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 if __name__ == '__main__':

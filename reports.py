@@ -3,9 +3,6 @@
 import pandas as pd
 
 
-from babelstore import query_to_dict
-
-
 def pull_table_to_dataframe(stmn, session):
     """
     turns SQLAlchemy results into Pandas dataframe
