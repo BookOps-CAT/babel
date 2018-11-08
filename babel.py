@@ -4539,11 +4539,15 @@ class CartSheet(tk.Frame):
                         'Output message', m):
                     os.startfile(cart_file)
 
-            except:
-                main_logger.exception('Cart sheet error:')
+            except Exception as e:
                 cur_manager.notbusy()
-
-            self.reset_values()
+                tkMessageBox.showerror(
+                    'Error',
+                    'Encountered error while creating a cart sheet. '
+                    'Error: {}'.format(e))
+                main_logger.error('Cart sheet error: {}'.format(e))
+            finally:
+                self.reset_values()
 
     def on_close(self):
         # reset choices
@@ -5230,15 +5234,19 @@ class ImportCartSheet(tk.Frame):
                                                cents2dollars(funds_used[fund_id]))
                 m = m + f
 
+                cur_manager.notbusy()
+
                 # display summary message
                 tkMessageBox.showinfo('Output message', m)
                 self.reset_form()
                 self.reset_preview()
 
             except Exception as e:
-                tkMessageBox.showerror('Error', e)
-            finally:
                 cur_manager.notbusy()
+                main_logger.error('Import sheet error: {}'.format(e))
+                tkMessageBox.showerror(
+                    'Error',
+                    'Unable to import the cart. Error: {}'.format(e))
 
     def on_close(self):
         self.reset_preview()
