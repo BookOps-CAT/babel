@@ -4738,7 +4738,7 @@ class ImportCartSheet(tk.Frame):
         self.selectorCbx = ttk.Combobox(self.baseFrm,
                                         textvariable=self.selector,
                                         width=20,
-                                        height=1)
+                                        height=10)
         self.selectorCbx.grid(
             row=8, column=4, sticky='snw', pady=2)
 
@@ -4761,7 +4761,7 @@ class ImportCartSheet(tk.Frame):
         self.fundCbx = ttk.Combobox(self.fundFrm, textvariable=self.fund,
                                     state='readonly',
                                     width=10,
-                                    height=1,
+                                    height=10,
                                     font=REG_FONT)
         self.fundCbx.grid(
             row=1, column=2, sticky='snw', padx=10, pady=5)
@@ -7463,7 +7463,7 @@ class Search(tk.Frame):
 
 
 if __name__ == '__main__':
-    version = 'BABEL (beta v.0.8.1)'
+    version = 'BABEL (beta v.0.8.6)'
 
     # setup log folder is does not exist
     if not os.path.isdir('./logs'):
