@@ -63,7 +63,7 @@ def find_fund(library_id, funds_str, audn_id, matType_id, location_id):
     elif len(ids) == 0:
         module_logger.exception(
             "FUND: fund(s) (%s) not applicable for this type of material" % fund_lst)
-        return (False, 'not able to correctly aplly one of the funds')
+        return (False, 'not able to correctly apply one of the funds')
     else:
         module_logger.exception('FUND: applied funds (%s) are not exclusive' % fund_lst)
         return (False, 'multiple fund matches, funds not exclusive')
