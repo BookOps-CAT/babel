@@ -55,6 +55,30 @@ def find_total_cost(df):
     return cdf['cost'].sum()
 
 
+def find_linked(df):
+    """
+    finds linked records in order
+    args:
+    df: pandas.core.frame.DataFrame
+    returns:
+        linked_recs: tuple, first value Boolean,
+            second int missing bibs, third int missing orders
+    """
+
+    ldf = df[['os_id', 'bNumber', 'oNumber']].copy()
+    ubdf = ldf[ldf['bNumber'].isnull()]
+    unlinked_bibs = ubdf['os_id'].nunique()
+    uodf = ldf[ldf['oNumber'].isnull()]
+    unlinked_orders = uodf['os_id'].nunique()
+
+    if unlinked_bibs == 0 and unlinked_orders == 0:
+        linked = True
+    else:
+        linked = False
+
+    return (linked, unlinked_bibs, unlinked_orders)
+
+
 def title_per_fund_breakdown(df):
     """
     creates a list funds with title and audience data for each fund
