@@ -5320,6 +5320,7 @@ class OrderBrowse(tk.Frame):
         self.vendor_filter = tk.StringVar()
         self.lang_filter = tk.StringVar()
         self.matType_filter = tk.StringVar()
+        self.progbar_max = 0
 
         # trace changes in filters to trigger dynamic display of orders
         self.library_id.trace('w', self.dynamic_orders)
@@ -5419,7 +5420,7 @@ class OrderBrowse(tk.Frame):
             background='SystemButtonFace',
             borderwidth=0)
         self.orderDetailsTxt.grid(
-            row=6, column=7, rowspan=10, sticky='ne', padx=10, pady=5)
+            row=6, column=7, rowspan=10, sticky='nse', padx=10, pady=5)
         tk.Button(self, text='edit', font=BTN_FONT,
                   width=15,
                   command=self.on_edit).grid(
@@ -5480,8 +5481,10 @@ class OrderBrowse(tk.Frame):
                 stmn = db.order_breakdown_sql_stmn(order_record.id)
                 df = rpt.pull_table_to_dataframe(stmn, session)
                 total_titles = rpt.find_total_titles(df)
+                self.progbar_max = total_titles
                 total_qty = rpt.find_total_copies(df)
                 total_cost = cents2dollars(rpt.find_total_cost(df))
+                linked, unlinked_bibs, unlinked_orders = rpt.find_linked(df)
 
                 details = 'date loaded: %s\n' \
                           'language: %s\n' \
@@ -5489,12 +5492,20 @@ class OrderBrowse(tk.Frame):
                           'material type: %s\n' \
                           'blanket PO: %s\n' \
                           'wlo number range: %s\n' \
-                          '--------totals--------\n' \
+                          '--------totals---------\n' \
                           'total titles: %s\n' \
                           'total copies: %s\n' \
                           'total cost: %s\n' % (
                               date, lang, self.vendor, matType, blanketPO,
                               wlo_range, total_titles, total_qty, total_cost)
+
+                details += '-------linking--------\n'
+                if linked:
+                    details += 'All orders linked to Sierra records\n'
+                else:
+                    details += '{} title(s) have no Sierra bib number\n' \
+                        '{} title(s) have no Sierra order number\n'.format(
+                        unlinked_bibs, unlinked_orders)
 
                 details += '---funds breakdown----\n'
 
@@ -5532,6 +5543,7 @@ class OrderBrowse(tk.Frame):
                         a = 'adult'
                     details += '\t{} - {} - ${}\n'.format(
                         fund, a, cents2dollars(amount))
+
 
                 # update display
                 self.orderDetailsTxt['state'] = tk.NORMAL
@@ -5588,11 +5600,13 @@ class OrderBrowse(tk.Frame):
                 tkMessageBox.showinfo(
                     'Output info', 'MARC file has been created')
                 cur_manager.notbusy()
-            except:
+            except Exception as e:
                 cur_manager.notbusy()
-                main_logger.exception('MARC file error:')
+                main_logger.error('MARC file error: {}'.format(e))
                 tkMessageBox.showerror(
-                    'Output error', 'not able to create MARC file')
+                    'Output error',
+                    'not able to create MARC file. Error: {}'.format(
+                        e))
 
     def addIDs(self):
         if self.orderId == 0:
@@ -5637,10 +5651,11 @@ class OrderBrowse(tk.Frame):
                             'Output message',
                             'numbers added to local database')
                     cur_manager.notbusy()
-                except:
+                except Exception as e:
                     cur_manager.notbusy()
                     m = 'not able to match orders\n' \
-                        'to Sierra IDs in the database'
+                        'to Sierra IDs in the database.\nError: {}'.format(e)
+                    main_logger.error(m)
                     tkMessageBox.showerror('database error', m)
 
     def createOrder(self):
@@ -5667,8 +5682,14 @@ class OrderBrowse(tk.Frame):
             fname = fname + '-' + file_date
             fh = order_dir + fname
             try:
+                retrieved = True
                 cur_manager.busy()
                 data_set = []
+
+                self.records = db.retrieve_all(
+                    db.OrderSingle,
+                    'orderSingleLocations',
+                    order_id=self.orderId)
 
                 for singleOrder in self.records:
                     data = []
@@ -5693,31 +5714,34 @@ class OrderBrowse(tk.Frame):
                     data.append(self.blanketPO)
                     data_set.append(data)
                 cur_manager.notbusy()
-            except:
+            except Exception as e:
+                retrieved = False
                 cur_manager.notbusy()
-                main_logger.exception('DB read error:')
+                main_logger.exception('DB read error: {}'.format(e))
                 m = 'not able to retrieve orders\n' \
                     'from the database'
                 tkMessageBox.showerror('database error', m)
 
-            try:
-                cur_manager.busy()
-                res = sh.create_order(fh, library, data_set)
-                cur_manager.notbusy()
-            except:
-                cur_manager.notbusy()
-                res = None
-                main_logger.exception('Order creation error:')
+            if retrieved:
+                try:
+                    cur_manager.busy()
+                    res = sh.create_order(fh, library, data_set)
+                    cur_manager.notbusy()
+                except Exception as e:
+                    cur_manager.notbusy()
+                    res = None
+                    main_logger.exception(
+                        'Order creation error: {}'.format(e))
 
-            if res is not None:
-                # add here file name & number of records
-                tkMessageBox.showinfo(
-                    'Output info',
-                    '%s \norder sheet has been created' % res)
-            else:
-                tkMessageBox.showerror(
-                    'Output error',
-                    'there was a problem in creating order sheet')
+                if res is not None:
+                    # add here file name & number of records
+                    tkMessageBox.showinfo(
+                        'Output info',
+                        '%s \norder sheet has been created' % res)
+                else:
+                    tkMessageBox.showerror(
+                        'Output error',
+                        'there was a problem in creating order sheet')
 
     def on_cancel(self):
         self.reset_values()
