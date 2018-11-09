@@ -945,7 +945,7 @@ def count_all(model, **kwargs):
 
 def order_breakdown_sql_stmn(order_id):
     stmn = text("""
-        SELECT o_id, osl_id, qty, os_id, price, fcode, acode
+        SELECT o_id, osl_id, qty, os_id, price, fcode, acode, bNumber, oNumber
         FROM order_fund_audn
         WHERE o_id = :id
         """)
@@ -1052,7 +1052,7 @@ def initiateDB():
     stmn = """
         DROP VIEW IF EXISTS order_fund_audn;
         CREATE VIEW order_fund_audn AS
-            SELECT ordersingle.order_id AS o_id, ordersingleloc.id AS osl_id, ordersingleloc.qty AS qty, ordersingle.id AS os_id, ordersingle.priceDisc AS price, fund.code AS fcode, audn.code AS acode
+            SELECT ordersingle.order_id AS o_id, ordersingleloc.id AS osl_id, ordersingleloc.qty AS qty, ordersingle.id AS os_id, ordersingle.priceDisc AS price, fund.code AS fcode, audn.code AS acode, oNumber, bNumber
             FROM ordersingle
                 JOIN ordersingleloc ON ordersingleloc.ordersingle_id = ordersingle.id
                 JOIN fund ON ordersingleloc.fund_id = fund.id
