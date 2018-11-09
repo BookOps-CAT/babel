@@ -21,8 +21,6 @@ FILL_GRAY = PatternFill(fill_type='solid',
                         end_color='C4C5C6')
 
 
-
-
 class SheetManipulator:
 
     def __init__(self, file):
