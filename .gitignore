@@ -97,6 +97,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# custom files and folders
 user_data
 *.out
 PyZ3950_parsetab.py
+old_source_code/
