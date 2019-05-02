@@ -104,3 +104,4 @@ user_data
 PyZ3950_parsetab.py
 old_source_code/
 temp/
+babel/temp.py
