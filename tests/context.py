@@ -7,3 +7,4 @@ sys.path.insert(0, p)
 
 
 from babel.data_sources import xlsx
+from babel.data import data_objs
