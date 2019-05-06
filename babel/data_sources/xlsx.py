@@ -1,32 +1,11 @@
 # xlsx spreadsheet parser
 # how about list of namedtuples as output parsing spreadsheet? pros: immutable, access by name, default values
 
-from collections import namedtuple
-
 from openpyxl import load_workbook
 from openpyxl import Workbook
 
 
-Data = namedtuple(
-    'Data',
-    [
-        'title',
-        'author',
-        'series',
-        'publisher',
-        'pub_date',
-        'summary',
-        'isbn',
-        'upc',
-        'other_no',
-        'price_list',
-        'price_disc',
-        'desc_url'
-    ],
-    defaults=[
-        None, None, None, None,
-        None, None, None, None,
-        None, 0.0, 0.0, None])
+from data.data_objs import VenData
 
 
 class OrderDataReader:
@@ -83,7 +62,6 @@ class OrderDataReader:
             price_disc_col=None,
             desc_url_col=None):
 
-        self.min_row = header_row
         self.header_row = header_row
         self.title_col = title_col
         self.author_col = author_col
@@ -96,9 +74,11 @@ class OrderDataReader:
         self.other_no_col = other_no_col
         self.price_list_col = price_list_col
         self.price_disc_col = price_disc_col
-        self.url_col = url_col
+        self.desc_url_col = desc_url_col
 
-        if not header_row:
+        try:
+            self.min_row = header_row + 2
+        except TypeError:
             raise AttributeError(
                 'Header row number is a required argument')
 
@@ -115,7 +95,8 @@ class OrderDataReader:
         self.ws = wb.active
 
     def __iter__(self):
-        for row in self.ws.iter_rows(values_only=True, min_row=self.min_row):
+        for row in self.ws.iter_rows(
+                values_only=True, min_row=self.min_row):
             data = self._map2content(row)
             if data:
                 yield data
@@ -144,10 +125,10 @@ class OrderDataReader:
             if self.other_no_col:
                 kwargs['other_no'] = row[self.other_no_col]
             if self.price_list_col:
-                kwargs['price_list'] = float(row[self.price_list_col])
+                kwargs['price_list'] = row[self.price_list_col]
             if self.price_disc_col:
-                kwargs['price_disc'] = float(row[self.price_disc_col])
+                kwargs['price_disc'] = row[self.price_disc_col]
             if self.desc_url_col:
-                kwargs['desc_url'] = row[self.desc_url]
+                kwargs['desc_url'] = row[self.desc_url_col]
 
-            return Data(**kwargs)
+            return VenData(**kwargs)
