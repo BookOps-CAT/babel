@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import unittest
 
 
@@ -56,8 +57,34 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertEqual(d.other_no, 'A12')
                 self.assertEqual(
                     d.desc_url, 'https://en.wikipedia.org/wiki/Zendegi')
+            if c == 1:
+                self.assertEqual(d.title, 'Reamde :  a novel')
+                self.assertEqual(d.author, 'Stephenson, Neal')
+                self.assertIsNone(d.series)
+                self.assertEqual(d.publisher, 'Harper')
+                self.assertEqual(d.pub_date, '2019')
+                self.assertEqual(d.isbn, '9785389109452')
+                self.assertEqual(d.summary, 'Summary 2 here')
+                self.assertEqual(d.price_list, 13.00)
+                self.assertEqual(d.price_disc, 11.99)
+                self.assertEqual(d.upc, '5060099503826')
+                self.assertEqual(d.other_no, 'A13')
+                self.assertEqual(
+                    d.desc_url, 'https://en.wikipedia.org/wiki/Reamde')
+            if c == 2:
+                self.assertEqual(d.title, 'The Best Science fiction of 2019')
+                self.assertIsNone(d.author)
+                self.assertEqual(d.series, 'Asimov Magazine Selection')
+                self.assertIsNone(d.publisher)
+                self.assertIsNone(d.pub_date)
+                self.assertEqual(d.isbn, '9785389112308')
+                self.assertIsNone(d.summary)
+                self.assertEqual(d.price_list, 15.99)
+                self.assertEqual(d.price_disc, 0.0)
+                self.assertEqual(d.upc, '5060099503827')
+                self.assertEqual(d.other_no, 'A14')
+                self.assertIsNone(d.desc_url)
             c += 1
-
 
 
 if __name__ == '__main__':

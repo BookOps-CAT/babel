@@ -104,36 +104,42 @@ class OrderDataReader:
                 yield data
 
     def _normalize(self, data):
-        pass
+        data = data._replace(
+            pub_date=validators.normalize_date(data.pub_date),
+            isbn=validators.normalize_isbn(data.isbn),
+            upc=validators.value2string(data.upc),
+            other_no=validators.value2string(data.other_no),
+            price_list=validators.normalize_price(data.price_list),
+            price_disc=validators.normalize_price(data.price_disc))
+        return data
 
     def _map2content(self, row):
         """
         returns rows where title column has some value
         """
         kwargs = dict()
-        if row[self.title_col]:
+        if row[self.title_col] is not None:
             kwargs['title'] = row[self.title_col]
-            if self.author_col:
+            if self.author_col is not None:
                 kwargs['author'] = row[self.author_col]
-            if self.series_col:
+            if self.series_col is not None:
                 kwargs['series'] = row[self.series_col]
-            if self.publisher_col:
+            if self.publisher_col is not None:
                 kwargs['publisher'] = row[self.publisher_col]
-            if self.pub_date_col:
+            if self.pub_date_col is not None:
                 kwargs['pub_date'] = row[self.pub_date_col]
-            if self.summary_col:
+            if self.summary_col is not None:
                 kwargs['summary'] = row[self.summary_col]
-            if self.isbn_col:
+            if self.isbn_col is not None:
                 kwargs['isbn'] = row[self.isbn_col]
-            if self.upc_col:
+            if self.upc_col is not None:
                 kwargs['upc'] = row[self.upc_col]
-            if self.other_no_col:
+            if self.other_no_col is not None:
                 kwargs['other_no'] = row[self.other_no_col]
-            if self.price_list_col:
+            if self.price_list_col is not None:
                 kwargs['price_list'] = row[self.price_list_col]
-            if self.price_disc_col:
+            if self.price_disc_col is not None:
                 kwargs['price_disc'] = row[self.price_disc_col]
-            if self.desc_url_col:
+            if self.desc_url_col is not None:
                 kwargs['desc_url'] = row[self.desc_url_col]
-
             return VenData(**kwargs)
