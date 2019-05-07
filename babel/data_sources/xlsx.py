@@ -6,6 +6,7 @@ from openpyxl import Workbook
 
 
 from data.data_objs import VenData
+from data import validators
 
 
 class OrderDataReader:
@@ -98,8 +99,12 @@ class OrderDataReader:
         for row in self.ws.iter_rows(
                 values_only=True, min_row=self.min_row):
             data = self._map2content(row)
+            data = self._normalize(data)
             if data:
                 yield data
+
+    def _normalize(self, data):
+        pass
 
     def _map2content(self, row):
         """
