@@ -1,7 +1,13 @@
 # babel2
-enhanced BookOps crosswalk from spreadsheet to MARC21
+enhanced BookOps crosswalk from a spreadsheet to MARC21 format
 
-this babel2 version makes a switch to Python 3, improves user interface, and accomodates different uses of the program
+==============
+Warning!!!
+Work-in-progress
+==============
 
-=====================================================
-WORK-IN-PROGRESS
+
+## icon credits
+Icons by [Everaldo / Yellowicon](http://www.everaldo.com) used under [GNU Lesser General Public License](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License).
+
+
