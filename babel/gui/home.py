@@ -13,6 +13,8 @@ class HomeView(Frame):
         self.parent = parent
         Frame.__init__(self, parent)
         self.controller = controller
+        self.app_data = app_data
+        self.profile = self.app_data['profile']
 
         img = Image.open('./icons/App-ark-icon.png')
         importImg = ImageTk.PhotoImage(img)
@@ -22,10 +24,10 @@ class HomeView(Frame):
             image=importImg,
             compound=TOP,
             text='Import',
-            command=None)
+            command=self.import_sheet)
         self.importBtn.image = importImg
         self.importBtn.grid(
-            row=0, column=0, sticky='sw', padx=20, pady=10)
+            row=1, column=0, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/App-wood-box-icon.png')
         cartImg = ImageTk.PhotoImage(img)
@@ -38,7 +40,7 @@ class HomeView(Frame):
             command=None)
         self.cartBtn.image = cartImg
         self.cartBtn.grid(
-            row=0, column=1, sticky='sw', padx=20, pady=10)
+            row=1, column=1, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/App-floppy-icon.png')
         exportImg = ImageTk.PhotoImage(img)
@@ -51,7 +53,7 @@ class HomeView(Frame):
             command=None)
         self.exportBtn.image = exportImg
         self.exportBtn.grid(
-            row=0, column=2, sticky='sw', padx=20, pady=10)
+            row=1, column=2, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/Action-find-icon.png')
         searchImg = ImageTk.PhotoImage(img)
@@ -64,7 +66,7 @@ class HomeView(Frame):
             command=None)
         self.searchBtn.image = searchImg
         self.searchBtn.grid(
-            row=0, column=3, sticky='sw', padx=20, pady=10)
+            row=1, column=3, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/App-ksirtet-icon.png')
         gridImg = ImageTk.PhotoImage(img)
@@ -77,7 +79,7 @@ class HomeView(Frame):
             command=None)
         self.gridBtn.image = gridImg
         self.gridBtn.grid(
-            row=1, column=0, sticky='sw', padx=20, pady=10)
+            row=2, column=0, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/App-database-icon.png')
         dbImg = ImageTk.PhotoImage(img)
@@ -90,7 +92,7 @@ class HomeView(Frame):
             command=None)
         self.dbBtn.image = dbImg
         self.dbBtn.grid(
-            row=1, column=1, sticky='sw', padx=20, pady=10)
+            row=2, column=1, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/App-chart-icon.png')
         reportsImg = ImageTk.PhotoImage(img)
@@ -103,7 +105,7 @@ class HomeView(Frame):
             command=None)
         self.reportsBtn.image = reportsImg
         self.reportsBtn.grid(
-            row=1, column=2, sticky='sw', padx=20, pady=10)
+            row=2, column=2, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/Action-run-icon.png')
         settingsImg = ImageTk.PhotoImage(img)
@@ -116,4 +118,8 @@ class HomeView(Frame):
             command=None)
         self.settingsBtn.image = settingsImg
         self.settingsBtn.grid(
-            row=1, column=3, sticky='sw', padx=20, pady=10)
+            row=2, column=3, sticky='sw', padx=20, pady=10)
+
+    def import_sheet(self):
+        print('setting new profile')
+        self.profile.set('Libbhy')

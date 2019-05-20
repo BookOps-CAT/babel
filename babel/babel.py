@@ -5,6 +5,7 @@ import logging.config
 import logging.handlers
 # import sys
 from tkinter.ttk import Style
+from tkinter import StringVar
 
 from gui.main import Base
 from logging_settings import DEV_LOGGING, LogglyAdapter, format_traceback
@@ -38,7 +39,6 @@ if __name__ == '__main__':
     app.iconbitmap('./icons/babel.ico')
     app.title('Babel v.{}'.format(version))
 
-    print(s.theme_names())
     # s.configure(
     #     '.',
     #     background='white')

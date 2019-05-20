@@ -11,31 +11,42 @@ class Base(Tk):
 
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
-        w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-        self.geometry("%dx%d+0+0" % (w, h))
+
+        # use in prod
+        # w, h = self.winfo_screenwidth(), self.winfo_screenheight()
+        # self.geometry("%dx%d+0+0" % (w, h))
 
         # container where frames are stacked
         container = Frame(self)
         container.grid()
+        # bind shared data between windows
+        self.activeW = StringVar()
+        self.profile = StringVar()
+
+        # temp, pull from db instead
+        users = [('ALL', 0), ('Libbhy', 1), ('Alex', 2), ('Scott', 3)]
+
+        img = Image.open('./icons/App-personal-icon.png')
+        profileImg = ImageTk.PhotoImage(img)
+        profile = Menubutton(container, image=profileImg)
+        profile.grid(row=0, column=0, sticky='nw')
+        profile.image = profileImg
+
+        self.profileLbl = Label(container, textvariable=self.profile)
+        self.profileLbl.grid(row=0, column=1, columnspan=20, sticky='nw')
+
+        profile.menu = Menu(profile, tearoff=0)
+        profile["menu"] = profile.menu
+
+        for name, uid in users:
+            profile.menu.add_radiobutton(
+                label=name,
+                variable=self.profile,
+                value=name)
 
         self.state = False
         self.bind("<F11>", self.toggle_fullscreen)
         self.bind("<Escape>", self.end_fullscreen)
-
-        # bind shared data between windows
-        self.activeW = StringVar()
-        self.app_data = {'activeW': self.activeW}
-
-        # spawn Babel frames
-        self.frames = {}
-        for F in (HomeView, ReportView):
-            page_name = F.__name__
-            frame = F(parent=container, controller=self,
-                      **self.app_data)
-            self.frames[page_name] = frame
-
-            # put all windows in the same location
-            frame.grid(row=0, column=0, sticky='snew', padx=10, pady=10)
 
         # set up menu bar
         menubar = Menu(self)
@@ -71,10 +82,7 @@ class Base(Tk):
         navig_menu.add_separator()
         navig_menu.add_command(label='Exit', command=self.quit)
         menubar.add_cascade(label='Menu', menu=navig_menu)
-        # report_menu = Menu(menubar, tearoff=0)
-        # report_menu.add_command(
-        #     label='Reports', command=None)
-        # menubar.add_cascade(label='Reports', menu=report_menu)
+
         help_menu = Menu(menubar, tearoff=0)
         help_menu.add_command(label='Help index', command=None)
         help_menu.add_command(label='Updates', command=None)
@@ -83,17 +91,25 @@ class Base(Tk):
                               command=None)
         menubar.add_cascade(label='Help', menu=help_menu)
 
-        # profile
-        # profile_menu = Menu(menubar, tearoff=0)
-        img = Image.open('./icons/Everaldo-Crystal-Clear-App-personal.ico')
-        profileImg = ImageTk.PhotoImage(img)
-        # profile_menu.add_command(image=profileImg)
-        menubar.add_command(
-            bitmap=profileImg,
-            command=None)
-        # profile_menu.image = profileImg
-
         self.config(menu=menubar)
+
+        # retrieve current profile from user_data and set below
+        # !!!! code needed
+        self.profile.set('ALL')
+        self.app_data = {
+            'activeW': self.activeW,
+            'profile': self.profile}
+
+        # spawn Babel frames
+        self.frames = {}
+        for F in (HomeView, ReportView):
+            page_name = F.__name__
+            frame = F(parent=container, controller=self,
+                      **self.app_data)
+            self.frames[page_name] = frame
+
+            # put all windows in the same location
+            frame.grid(row=1, column=0, columnspan=20, sticky='snew', padx=5, pady=5)
 
         # lift to the top main window
         self.show_frame('HomeView')
