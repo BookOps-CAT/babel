@@ -33,7 +33,7 @@ class Base(Tk):
         profile.image = profileImg
 
         self.profileLbl = Label(container, textvariable=self.profile)
-        self.profileLbl.grid(row=0, column=1, columnspan=20, sticky='nw')
+        self.profileLbl.grid(row=0, column=1, columnspan=20, sticky='snw')
 
         profile.menu = Menu(profile, tearoff=0)
         profile["menu"] = profile.menu
