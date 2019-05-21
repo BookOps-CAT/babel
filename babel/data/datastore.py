@@ -4,7 +4,7 @@ Defines and initiates local DB that stores Babel data
 
 from contextlib import contextmanager
 
-from sqlalchemy import Column, ForeignKey, Integer, String,
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
 from sqlalchemy import create_engine
