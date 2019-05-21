@@ -6,10 +6,11 @@ import logging.handlers
 # import sys
 from tkinter.ttk import Style
 from tkinter import StringVar
+import shelve
 
 from gui.main import Base
 from logging_settings import DEV_LOGGING, LogglyAdapter, format_traceback
-# from paths import APP_DATA_DIR
+from paths import USER_DATA
 
 
 def determine_version():
@@ -29,15 +30,35 @@ if __name__ == '__main__':
     logger = logging.getLogger('babel_logger')
     error_logger = LogglyAdapter(logger, None)
 
-    # determine version
+    # determine version, wonder if this will work after packaging
+    # into frozen binaries?
     version = determine_version()
 
-    # launch application
-    app = Base()
-    s = Style()
-    s.theme_use('xpnative')
-    app.iconbitmap('./icons/babel.ico')
-    app.title('Babel v.{}'.format(version))
+    # determine if babelstore is connected and if not
+    # launch setup
+    user_data = shelve.open(USER_DATA)
+    if 'db_config' in user_data:
+        datastore_linked = True
+    else:
+        datastore_linked = False
+    user_data.close()
+
+    if datastore_linked:
+        app = Base()
+        s = Style()
+        s.theme_use('xpnative')
+        app.iconbitmap('./icons/babel.ico')
+        app.title('Babel v.{}'.format(version))
+        app.mainloop()
+    else:
+        print('Babel datastore setup should launch here.')
+        # first time launch, show db details form
+        # setup_root = tk.Tk()
+        # setup_root.title("Database connection details")
+        # setup_app = DBSetup(setup_root)
+        # setup_root.mainloop()
+
+
 
     # s.configure(
     #     '.',
@@ -48,4 +69,4 @@ if __name__ == '__main__':
     # s.configure('Bold.TLabel', font=('Helvetica', 12, 'bold'))
     # s.configure('Small.TLabel', font=('Helvetica', 8))
     # s.configure('Medium.Treeview', font=('Helvetica', 9))
-    app.mainloop()
+
