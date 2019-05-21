@@ -89,7 +89,7 @@ class HomeView(Frame):
             image=dbImg,
             compound=TOP,
             text='Tables',
-            command=None)
+            command=lambda: controller.show_frame('TableView'))
         self.dbBtn.image = dbImg
         self.dbBtn.grid(
             row=2, column=1, sticky='sw', padx=20, pady=10)

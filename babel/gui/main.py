@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 
 from gui.home import HomeView
 from gui.reports import ReportView
+from gui.tables import TableView
 
 
 class Base(Tk):
@@ -18,10 +19,12 @@ class Base(Tk):
 
         # container where frames are stacked
         container = Frame(self)
+        container.columnconfigure(2, minsize=20)
         container.grid()
         # bind shared data between windows
         self.activeW = StringVar()
         self.profile = StringVar()
+        self.system = IntVar()  # BPL 1, NYPL 2
 
         # temp, pull from db instead
         users = [('ALL', 0), ('Libbhy', 1), ('Alex', 2), ('Scott', 3)]
@@ -43,6 +46,18 @@ class Base(Tk):
                 label=name,
                 variable=self.profile,
                 value=name)
+
+        systemLbl = Label(container, text='System:')
+        systemLbl.grid(row=0, column=3, sticky='sne')
+
+        bplBtn = Radiobutton(
+            container, text='BPL', variable=self.system, value=1)
+        bplBtn.grid(
+            row=0, column=4, sticky='sne')
+        nypBtn = Radiobutton(
+            container, text='NYPL', variable=self.system, value=2)
+        nypBtn.grid(
+            row=0, column=5, sticky='snw')
 
         self.state = False
         self.bind("<F11>", self.toggle_fullscreen)
@@ -71,7 +86,7 @@ class Base(Tk):
             command=None)
         navig_menu.add_command(
             label='Tables',
-            command=None)
+            command=lambda: self.show_frame('TableView'))
         navig_menu.add_command(
             label='Reports',
             command=None)
@@ -98,11 +113,12 @@ class Base(Tk):
         self.profile.set('ALL')
         self.app_data = {
             'activeW': self.activeW,
-            'profile': self.profile}
+            'profile': self.profile,
+            'system': self.system}
 
         # spawn Babel frames
         self.frames = {}
-        for F in (HomeView, ReportView):
+        for F in (HomeView, ReportView, TableView):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
                       **self.app_data)
