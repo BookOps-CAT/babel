@@ -13,10 +13,12 @@ def insert_or_ignore(session, model, **kwargs):
 
 def get_column_values(session, model, column, **kwargs):
     instances = session.query(model).filter_by(**kwargs).options(
-        load_only(column)).order_by(column)
+        load_only(column)).order_by(column).all()
     return instances
 
 
 def retrieve_record(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).one()
     return instance
+
+

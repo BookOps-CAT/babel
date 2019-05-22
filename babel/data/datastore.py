@@ -3,8 +3,10 @@ Defines and initiates local DB that stores Babel data
 """
 
 from contextlib import contextmanager
+from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import (DateTime, Column, ForeignKey, Integer,
+                        String, UniqueConstraint)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
@@ -33,7 +35,8 @@ class System(Base):
 
     def __repr__(self):
         state = inspect(self)
-        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
         return f"<System({attrs})>"
 
 
@@ -45,7 +48,8 @@ class Library(Base):
 
     def __repr__(self):
         state = inspect(self)
-        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
         return f"<Library({attrs})>"
 
 
@@ -58,7 +62,8 @@ class User(Base):
 
     def __repr__(self):
         state = inspect(self)
-        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
         return f"<User({attrs})>"
 
 
@@ -71,7 +76,8 @@ class Lang(Base):
 
     def __repr__(self):
         state = inspect(self)
-        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
         return f"<Lang({attrs})>"
 
 
@@ -84,7 +90,8 @@ class Audn(Base):
 
     def __repr__(self):
         state = inspect(self)
-        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
         return f"<Audn({attrs})>"
 
 
@@ -96,7 +103,8 @@ class MatType(Base):
 
     def __repr__(self):
         state = inspect(self)
-        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
         return f"<MatType({attrs})>"
 
 
@@ -108,10 +116,107 @@ class Branch(Base):
     name = Column(String(50))
     code = Column(String(2), nullable=False, unique=True)
 
-    # def __repr__(self):
-    #     state = inspect(self)
-    #     attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
-    #     return f"<Branch({attrs})>"
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Branch({attrs})>"
+
+
+class VendorCode(Base):
+    __tablename__ = 'vencode'
+    vendor_id = Column(Integer, ForeignKey('vendor.did'), primary_key=True)
+    system_id = Column(Integer, ForeignKey('system.did'), primary_key=True)
+    code = Column(String(5))
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<VenCode({attrs})>"
+
+
+class Vendor(Base):
+    __tablename__ = 'vendor'
+
+    did = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False, unique=True)
+    note = Column(String(250))
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Vendor({attrs})>"
+
+
+class DistGrid(Base):
+    __tablename__ = 'distgrid'
+
+    did = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False)
+    distgridset_id = Column(Integer, ForeignKey('distgridset.did'),
+                            nullable=False)
+
+    UniqueConstraint('name', 'distgridset_id')
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<DistGrid({attrs})>"
+
+
+class DistGridSet(Base):
+    __tablename__ = 'distgridset'
+
+    did = Column(Integer, primary_key=True)
+    name = Column(String(80, collation='utf8_bin'),
+                  nullable=False, unique=True)
+    system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
+
+    distgrids = relationship(
+        'DistGrid', lazy='joined', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<DistGridSet({attrs})>"
+
+
+class ShelfCode(Base):
+    __tablename__ = 'shelfcode'
+
+    did = Column(Integer, primary_key=True)
+    system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
+    code = Column(String(3), unique=True, nullable=False)
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<ShelfCode({attrs})>"
+
+
+class Wlos(Base):
+    """
+    stores unique wlo numbers that can be used for retrieval of bibs
+    and orders from Sierra and for matching them to Babel records
+    """
+
+    __tablename__ = 'wlo'
+
+    did = Column(String(13), primary_key=True, autoincrement=False)
+    date = Column(DateTime, nullable=False, default=datetime.now())
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Wlo({attrs})>"
+
+
 
 
 def datastore_url():
