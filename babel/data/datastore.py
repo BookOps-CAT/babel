@@ -6,13 +6,17 @@ from contextlib import contextmanager
 
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 import shelve
 
+
+from credentials import get_from_vault
 from data.datastore_values import *
 from data.datastore_worker import insert_or_ignore
+from paths import USER_DATA
 
 DB_DIALECT = 'mysql'
 DB_DRIVER = 'pymysql'
@@ -25,11 +29,12 @@ Base = declarative_base()
 class System(Base):
     __tablename__ = 'system'
     did = Column(Integer, primary_key=True, autoincrement=False)
-    code = Column(String(3), nullable=False, unique=True)
+    name = Column(String(3), nullable=False, unique=True)
 
     def __repr__(self):
-        return "<System(did='%s', code='%s')>" % (
-            self.did, self.code)
+        state = inspect(self)
+        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<System({attrs})>"
 
 
 class Library(Base):
@@ -39,23 +44,22 @@ class Library(Base):
     name = Column(String(8), nullable=False, unique=True)
 
     def __repr__(self):
-        return "<Library(did='%s', code='%s', " \
-            "name='%s')>" % (
-                self.did, self.code, self.name)
+        state = inspect(self)
+        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Library({attrs})>"
 
 
-class Users(Base):
-    __tablename__ = 'users'
+class User(Base):
+    __tablename__ = 'user'
     did = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False, unique=True)
     nyp_code = Column(String(1), nullable=False, default='-')
     bpl_code = Column(String(1), nullable=False, default='-')
 
     def __repr__(self):
-        return "<User(did='%s', name='%s', nyp_code='%s', " \
-            "bpl_code='%s')>" % (
-                self.did, self.name, self.nyp_code,
-                self.bpl_code)
+        state = inspect(self)
+        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<User({attrs})>"
 
 
 class Lang(Base):
@@ -66,8 +70,9 @@ class Lang(Base):
     name = Column(String(50), nullable=False)
 
     def __repr__(self):
-        return "<Lang(did='%s', code='%s', name='%s')>" % (
-            self.did, self.code, self.name)
+        state = inspect(self)
+        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Lang({attrs})>"
 
 
 class Audn(Base):
@@ -78,8 +83,9 @@ class Audn(Base):
     code = Column(String(1), nullable=False, unique=True)
 
     def __repr__(self):
-        return "<Audn(did='%s', name='%s', code='%s')>" % (
-            self.id, self.name, self.code)
+        state = inspect(self)
+        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Audn({attrs})>"
 
 
 class MatType(Base):
@@ -89,36 +95,40 @@ class MatType(Base):
     name = Column(String(25), nullable=False)
 
     def __repr__(self):
-        return "<MatType(did='%s', name='%s')>" % (
-            self.did, self.name)
+        state = inspect(self)
+        attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<MatType({attrs})>"
 
 
 class Branch(Base):
     __tablename__ = 'branch'
 
-    bid = Column(Integer, primary_key=True)
+    did = Column(Integer, primary_key=True)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
     name = Column(String(50))
     code = Column(String(2), nullable=False, unique=True)
 
-    def __repr__(self):
-        return "<Branch(did='%s', system_id='%s', name='%s', code='%s')>" \
-            % (self.did, self.system_id, self.name, self.code)
+    # def __repr__(self):
+    #     state = inspect(self)
+    #     attrs = ', '.join([f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+    #     return f"<Branch({attrs})>"
 
 
 def datastore_url():
     """Windows Cred Vault mod needed below"""
-    user_data = shelve.open('user_data')
+    user_data = shelve.open(USER_DATA)
     if 'db_config' in user_data:
         db_details = user_data['db_config']
+        passw = get_from_vault(
+            db_details['db_name'], db_details['user'])
         db_url = URL(
-            drivername=db_details['dialect'] + '+' + db_details['driver'],
+            drivername=DB_DIALECT + '+' + DB_DRIVER,
             username=db_details['user'],
-            password=db_details['password'],
+            password=passw,
             host=db_details['host'],
             port=db_details['port'],
             database=db_details['db_name'],
-            query={'charset': db_details['charset']}
+            query={'charset': DB_CHARSET}
         )
     else:
         db_url = None
@@ -206,7 +216,7 @@ def create_datastore(
 
     for item in SYSTEM:
         insert_or_ignore(
-            session, System, did=item[0], code=item[1])
+            session, System, did=item[0], name=item[1])
 
     for item in LIBRARY:
         insert_or_ignore(
