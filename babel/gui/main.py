@@ -19,15 +19,15 @@ class Base(Tk):
 
         # container where frames are stacked
         container = Frame(self)
-        container.columnconfigure(2, minsize=20)
-        container.grid()
+        container.columnconfigure(2, minsize=150)
+        container.grid(padx=10)
         # bind shared data between windows
         self.activeW = StringVar()
         self.profile = StringVar()
         self.system = IntVar()  # BPL 1, NYPL 2
 
         # temp, pull from db instead
-        users = [('ALL', 0), ('Libbhy', 1), ('Alex', 2), ('Scott', 3)]
+        users = [('ALL', 0), ('Libbhy', 1), ('Alex', 2), ('Scott', 3), ('Someverylongname', 4)]
 
         img = Image.open('./icons/App-personal-icon.png')
         profileImg = ImageTk.PhotoImage(img)
@@ -36,7 +36,7 @@ class Base(Tk):
         profile.image = profileImg
 
         self.profileLbl = Label(container, textvariable=self.profile)
-        self.profileLbl.grid(row=0, column=1, columnspan=20, sticky='snw')
+        self.profileLbl.grid(row=0, column=1, sticky='snw')
 
         profile.menu = Menu(profile, tearoff=0)
         profile["menu"] = profile.menu
@@ -48,16 +48,16 @@ class Base(Tk):
                 value=name)
 
         systemLbl = Label(container, text='System:')
-        systemLbl.grid(row=0, column=3, sticky='sne')
+        systemLbl.grid(row=0, column=4, sticky='sne')
 
         bplBtn = Radiobutton(
             container, text='BPL', variable=self.system, value=1)
         bplBtn.grid(
-            row=0, column=4, sticky='sne')
+            row=0, column=5, sticky='sne')
         nypBtn = Radiobutton(
             container, text='NYPL', variable=self.system, value=2)
         nypBtn.grid(
-            row=0, column=5, sticky='snw')
+            row=0, column=6, sticky='snw')
 
         self.state = False
         self.bind("<F11>", self.toggle_fullscreen)

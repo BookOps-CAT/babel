@@ -4,6 +4,11 @@ from tkinter.ttk import *
 from PIL import Image, ImageTk
 
 
+from data.datastore import Branch, Lang, MatType, User
+from gui.data_retriever import get_as_list
+from gui.fonts import RFONT
+
+
 class TableView(Frame):
     """
     Shared among settings widgets frame
@@ -14,15 +19,17 @@ class TableView(Frame):
         Frame.__init__(self, parent)
         self.controller = controller
         self.app_data = app_data
+        self.activeW = app_data['activeW']
+        self.activeW.trace('w', self.observer)
         self.profile = app_data['profile']
         self.system = app_data['system']
-        self.gen_list = StringVar()
-        self.det_list = StringVar()
+        self.gen_list_select = StringVar()
+        self.det_list_select = StringVar()
 
         # layout
-        self.columnconfigure(0, minsize=200) # genLst col
+        self.columnconfigure(0, minsize=200)  # genLst col
         self.columnconfigure(2, minsize=5)
-        self.columnconfigure(3, minsize=200) # detLst col
+        self.columnconfigure(3, minsize=200)  # detLst col
 
         # tables list
         Label(self, text='Tables:').grid(
@@ -32,14 +39,25 @@ class TableView(Frame):
             row=1, column=1, rowspan=20, sticky='nsw')
         self.genLst = Listbox(
             self,
+            font=RFONT,
             yscrollcommand=scrollbarA.set)
         self.genLst.bind('<Double-Button-1>', self.populate_detail_list)
         self.genLst.grid(
             row=1, column=0, rowspan=20, sticky='snew')
         scrollbarA['command'] = self.genLst.yview
+        # populate tables list
+        tables = [
+            'Branches',
+            'Grids',
+            'Language',
+            'Material Type',
+            'Selectors',
+            'Shelf Codes']
+        for t in tables:
+            self.genLst.insert(END, t)
 
         # table values list
-        self.detLbl = Label(self, textvariable=self.det_list)
+        self.detLbl = Label(self, textvariable=self.gen_list_select)
         self.detLbl.grid(
             row=0, column=3, sticky='nw')
         scrollbarB = Scrollbar(self, orient=VERTICAL)
@@ -58,10 +76,7 @@ class TableView(Frame):
         addImg = ImageTk.PhotoImage(img)
         self.addBtn = Button(
             self,
-            # style='Regular.TButton',
             image=addImg,
-            # compound=TOP,
-            # text='new',
             command=None)
         self.addBtn.image = addImg
         self.addBtn.grid(
@@ -71,10 +86,7 @@ class TableView(Frame):
         editImg = ImageTk.PhotoImage(img)
         self.editBtn = Button(
             self,
-            # style='Regular.TButton',
             image=editImg,
-            # compound=TOP,
-            # text='new',
             command=None)
         self.editBtn.image = editImg
         self.editBtn.grid(
@@ -84,10 +96,7 @@ class TableView(Frame):
         deleteImg = ImageTk.PhotoImage(img)
         self.deleteBtn = Button(
             self,
-            # style='Regular.TButton',
             image=deleteImg,
-            # compound=TOP,
-            # text='new',
             command=None)
         self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
@@ -97,15 +106,30 @@ class TableView(Frame):
         saveImg = ImageTk.PhotoImage(img)
         self.saveBtn = Button(
             self,
-            # style='Regular.TButton',
             image=saveImg,
-            # compound=TOP,
-            # text='new',
             command=None)
         self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=4, column=5, sticky='sw', padx=20, pady=5)
 
-    def populate_detail_list(self):
-        print('populating')
+    def populate_detail_list(self, *args):
+        table = self.genLst.get(ACTIVE)
+        self.gen_list_select.set(table)
+        if self.system.get():
+            if table == 'Branches':
+                model = Branch
+                kwargs = {'system_id': self.system.get()}
+            elif table == 'Selectors':
+                model = User
+            elif table == 'Material Type':
+                model = MatType
+            elif table == 'Languages':
+                model = Lang
 
+            values = get_values(model, 'name', **kwargs)
+            print(values)
+            
+
+    def observer(self, *args):
+        if self.activeW.get() == 'TableView':
+            pass

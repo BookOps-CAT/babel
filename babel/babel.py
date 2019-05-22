@@ -47,6 +47,7 @@ if __name__ == '__main__':
         app = Base()
         s = Style()
         s.theme_use('xpnative')
+        s.configure('.', font=('device', 12))
         app.iconbitmap('./icons/babel.ico')
         app.title('Babel v.{}'.format(version))
         app.mainloop()
