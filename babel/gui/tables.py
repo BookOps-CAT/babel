@@ -7,37 +7,9 @@ from PIL import Image, ImageTk
 from data.datastore import (Audn, Branch, DistGridSet, DistGrid,
                             MatType, Lang, Library, User, Vendor,
                             VendorCode)
-from gui.data_retriever import get_names
+from gui.data_retriever import get_names, get_record, save_record
 from gui.fonts import RFONT
-
-
-class DetailsView(Frame):
-    """
-    Widget displaying elements of each construct
-    """
-
-    def __init__(self, parent, controller, **app_data):
-        self.parent = parent
-        Frame.__init__(self, parent)
-        self.controller = controller
-        self.app_data = app_data
-        self.activeW = app_data['activeW']
-        self.activeW.trace('w', self.observer)
-        self.profile = app_data['profile']
-        self.system = app_data['system']
-        self.system.trace('w', self.system_observer)
-        self.unit = app_data['unit']
-        self.unit.trace('w', self.unit_observer)
-
-
-    self.system_observer(self, *args):
-        pass
-
-    self.unit_observer(self, *args):
-        pass
-
-    self.oberver(self, *args):
-        pass
+from gui.utils import disable_widgets, enable_widgets
 
 
 class TableView(Frame):
@@ -57,7 +29,12 @@ class TableView(Frame):
         self.system.trace('w', self.system_observer)
         self.gen_list_select = StringVar()
         self.det_list_select = StringVar()
-        list_height = int((self.winfo_screenheight() - 60) / 20)
+        self.det_list_select.trace('w', self.recreate_details_frame)
+        self.records = []
+        list_height = int((self.winfo_screenheight() - 100) / 25)
+
+        # temp
+        self.r = 0
 
         # layout
         self.columnconfigure(0, minsize=200)  # genLst col
@@ -104,7 +81,7 @@ class TableView(Frame):
             font=RFONT,
             height=list_height,
             yscrollcommand=scrollbarB.set)
-        self.detLst.bind('<Double-Button-1>', self.populate_detail_list)
+        self.detLst.bind('<Double-Button-1>', self.show_details)
         self.detLst.grid(
             row=1, column=3, rowspan=40, sticky='snew')
         scrollbarB['command'] = self.detLst.yview
@@ -115,7 +92,7 @@ class TableView(Frame):
         self.addBtn = Button(
             self,
             image=addImg,
-            command=None)
+            command=self.add_record)
         self.addBtn.image = addImg
         self.addBtn.grid(
             row=1, column=5, sticky='sw', padx=20, pady=10)
@@ -145,10 +122,31 @@ class TableView(Frame):
         self.saveBtn = Button(
             self,
             image=saveImg,
-            command=None)
+            command=self.insert_or_update_record)
         self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=4, column=5, sticky='sw', padx=20, pady=5)
+
+        self.initiate_details_frame()
+
+    def identify_model(self, table, **kwargs):
+        if table == 'Selectors':
+            model = User
+        elif table == 'Material Types':
+            model = MatType
+        elif table == 'Languages':
+            model = Lang
+        elif self.system.get():
+            kwargs['system_id'] = self.system.get()
+            if table == 'Branches':
+                model = Branch
+            elif table == 'Grids':
+                model = DistGrid
+            elif table == 'Shelf Codes':
+                model = ShelfCode
+            elif table == 'Vendors':
+                model = Vendor
+        return (model, kwargs)
 
     def populate_detail_list(self, *args):
         # detelet current one
@@ -157,28 +155,97 @@ class TableView(Frame):
         # retrieve data
         table = self.genLst.get(ACTIVE)
         self.gen_list_select.set(table)
-        kwargs = {}
-        if self.system.get():
-            if table == 'Branches':
-                model = Branch
-                kwargs['system_id'] = self.system.get()
-            if table == 'Selectors':
-                model = User
-            if table == 'Material Types':
-                model = MatType
-            if table == 'Languages':
-                model = Lang
-            if table == 'Grids':
-                model = DistGrid
-            if table == 'Shelf Codes':
-                model = ShelfCode
-            if table == 'Vendors':
-                model = Vendor
 
-            # repopulate
-            values = get_names(model, **kwargs)
-            for v in values:
-                self.detLst.insert(END, v)
+        # repopulate
+        model, kwargs = self.identify_model(table)
+        values = get_names(model, **kwargs)
+        for v in values:
+            self.detLst.insert(END, v)
+
+    def show_details(self, *args):
+        table = self.gen_list_select.get()
+        self.det_list_select.set(self.detLst.get(ACTIVE))
+
+        if table == 'Languages':
+            self.show_language()
+
+    def add_record(self):
+        # redo details frame
+        self.recreate_details_frame()
+
+        # activate only when a table is selected
+        table = self.gen_list_select.get()
+        if table == 'Languages':
+            self.langFrame()
+            enable_widgets(self.detFrm.winfo_children())
+
+    def edit_record(self):
+        self.recreate_details_frame()
+        table = self.get_list_select.get()
+        if table == 'Languages':
+            self.show_language()
+
+        enable_widgets(self.detFrm.winfo_children())
+
+    def insert_or_update_record(self):
+        if self.records:
+            for record in self.records:
+                if record.did:
+                    pass
+                    # update existing
+
+        else:
+            # check what table it is
+            table = self.gen_list_select.get()
+            kwargs = {}
+            if table == 'Languages':
+                name = self.nameEnt.get()
+                code = self.codeEnt.get()
+                # validate
+                kwargs = {
+                    'name': name,
+                    'code': code
+                }
+
+            model, kwargs = self.identify_model(table, **kwargs)
+            print(model, kwargs)
+            save_record(
+                model, False, **kwargs)
+        self.populate_detail_list()
+
+    def show_language(self):
+        record = get_record(Lang, name=self.det_list_select.get())
+        self.records = [record]
+        self.langFrame(record.name, record.code)
+
+    def langFrame(self, name='', code=''):
+        Label(self.detFrm, text='name').grid(
+            row=0, column=0, sticky='snw', padx=5, pady=5)
+        Label(self.detFrm, text='code').grid(
+            row=1, column=0, sticky='snw', padx=5, pady=5)
+        self.nameEnt = Entry(
+            self.detFrm,
+            font=RFONT)
+        self.nameEnt.grid(
+            row=0, column=1, columnspan=3, padx=5, pady=5)
+        self.codeEnt = Entry(
+            self.detFrm,
+            font=RFONT,)
+        self.codeEnt.grid(
+            row=1, column=1, columnspan=3, padx=5, pady=5)
+        self.nameEnt.insert(0, name)
+        self.codeEnt.insert(0, code)
+        disable_widgets([self.nameEnt, self.codeEnt])
+
+    def initiate_details_frame(self):
+        # Details frame
+        self.detFrm = LabelFrame(self, text='Values')
+        self.detFrm.grid(row=1, column=6, rowspan=40, sticky='snew', padx=5)
+
+    def recreate_details_frame(self, *args):
+        self.detFrm.destroy()
+        self.records = []
+        self.initiate_details_frame()
 
     def system_observer(self, *args):
         if self.gen_list_select.get():
