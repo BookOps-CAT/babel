@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import messagebox
 
 from PIL import Image, ImageTk
 
@@ -60,6 +61,7 @@ class TableView(Frame):
         scrollbarA['command'] = self.genLst.yview
         # populate tables list
         tables = [
+            'Audineces',
             'Branches',
             'Grids',
             'Languages',
@@ -93,7 +95,7 @@ class TableView(Frame):
         self.addBtn = Button(
             self,
             image=addImg,
-            command=self.add_record)
+            command=self.add_data)
         self.addBtn.image = addImg
         self.addBtn.grid(
             row=1, column=5, sticky='sw', padx=20, pady=10)
@@ -103,7 +105,7 @@ class TableView(Frame):
         self.editBtn = Button(
             self,
             image=editImg,
-            command=None)
+            command=self.edit_data)
         self.editBtn.image = editImg
         self.editBtn.grid(
             row=2, column=5, sticky='sw', padx=20, pady=5)
@@ -123,14 +125,97 @@ class TableView(Frame):
         self.saveBtn = Button(
             self,
             image=saveImg,
-            command=self.insert_or_update_record)
+            command=self.insert_or_update_data)
         self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=4, column=5, sticky='sw', padx=20, pady=5)
 
         self.initiate_details_frame()
 
+    def add_data(self):
+        # redo details frame
+        self.recreate_details_frame()
+
+        # activate only when a table is selected
+        table = self.gen_list_select.get()
+        if table:
+            if table in ('Audiences', 'Branches', 'Languages'):
+                self.simpleDetailFrame()
+
+            enable_widgets(self.detFrm.winfo_children())
+
+    def edit_data(self):
+        self.recreate_details_frame()
+        table = self.gen_list_select.get()
+        if table:
+            if table in ('Audiences', 'Branches', 'Languages'):
+                self.populate_detail_frame(table)
+
+            enable_widgets(self.detFrm.winfo_children())
+
+    def delete_data(self):
+        # ask before deletion
+        if self.records:
+            msg = 'Are you sure you want to delete\n{}?'.format(
+                '\n'.join([str(x) for x in self.records]))
+            if messagebox.askokcancel('Deletion', msg):
+                delete_records(self.records)
+                self.populate_detail_list()
+                self.detFrm.destroy()
+                self.initiate_details_frame()
+                self.records = []
+
+    def insert_or_update_data(self):
+        # check what table it is
+        table = self.gen_list_select.get()
+        kwargs = {}
+        error_msg = False
+        if self.records:
+            for record in self.records:
+                if table in ('Audiences', 'Branches', 'Languages'):
+                    name = self.nameEnt.get().strip()
+                    code = self.codeEnt.get().strip()
+                    kwargs = {
+                        'name': name,
+                        'code': code}
+
+                for k, v in kwargs.items():
+                    if v == '':
+                        kwargs[k] = None
+                model, kwargs = self.identify_model(table, **kwargs)
+                try:
+                    save_record(
+                        model, did=record.did, **kwargs)
+                except BabelError as e:
+                    error_msg = True
+                    messagebox.showerror('Database error', e)
+
+        else:
+            if table in ('Audiences', 'Branches', 'Languages'):
+                name = self.nameEnt.get()
+                code = self.codeEnt.get()
+                # validate
+                kwargs = {
+                    'name': name,
+                    'code': code}
+
+            for k, v in kwargs.items():
+                if v == '':
+                    kwargs[k] = None
+            model, kwargs = self.identify_model(table, **kwargs)
+            try:
+                save_record(
+                    model, **kwargs)
+            except BabelError as e:
+                error_msg = True
+                messagebox.showerror('Database error', e)
+        self.populate_detail_list(redo_detail_frame=False)
+        if not error_msg:
+            disable_widgets(self.detFrm.winfo_children())
+
     def identify_model(self, table, **kwargs):
+        if not kwargs:
+            kwargs = {}
         if table == 'Selectors':
             model = User
         elif table == 'Material Types':
@@ -139,7 +224,9 @@ class TableView(Frame):
             model = Lang
         elif self.system.get():
             kwargs['system_id'] = self.system.get()
-            if table == 'Branches':
+            if table == 'Audineces':
+                model = Audn
+            elif table == 'Branches':
                 model = Branch
             elif table == 'Grids':
                 model = DistGrid
@@ -147,74 +234,25 @@ class TableView(Frame):
                 model = ShelfCode
             elif table == 'Vendors':
                 model = Vendor
+        else:
+            model = None
         return (model, kwargs)
 
     def show_details(self, *args):
         table = self.gen_list_select.get()
         self.det_list_select.set(self.detLst.get(ACTIVE))
 
-        if table == 'Languages':
-            self.show_language()
+        if table in ('Audiences', 'Branches', 'Languages'):
+            self.populate_detail_frame(table)
 
-    def add_record(self):
-        # redo details frame
-        self.recreate_details_frame()
+    def populate_detail_frame(self, table):
+        model = self.identify_model(table)[0]
+        if table in ('Audiences', 'Branches', 'Languages'):
+            record = get_record(model, name=self.det_list_select.get())
+            self.records = [record]
+            self.simpleDetailFrame(record.name, record.code)
 
-        # activate only when a table is selected
-        table = self.gen_list_select.get()
-        if table == 'Languages':
-            self.langFrame()
-            enable_widgets(self.detFrm.winfo_children())
-
-    def edit_record(self):
-        self.recreate_details_frame()
-        table = self.gen_list_select.get()
-        if table == 'Languages':
-            self.show_language()
-
-        enable_widgets(self.detFrm.winfo_children())
-
-    def delete_data(self):
-        # ask before deletion
-        delete_records(self.records)
-        self.populate_detail_list()
-        self.detFrm.destroy()
-        self.initiate_details_frame()
-
-    def insert_or_update_record(self):
-        if self.records:
-            for record in self.records:
-                if record.did:
-                    pass
-                    # update existing
-
-        else:
-            # check what table it is
-            table = self.gen_list_select.get()
-            kwargs = {}
-            if table == 'Languages':
-                name = self.nameEnt.get()
-                code = self.codeEnt.get()
-                # validate
-                kwargs = {
-                    'name': name,
-                    'code': code
-                }
-
-            model, kwargs = self.identify_model(table, **kwargs)
-            try:
-                save_record(
-                    model, False, **kwargs)
-            except BabelError as e:
-                tkMessageBox.showerror('Database error', e)
-        self.populate_detail_list()
-
-    def show_language(self):
-        record = get_record(Lang, name=self.det_list_select.get())
-        self.records = [record]
-        self.langFrame(record.name, record.code)
-
-    def langFrame(self, name='', code=''):
+    def simpleDetailFrame(self, name='', code=''):
         Label(self.detFrm, text='name').grid(
             row=0, column=0, sticky='snw', padx=5, pady=5)
         Label(self.detFrm, text='code').grid(
@@ -243,8 +281,13 @@ class TableView(Frame):
         self.records = []
         self.initiate_details_frame()
 
-    def populate_detail_list(self, *args):
-        # detelet current one
+    def populate_detail_list(self, redo_detail_frame=True, *args):
+        # destroy any detail frame that may display
+        # previous data
+        if redo_detail_frame:
+            self.recreate_details_frame()
+
+        # detelet current detail list
         self.detLst.delete(0, END)
 
         # retrieve data
@@ -253,9 +296,10 @@ class TableView(Frame):
 
         # repopulate
         model, kwargs = self.identify_model(table)
-        values = get_names(model, **kwargs)
-        for v in values:
-            self.detLst.insert(END, v)
+        if model is not None:
+            values = get_names(model, **kwargs)
+            for v in values:
+                self.detLst.insert(END, v)
 
     def system_observer(self, *args):
         if self.gen_list_select.get():
