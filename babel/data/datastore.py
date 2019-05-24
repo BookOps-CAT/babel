@@ -71,7 +71,7 @@ class Lang(Base):
     __tablename__ = 'lang'
 
     did = Column(Integer, primary_key=True)
-    code = Column(String(3), unique=True)
+    code = Column(String(3), unique=True, nullable=False)
     name = Column(String(50), nullable=False)
 
     def __repr__(self):
@@ -98,7 +98,7 @@ class Audn(Base):
 class MatType(Base):
     __tablename__ = 'mattype'
 
-    did = Column(Integer, primary_key=True, )
+    did = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False)
 
     def __repr__(self):
@@ -191,6 +191,7 @@ class ShelfCode(Base):
     did = Column(Integer, primary_key=True)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
     code = Column(String(3), unique=True, nullable=False)
+    name = Column(String(50))
 
     def __repr__(self):
         state = inspect(self)
@@ -215,8 +216,6 @@ class Wlos(Base):
         attrs = ', '.join([
             f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
         return f"<Wlo({attrs})>"
-
-
 
 
 def datastore_url():

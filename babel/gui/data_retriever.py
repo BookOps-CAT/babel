@@ -2,10 +2,14 @@
 Methods to retrieve data from Babel datastore
 """
 
+from sqlalchemy.exc import IntegrityError
+
+
 from data.datastore import session_scope
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    insert_or_ignore, delete_record,
                                    update_record)
+from errors import BabelError
 
 
 def get_names(model, **kwargs):
@@ -25,12 +29,15 @@ def get_record(model, **kwargs):
         return instance
 
 
-def save_record(model, exists, **kwargs):
-    with session_scope() as session:
-        if exists:
-            update_record(session, model, **kwargs)
-        else:
-            insert_or_ignore(session, model, **kwargs)
+def save_record(model, did=None, **kwargs):
+    try:
+        with session_scope() as session:
+            if did:
+                update_record(session, model, did, **kwargs)
+            else:
+                insert_or_ignore(session, model, **kwargs)
+    except IntegrityError as e:
+        raise BabelError(e)
 
 
 def delete_records(records):
