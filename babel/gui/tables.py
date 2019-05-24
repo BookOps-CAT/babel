@@ -7,7 +7,8 @@ from PIL import Image, ImageTk
 from data.datastore import (Audn, Branch, DistGridSet, DistGrid,
                             MatType, Lang, Library, User, Vendor,
                             VendorCode)
-from gui.data_retriever import get_names, get_record, save_record
+from errors import BabelError
+from gui.data_retriever import get_names, get_record, save_record, delete_records
 from gui.fonts import RFONT
 from gui.utils import disable_widgets, enable_widgets
 
@@ -112,7 +113,7 @@ class TableView(Frame):
         self.deleteBtn = Button(
             self,
             image=deleteImg,
-            command=None)
+            command=self.delete_data)
         self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
             row=3, column=5, sticky='sw', padx=20, pady=5)
@@ -148,20 +149,6 @@ class TableView(Frame):
                 model = Vendor
         return (model, kwargs)
 
-    def populate_detail_list(self, *args):
-        # detelet current one
-        self.detLst.delete(0, END)
-
-        # retrieve data
-        table = self.genLst.get(ACTIVE)
-        self.gen_list_select.set(table)
-
-        # repopulate
-        model, kwargs = self.identify_model(table)
-        values = get_names(model, **kwargs)
-        for v in values:
-            self.detLst.insert(END, v)
-
     def show_details(self, *args):
         table = self.gen_list_select.get()
         self.det_list_select.set(self.detLst.get(ACTIVE))
@@ -181,11 +168,18 @@ class TableView(Frame):
 
     def edit_record(self):
         self.recreate_details_frame()
-        table = self.get_list_select.get()
+        table = self.gen_list_select.get()
         if table == 'Languages':
             self.show_language()
 
         enable_widgets(self.detFrm.winfo_children())
+
+    def delete_data(self):
+        # ask before deletion
+        delete_records(self.records)
+        self.populate_detail_list()
+        self.detFrm.destroy()
+        self.initiate_details_frame()
 
     def insert_or_update_record(self):
         if self.records:
@@ -208,9 +202,11 @@ class TableView(Frame):
                 }
 
             model, kwargs = self.identify_model(table, **kwargs)
-            print(model, kwargs)
-            save_record(
-                model, False, **kwargs)
+            try:
+                save_record(
+                    model, False, **kwargs)
+            except BabelError as e:
+                tkMessageBox.showerror('Database error', e)
         self.populate_detail_list()
 
     def show_language(self):
@@ -246,6 +242,20 @@ class TableView(Frame):
         self.detFrm.destroy()
         self.records = []
         self.initiate_details_frame()
+
+    def populate_detail_list(self, *args):
+        # detelet current one
+        self.detLst.delete(0, END)
+
+        # retrieve data
+        table = self.genLst.get(ACTIVE)
+        self.gen_list_select.set(table)
+
+        # repopulate
+        model, kwargs = self.identify_model(table)
+        values = get_names(model, **kwargs)
+        for v in values:
+            self.detLst.insert(END, v)
 
     def system_observer(self, *args):
         if self.gen_list_select.get():

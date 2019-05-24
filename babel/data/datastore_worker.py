@@ -1,14 +1,21 @@
 # datastore transations and methods
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import load_only
 
 
+from errors import BabelError
+
+
 def insert_or_ignore(session, model, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).first()
-    if not instance:
-        instance = model(**kwargs)
-        session.add(instance)
-    return instance
+    try:
+        instance = session.query(model).filter_by(**kwargs).first()
+        if not instance:
+            instance = model(**kwargs)
+            session.add(instance)
+        return instance
+    except IntegrityError as e:
+        raise BabelError(e)
 
 
 def get_column_values(session, model, column, **kwargs):

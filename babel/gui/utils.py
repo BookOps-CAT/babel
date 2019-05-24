@@ -1,4 +1,15 @@
-import Tkinter as tk
+from tkinter import *
+from tkinter.ttk import *
+
+
+def disable_widgets(widgets):
+    for w in widgets:
+        w['state'] = DISABLED
+
+
+def enable_widgets(widgets):
+    for w in widgets:
+        w['state'] = ACTIVE
 
 
 class BusyManager:

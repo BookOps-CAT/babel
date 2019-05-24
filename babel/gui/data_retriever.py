@@ -28,11 +28,13 @@ def get_record(model, **kwargs):
 def save_record(model, exists, **kwargs):
     with session_scope() as session:
         if exists:
-            update_record(session, model, did, **kwargs)
+            update_record(session, model, **kwargs)
         else:
             insert_or_ignore(session, model, **kwargs)
 
-    # def update_record_in_session(session, model, id, **kwargs):
-    # instance = session.query(model).filter_by(did=did).one()
-    # for key, value in kwargs.iteritems():
-    #     setattr(instance, key, value)
+
+def delete_records(records):
+    with session_scope() as session:
+        for record in records:
+            model = type(record)
+            delete_record(session, model, did=record.did)
