@@ -99,7 +99,11 @@ class MatType(Base):
     __tablename__ = 'mattype'
 
     did = Column(Integer, primary_key=True)
-    name = Column(String(25), nullable=False)
+    name = Column(String(25), nullable=False, unique=True)
+    bpl_bib_code = Column(String(1))
+    bpl_ord_code = Column(String(1))
+    nyp_bib_code = Column(String(1))
+    nyp_ord_code = Column(String(1))
 
     def __repr__(self):
         state = inspect(self)
@@ -113,8 +117,10 @@ class Branch(Base):
 
     did = Column(Integer, primary_key=True)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
-    name = Column(String(50))
-    code = Column(String(2), nullable=False, unique=True)
+    name = Column(String(50), unique=True)
+    code = Column(String(2), nullable=False)
+
+    UniqueConstraint('system_id', 'code')
 
     def __repr__(self):
         state = inspect(self)
@@ -123,25 +129,14 @@ class Branch(Base):
         return f"<Branch({attrs})>"
 
 
-class VendorCode(Base):
-    __tablename__ = 'vencode'
-    vendor_id = Column(Integer, ForeignKey('vendor.did'), primary_key=True)
-    system_id = Column(Integer, ForeignKey('system.did'), primary_key=True)
-    code = Column(String(5))
-
-    def __repr__(self):
-        state = inspect(self)
-        attrs = ', '.join([
-            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
-        return f"<VenCode({attrs})>"
-
-
 class Vendor(Base):
     __tablename__ = 'vendor'
 
     did = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
     note = Column(String(250))
+    bpl_code = Column(String(5))
+    nyp_code = Column(String(5))
 
     def __repr__(self):
         state = inspect(self)
@@ -155,7 +150,7 @@ class DistGrid(Base):
 
     did = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
-    distgridset_id = Column(Integer, ForeignKey('distgridset.did'),
+    distgridset_id = Column(Integer, ForeignKey('distset.did'),
                             nullable=False)
 
     UniqueConstraint('name', 'distgridset_id')
@@ -167,8 +162,8 @@ class DistGrid(Base):
         return f"<DistGrid({attrs})>"
 
 
-class DistGridSet(Base):
-    __tablename__ = 'distgridset'
+class DistSet(Base):
+    __tablename__ = 'distset'
 
     did = Column(Integer, primary_key=True)
     name = Column(String(80, collation='utf8_bin'),
@@ -182,7 +177,7 @@ class DistGridSet(Base):
         state = inspect(self)
         attrs = ', '.join([
             f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
-        return f"<DistGridSet({attrs})>"
+        return f"<DistSet({attrs})>"
 
 
 class ShelfCode(Base):
@@ -190,8 +185,58 @@ class ShelfCode(Base):
 
     did = Column(Integer, primary_key=True)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
-    code = Column(String(3), unique=True, nullable=False)
-    name = Column(String(50))
+    code = Column(String(3))
+    name = Column(String(50), nullable=False)
+
+    UniqueConstraint('system_id', 'code')
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<ShelfCode({attrs})>"
+
+
+class FundAudnJoiner(Base):
+    __tablename__ = 'fundaudnjoiner'
+
+    fund_id = Column(Integer, ForeignKey('fund.did'), primary_key=True)
+    audn_id = Column(Integer, ForeignKey('audn.did'), primary_key=True)
+
+
+class FundMatTypeJoiner(Base):
+    __tablename__ = 'fundmattypejoiner'
+
+    fund_id = Column(Integer, ForeignKey('fund.did'), primary_key=True)
+    matType_id = Column(Integer, ForeignKey('mattype.did'), primary_key=True)
+
+
+class FundBranchJoiner(Base):
+    __tablename__ = 'fundbranchjoiner'
+
+    fund_id = Column(Integer, ForeignKey('fund.did'), primary_key=True)
+    branch_id = Column(Integer, ForeignKey('branch.did'), primary_key=True)
+
+
+class Fund(Base):
+    __tablename__ = 'fund'
+
+    did = Column(Integer, primary_key=True)
+    code = Column(String(25), nullable=False)
+    system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
+    describ = Column(String(100))
+
+    UniqueConstraint('code', 'system_id')
+
+    audns = relationship('FundAudnJoiner',
+                         cascade='all, delete-orphan',
+                         lazy='joined')
+    matTypes = relationship('FundMatTypeJoiner',
+                            cascade='all, delete-orphan',
+                            lazy='joined')
+    branches = relationship('FundBranchJoiner',
+                            cascade='all, delete-orphan',
+                            lazy='joined')
 
     def __repr__(self):
         state = inspect(self)
@@ -338,7 +383,20 @@ def create_datastore(
             code=item[1], name=item[2])
 
     for item in MATERIAL:
-        insert_or_ignore(session, MatType, name=item[0])
+        insert_or_ignore(
+            session, MatType,
+            name=item[0],
+            bpl_bib_code=item[1][1],
+            bpl_ord_code=item[1][2],
+            nyp_bib_code=item[2][1],
+            nyp_ord_code=item[2][2])
+
+    for item in USERS:
+        insert_or_ignore(
+            session, User,
+            name=item[0],
+            bpl_code=item[1][1],
+            nyp_code=item[2][1])
 
     session.commit()
     session.close()
