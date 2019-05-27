@@ -22,6 +22,11 @@ def retrieve_record(session, model, **kwargs):
     return instance
 
 
+def retrieve_records(session, model, **kwargs):
+    instances = session.query(model).filter_by(**kwargs).all()
+    return instances
+
+
 def update_record(session, model, did, **kwargs):
     instance = session.query(model).filter_by(did=did).one()
     for key, value in kwargs.items():
