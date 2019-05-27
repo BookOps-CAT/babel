@@ -8,8 +8,9 @@ from PIL import Image, ImageTk
 
 
 from errors import BabelError
-from data.datastore import (Branch, Fund, FundAudnJoiner, FundMatTypeJoiner,
-                            FundBranchJoiner)
+from data.datastore import (Audn, Branch, Fund, FundAudnJoiner,
+                            FundMatTypeJoiner, FundBranchJoiner, Library,
+                            MatType)
 from gui.data_retriever import (get_codes, get_names, get_record,
                                 save_record, delete_records)
 from gui.fonts import RFONT
@@ -205,7 +206,10 @@ class FundView(Frame):
         self.libInBtn = Button(
             self.libraryFrm,
             image=addSImg,
-            command=self.add_condition)
+            command=lambda: self.add_condition(
+                'libLst',
+                self.libOutLst, self.libInLst,
+                self.libOutLst.curselection()))
         self.libInBtn.image = addSImg
         self.libInBtn.grid(
             row=0, column=1, sticky='sw', padx=5, pady=2)
@@ -213,7 +217,10 @@ class FundView(Frame):
         self.libOutBtn = Button(
             self.libraryFrm,
             image=removeSImg,
-            command=self.remove_condition)
+            command=lambda: self.remove_condition(
+                'LibLst',
+                self.libOutLst, self.libInLst,
+                self.libInLst.curselection()))
         self.libOutBtn.image = removeSImg
         self.libOutBtn.grid(
             row=1, column=1, sticky='sw', padx=5, pady=2)
@@ -236,15 +243,17 @@ class FundView(Frame):
             self.audienceFrm,
             font=RFONT,
             height=3,
-            selectmode=MULTIPLE)
-
+            selectmode=EXTENDED)
         self.audnOutLst.grid(
             row=0, column=0, rowspan=2, sticky='snew', padx=2, pady=2)
 
         self.audnInBtn = Button(
             self.audienceFrm,
             image=addSImg,
-            command=self.add_condition)
+            command=lambda: self.add_condition(
+                'audnLst',
+                self.audnOutLst, self.audnInLst,
+                self.audnOutLst.curselection()))
         self.audnInBtn.image = addSImg
         self.audnInBtn.grid(
             row=0, column=1, sticky='sw', padx=5, pady=2)
@@ -252,7 +261,10 @@ class FundView(Frame):
         self.audnOutBtn = Button(
             self.audienceFrm,
             image=removeSImg,
-            command=self.remove_condition)
+            command=lambda: self.remove_condition(
+                'audnLst',
+                self.audnOutLst, self.audnInLst,
+                self.audnInLst.curselection()))
         self.audnOutBtn.image = removeSImg
         self.audnOutBtn.grid(
             row=1, column=1, sticky='sw', padx=5, pady=2)
@@ -261,28 +273,31 @@ class FundView(Frame):
             self.audienceFrm,
             font=RFONT,
             height=2,
-            selectmode=MULTIPLE)
+            selectmode=EXTENDED)
         self.audnInLst.grid(
             row=0, column=2, rowspan=2, sticky='snew', padx=2, pady=2)
 
       # material type
         self.mattypeFrm = LabelFrame(self.detFrm, text='Material type')
         self.mattypeFrm.grid(
-            row=5, column=6, rowspan=6, columnspan=5,
+            row=5, column=6, rowspan=7, columnspan=5,
             sticky='snew', padx=5, pady=5)
 
         self.mattypeOutLst = Listbox(
             self.mattypeFrm,
             font=RFONT,
-            height=6,
-            selectmode=MULTIPLE)
+            height=7,
+            selectmode=EXTENDED)
         self.mattypeOutLst.grid(
-            row=0, column=0, rowspan=6, sticky='snew', padx=2, pady=2)
+            row=0, column=0, rowspan=7, sticky='snew', padx=2, pady=2)
 
         self.mattypeInBtn = Button(
             self.mattypeFrm,
             image=addSImg,
-            command=self.add_condition)
+            command=lambda: self.add_condition(
+                'mattypeLst',
+                self.mattypeOutLst, self.mattypeInLst,
+                self.mattypeOutLst.curselection()))
         self.mattypeInBtn.image = addSImg
         self.mattypeInBtn.grid(
             row=0, column=1, sticky='sw', padx=5, pady=2)
@@ -290,7 +305,10 @@ class FundView(Frame):
         self.mattypeOutBtn = Button(
             self.mattypeFrm,
             image=removeSImg,
-            command=self.remove_condition)
+            command=lambda: self.remove_condition(
+                'mattypesLst',
+                self.mattypeOutLst, self.mattypeInLst,
+                self.mattypeInLst.curselection()))
         self.mattypeOutBtn.image = removeSImg
         self.mattypeOutBtn.grid(
             row=1, column=1, sticky='sw', padx=5, pady=2)
@@ -299,9 +317,9 @@ class FundView(Frame):
             self.mattypeFrm,
             font=RFONT,
             height=6,
-            selectmode=MULTIPLE)
+            selectmode=EXTENDED)
         self.mattypeInLst.grid(
-            row=0, column=2, rowspan=6, sticky='snew', padx=2, pady=2)
+            row=0, column=2, rowspan=7, sticky='snew', padx=2, pady=2)
 
     def add_data(self):
         pass
@@ -379,6 +397,31 @@ class FundView(Frame):
         for branch in branches:
             self.branchOutLst.insert(END, branch)
 
+    def display_library(self):
+        mlogger.debug('Displaying library.')
+        self.libOutLst.delete(0, END)
+        self.libInLst.delete(0, END)
+        if self.system.get() == 2:
+            libraries = get_names(Library)
+            for library in libraries:
+                self.libOutLst.insert(END, library)
+
+    def display_audiences(self):
+        mlogger.debug('Displaying audiences.')
+        self.audnOutLst.delete(0, END)
+        self.audnInLst.delete(0, END)
+        audns = get_names(Audn)
+        for audn in sorted(audns):
+            self.audnOutLst.insert(END, audn)
+
+    def display_mattypes(self):
+        mlogger.debug('Displaying mattypes.')
+        self.mattypeOutLst.delete(0, END)
+        self.mattypeInLst.delete(0, END)
+        mattypes = get_names(MatType)
+        for mattype in sorted(mattypes):
+            self.mattypeOutLst.insert(END, mattype)
+
     def branch_selection_observer(self, *args):
         if self.system.get():
             if self.all_branches.get() == 1:
@@ -407,6 +450,16 @@ class FundView(Frame):
 
         if self.activeW.get() == 'FundView':
             self.display_branches()
+            self.display_audiences()
+            self.display_mattypes()
+
+            # enable/disable widgets for library
+            if self.system.get() == 1:
+                self.display_library()
+                disable_widgets(self.libraryFrm.winfo_children())
+            elif self.system.get() == 2:
+                enable_widgets(self.libraryFrm.winfo_children())
+                self.display_library()
 
     def observer(self, *args):
         if self.activeW.get() == 'FundView':
@@ -415,5 +468,9 @@ class FundView(Frame):
 
             # pull data from data store only
             self.display_funds()
+            self.display_audiences()
+            self.display_mattypes()
             if self.system.get():
                 self.display_branches()
+
+
