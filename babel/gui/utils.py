@@ -9,7 +9,7 @@ def disable_widgets(widgets):
 
 def enable_widgets(widgets):
     for w in widgets:
-        w['state'] = ACTIVE
+        w['state'] = NORMAL
 
 
 class BusyManager:
