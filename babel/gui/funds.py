@@ -8,8 +8,10 @@ from PIL import Image, ImageTk
 
 
 from errors import BabelError
-from gui.data_retriever import (get_names, get_record, save_record,
-                                delete_records)
+from data.datastore import (Branch, Fund, FundAudnJoiner, FundMatTypeJoiner,
+                            FundBranchJoiner)
+from gui.data_retriever import (get_codes, get_names, get_record,
+                                save_record, delete_records)
 from gui.fonts import RFONT
 from gui.utils import disable_widgets, enable_widgets
 from paths import USER_DATA
@@ -36,13 +38,16 @@ class FundView(Frame):
         list_height = int((self.winfo_screenheight() - 100) / 25)
 
         self.active_fund = StringVar()
+        self.all_branches = IntVar()
+        self.all_branches.trace('w', self.branch_selection_observer)
+        self.all_branchesLbl = StringVar()
+        self.all_branchesLbl.set('select all')
 
         # setup small add/remove icons
         img = Image.open('./icons/Action-edit-add-iconS.png')
         addSImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-remove-iconS.png')
         removeSImg = ImageTk.PhotoImage(img)
-
 
         # tables list
         Label(self, text='Funds:').grid(
@@ -131,64 +136,71 @@ class FundView(Frame):
             row=1, column=0, rowspan=10, columnspan=5,
             sticky='snew', padx=5)
 
+        Checkbutton(
+            self.branchesFrm, textvariable=self.all_branchesLbl,
+            variable=self.all_branches).grid(row=0, column=0, sticky='snw')
+
         scrollbarB = Scrollbar(self.branchesFrm, orient=VERTICAL)
         scrollbarB.grid(
-            row=0, column=1, rowspan=20, sticky='nsw', pady=2)
+            row=1, column=1, rowspan=20, sticky='nsw', pady=2)
         self.branchOutLst = Listbox(
             self.branchesFrm,
             font=RFONT,
             height=list_height,
-            selectmode=MULTIPLE,
+            selectmode=EXTENDED,
             yscrollcommand=scrollbarB.set)
-        self.branchOutLst.bind('<Double-Button-1>', self.add_condition)
         self.branchOutLst.grid(
-            row=0, column=0, rowspan=20, sticky='snew', padx=2, pady=2)
+            row=1, column=0, rowspan=20, sticky='snew', padx=2, pady=2)
         scrollbarB['command'] = self.branchOutLst.yview
 
         self.branchInBtn = Button(
             self.branchesFrm,
             image=addSImg,
-            command=self.add_condition)
+            command=lambda: self.add_condition(
+                'branchLst',
+                self.branchOutLst, self.branchInLst,
+                self.branchOutLst.curselection()))
         self.branchInBtn.image = addSImg
         self.branchInBtn.grid(
-            row=0, column=2, sticky='sw', padx=2, pady=2)
+            row=1, column=2, sticky='sw', padx=2, pady=2)
 
         self.branchOutBtn = Button(
             self.branchesFrm,
             image=removeSImg,
-            command=self.remove_condition)
+            command=lambda: self.remove_condition(
+                'branchLst',
+                self.branchOutLst, self.branchInLst,
+                self.branchInLst.curselection()))
         self.branchOutBtn.image = removeSImg
         self.branchOutBtn.grid(
-            row=1, column=2, sticky='sw', padx=2, pady=2)
+            row=2, column=2, sticky='sw', padx=2, pady=2)
 
         scrollbarC = Scrollbar(self.branchesFrm, orient=VERTICAL)
         scrollbarC.grid(
-            row=0, column=4, rowspan=20, sticky='nsw', pady=2)
+            row=1, column=4, rowspan=20, sticky='nsw', pady=2)
         self.branchInLst = Listbox(
             self.branchesFrm,
             font=RFONT,
             height=list_height,
-            selectmode=MULTIPLE,
+            selectmode=EXTENDED,
             yscrollcommand=scrollbarC.set)
-        self.branchInLst.bind('<Double-Button-1>', self.remove_condition)
         self.branchInLst.grid(
-            row=0, column=3, rowspan=20, sticky='snew', padx=2, pady=2)
+            row=1, column=3, rowspan=20, sticky='snew', padx=2, pady=2)
         scrollbarC['command'] = self.branchInLst.yview
 
         # library
         self.libraryFrm = LabelFrame(self.detFrm, text='Library')
         self.libraryFrm.grid(
             row=1, column=7, rowspan=2, columnspan=5,
-            sticky='snew', padx=5, pady=5)
+            sticky='snew', padx=5)
 
         self.libOutLst = Listbox(
             self.libraryFrm,
             font=RFONT,
-            height=2,
-            selectmode=MULTIPLE)
-        self.libOutLst.bind('<Double-Button-1>', self.add_condition)
+            height=3,
+            selectmode=EXTENDED)
         self.libOutLst.grid(
-            row=0, column=0, rowspan=2, sticky='snew', padx=2, pady=2)
+            row=0, column=0, rowspan=3, sticky='snew', padx=2, pady=2)
 
         self.libInBtn = Button(
             self.libraryFrm,
@@ -210,15 +222,14 @@ class FundView(Frame):
             self.libraryFrm,
             font=RFONT,
             height=2,
-            selectmode=MULTIPLE)
-        self.libInLst.bind('<Double-Button-1>', self.remove_condition)
+            selectmode=EXTENDED)
         self.libInLst.grid(
             row=0, column=2, rowspan=2, sticky='snew', padx=2, pady=2)
 
       # audience
         self.audienceFrm = LabelFrame(self.detFrm, text='Audience')
         self.audienceFrm.grid(
-            row=3, column=7, rowspan=3, columnspan=5,
+            row=3, column=7, rowspan=2, columnspan=5,
             sticky='snew', padx=5, pady=5)
 
         self.audnOutLst = Listbox(
@@ -226,7 +237,7 @@ class FundView(Frame):
             font=RFONT,
             height=3,
             selectmode=MULTIPLE)
-        self.audnOutLst.bind('<Double-Button-1>', self.add_condition)
+
         self.audnOutLst.grid(
             row=0, column=0, rowspan=2, sticky='snew', padx=2, pady=2)
 
@@ -251,24 +262,22 @@ class FundView(Frame):
             font=RFONT,
             height=2,
             selectmode=MULTIPLE)
-        self.audnInLst.bind('<Double-Button-1>', self.remove_condition)
         self.audnInLst.grid(
             row=0, column=2, rowspan=2, sticky='snew', padx=2, pady=2)
 
       # material type
         self.mattypeFrm = LabelFrame(self.detFrm, text='Material type')
         self.mattypeFrm.grid(
-            row=6, column=7, rowspan=3, columnspan=5,
+            row=5, column=6, rowspan=6, columnspan=5,
             sticky='snew', padx=5, pady=5)
 
         self.mattypeOutLst = Listbox(
             self.mattypeFrm,
             font=RFONT,
-            height=3,
+            height=6,
             selectmode=MULTIPLE)
-        self.mattypeOutLst.bind('<Double-Button-1>', self.add_condition)
         self.mattypeOutLst.grid(
-            row=0, column=0, rowspan=2, sticky='snew', padx=2, pady=2)
+            row=0, column=0, rowspan=6, sticky='snew', padx=2, pady=2)
 
         self.mattypeInBtn = Button(
             self.mattypeFrm,
@@ -289,11 +298,10 @@ class FundView(Frame):
         self.mattypeInLst = Listbox(
             self.mattypeFrm,
             font=RFONT,
-            height=2,
+            height=6,
             selectmode=MULTIPLE)
-        self.mattypeInLst.bind('<Double-Button-1>', self.remove_condition)
         self.mattypeInLst.grid(
-            row=0, column=2, rowspan=2, sticky='snew', padx=2, pady=2)
+            row=0, column=2, rowspan=6, sticky='snew', padx=2, pady=2)
 
     def add_data(self):
         pass
@@ -313,22 +321,99 @@ class FundView(Frame):
     def select_library(self):
         pass
 
-    def add_condition(self):
-        pass
+    def add_condition(self, category, widgetOut, widgetIn, selected):
+        mlogger.debug('Adding condition(s) to {} initaited.'.format(
+            category))
+        values = [widgetOut.get(x) for x in selected]
+        mlogger.debug('Selected condition values: {}'.format(values))
 
-    def remove_condition(self):
-        pass
+        # remove them from out widget
+        for x in reversed(selected):
+            mlogger.debug('Deleting selected {}'.format(x))
+            widgetOut.delete(x)
+
+        # sort and add them to in widget
+        in_values = list(widgetIn.get(0, END))
+        mlogger.debug('Existing values: {}'.format(in_values))
+        widgetIn.delete(0, END)
+        in_values.extend(values)
+        mlogger.debug('Existing values after appending: {}'.format(
+            in_values))
+
+        for value in sorted(in_values):
+            widgetIn.insert(END, value)
+
+    def remove_condition(self, category, widgetOut, widgetIn, selected):
+        mlogger.debug('Removing condition(s) from {} initiated'.format(
+            category))
+
+        values = [widgetIn.get(x) for x in selected]
+        mlogger.debug('Selected condiction values: {}'.format(values))
+
+        # remove from in widget
+        for x in reversed(selected):
+            widgetIn.delete(x)
+
+        # sort and add them to out widget
+        out_values = list(widgetOut.get(0, END))
+        mlogger.debug('Existing values: {}'.format(out_values))
+        widgetOut.delete(0, END)
+        out_values.extend(values)
+        mlogger.debug('Existing values after appending: {}'.format(
+            out_values))
+
+        for value in sorted(out_values):
+            widgetOut.insert(END, value)
+
+    def display_funds(self):
+        self.fundLst.delete(0, END)
+        funds = get_codes(Fund, system_id=self.system.get())
+        for fund in sorted(funds):
+            self.fundLst.insert(END, fund)
+
+    def display_branches(self):
+        mlogger.debug('Displaying branches.')
+        self.branchOutLst.delete(0, END)
+        self.branchInLst.delete(0, END)
+        branches = get_codes(Branch, system_id=self.system.get())
+        for branch in branches:
+            self.branchOutLst.insert(END, branch)
+
+    def branch_selection_observer(self, *args):
+        if self.system.get():
+            if self.all_branches.get() == 1:
+                # change label
+                self.all_branchesLbl.set('deselect all')
+                # remove any existing selection
+                self.branchInLst.delete(0, END)
+                # re-retrive branches in case some were
+                # already selected
+                self.display_branches()
+                branches = self.branchOutLst.get(0, END)
+                self.branchOutLst.delete(0, END)
+                for branch in branches:
+                    self.branchInLst.insert(END, branch)
+
+            elif self.all_branches.get() == 0:
+                self.all_branchesLbl.set('select all')
+                self.branchInLst.delete(0, END)
+                self.branchOutLst.delete(0, END)
+                self.display_branches()
 
     def system_observer(self, *args):
         user_data = shelve.open(USER_DATA)
         user_data['system'] = self.system.get()
         user_data.close()
-        if self.system.get() == 1:
-            # show BPL funds
-            print('BPL')
-        if self.system.get() == 2:
-            print('NYPL')
+
+        if self.activeW.get() == 'FundView':
+            self.display_branches()
 
     def observer(self, *args):
         if self.activeW.get() == 'FundView':
             self.profile.set('All users')
+            self.all_branches.set(0)
+
+            # pull data from data store only
+            self.display_funds()
+            if self.system.get():
+                self.display_branches()

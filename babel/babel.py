@@ -5,7 +5,6 @@ import logging.config
 import logging.handlers
 # import sys
 from tkinter.ttk import Style
-from tkinter import StringVar
 import shelve
 
 from gui.main import Base
