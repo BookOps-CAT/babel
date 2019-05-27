@@ -218,10 +218,15 @@ BRANCH = [
 ]
 
 MATERIAL = [
-    ('print', (1, 'a', 'b'), (2, 'a', 'b')),
-    ('dvd', (1, 'h', 'a'), (2, 'v', 'v')),
-    ('audiobook', (1, 'i', 'i'), (2, 'u', 'i')),
-    ('music CD', (1, 'j', 'z'), (2, 'y', 'w')),
-    ('graphic novel', (1, 'a', 'g'), (2, 'a', 'b')),
-    ('board book', (1, 'a', 'd'), (2, 'a', 'b'))
+    ('print', ('BPL', 'a', 'b'), ('NYPL', 'a', 'b')),
+    ('dvd', ('BPL', 'h', 'a'), ('NYPL', 'v', 'v')),
+    ('audiobook', ('BPL', 'i', 'i'), ('NYPL', 'u', 'i')),
+    ('music CD', ('BPL', 'j', 'z'), ('NYPL', 'y', 'w')),
+    ('graphic novel', ('BPL', 'a', 'g'), ('NYPL', 'a', 'b')),
+    ('board book', ('BPL', 'a', 'd'), ('NYPL', 'a', 'b'))
+]
+
+
+USERS = [
+    ('generic', ('BPL', '-'), ('NYPL', '-'))
 ]
