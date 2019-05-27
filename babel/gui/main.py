@@ -3,9 +3,13 @@ from tkinter.ttk import *
 
 from PIL import Image, ImageTk
 
+
+from data.datastore import User
+from gui.data_retriever import get_names
 from gui.home import HomeView
 from gui.reports import ReportView
 from gui.tables import TableView
+from gui.funds import FundView
 
 
 class Base(Tk):
@@ -19,15 +23,12 @@ class Base(Tk):
 
         # container where frames are stacked
         container = Frame(self)
-        container.columnconfigure(2, minsize=150)
+        container.columnconfigure(1, minsize=150)
         container.grid(padx=10)
         # bind shared data between windows
         self.activeW = StringVar()
         self.profile = StringVar()
         self.system = IntVar()  # BPL 1, NYPL 2
-
-        # temp, pull from db instead
-        users = [('ALL', 0), ('Libbhy', 1), ('Alex', 2), ('Scott', 3), ('Someverylongname', 4)]
 
         img = Image.open('./icons/App-personal-icon.png')
         profileImg = ImageTk.PhotoImage(img)
@@ -36,24 +37,27 @@ class Base(Tk):
         profile.image = profileImg
 
         self.profileLbl = Label(container, textvariable=self.profile)
-        self.profileLbl.grid(row=0, column=1, sticky='snw')
+        self.profileLbl.grid(row=0, column=1, columnspan=3, sticky='snw')
 
         profile.menu = Menu(profile, tearoff=0)
         profile["menu"] = profile.menu
 
-        for name, uid in users:
+        # pull from datastore as tuple(did, name)
+        users = get_names(User)
+        users.insert(0, 'All users')
+        for name in users:
             profile.menu.add_radiobutton(
                 label=name,
                 variable=self.profile,
                 value=name)
 
         systemLbl = Label(container, text='System:')
-        systemLbl.grid(row=0, column=4, sticky='sne')
+        systemLbl.grid(row=0, column=4, sticky='snw')
 
         bplBtn = Radiobutton(
             container, text='BPL', variable=self.system, value=1)
         bplBtn.grid(
-            row=0, column=5, sticky='sne')
+            row=0, column=5, sticky='snw')
         nypBtn = Radiobutton(
             container, text='NYPL', variable=self.system, value=2)
         nypBtn.grid(
@@ -85,6 +89,9 @@ class Base(Tk):
             label='Grids',
             command=None)
         navig_menu.add_command(
+            label='Funds',
+            command=lambda: self.show_frame('FundView'))
+        navig_menu.add_command(
             label='Tables',
             command=lambda: self.show_frame('TableView'))
         navig_menu.add_command(
@@ -110,7 +117,7 @@ class Base(Tk):
 
         # retrieve current profile from user_data and set below
         # !!!! code needed
-        self.profile.set('ALL')
+        self.profile.set('All users')
         self.app_data = {
             'activeW': self.activeW,
             'profile': self.profile,
@@ -118,14 +125,15 @@ class Base(Tk):
 
         # spawn Babel frames
         self.frames = {}
-        for F in (HomeView, ReportView, TableView):
+        for F in (FundView, HomeView, ReportView, TableView):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
                       **self.app_data)
             self.frames[page_name] = frame
 
             # put all windows in the same location
-            frame.grid(row=1, column=0, columnspan=20, sticky='snew', padx=5, pady=5)
+            frame.grid(
+                row=1, column=0, columnspan=20, sticky='snew', padx=5, pady=5)
 
         # lift to the top main window
         self.show_frame('HomeView')
