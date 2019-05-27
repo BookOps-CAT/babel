@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from data.datastore import session_scope
 from data.datastore_worker import (get_column_values, retrieve_record,
+                                   retrieve_records,
                                    insert_or_ignore, delete_record,
                                    update_record)
 from errors import BabelError
@@ -27,6 +28,13 @@ def get_record(model, **kwargs):
         instance = retrieve_record(session, model, **kwargs)
         session.expunge(instance)
         return instance
+
+
+def get_records(model, **kwargs):
+    with session_scope() as session:
+        instances = retrieve_records(session, model, **kwargs)
+        session.expunge(instances)
+        return instances
 
 
 def save_record(model, did=None, **kwargs):
