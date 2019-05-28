@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from datetime import datetime
 
 from sqlalchemy import (DateTime, Column, ForeignKey, Integer,
-                        String, UniqueConstraint)
+                        String, Index, UniqueConstraint)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
@@ -114,13 +114,14 @@ class MatType(Base):
 
 class Branch(Base):
     __tablename__ = 'branch'
+    __table_args__ = (
+        UniqueConstraint('code', 'system_id', name='uix_branch'),
+        Index('ix_branch', 'code', 'system_id', unique=True))
 
     did = Column(Integer, primary_key=True)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
-    name = Column(String(50), unique=True)
+    name = Column(String(50))
     code = Column(String(2), nullable=False)
-
-    UniqueConstraint('system_id', 'code')
 
     def __repr__(self):
         state = inspect(self)
@@ -133,7 +134,7 @@ class Vendor(Base):
     __tablename__ = 'vendor'
 
     did = Column(Integer, primary_key=True)
-    name = Column(String(50), nullable=False, unique=True)
+    name = Column(String(50), nullable=False, unique=True, index=True)
     note = Column(String(250))
     bpl_code = Column(String(5))
     nyp_code = Column(String(5))
@@ -147,13 +148,14 @@ class Vendor(Base):
 
 class DistGrid(Base):
     __tablename__ = 'distgrid'
+    __table_args__ = (
+        UniqueConstraint(
+            'name', 'distgridset_id', name='uix_distgrid'), )
 
     did = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
     distgridset_id = Column(Integer, ForeignKey('distset.did'),
                             nullable=False)
-
-    UniqueConstraint('name', 'distgridset_id')
 
     def __repr__(self):
         state = inspect(self)
@@ -164,10 +166,12 @@ class DistGrid(Base):
 
 class DistSet(Base):
     __tablename__ = 'distset'
+    __table_args__ = (
+        UniqueConstraint(
+            'name', 'system_id', name='uix_distset'), )
 
     did = Column(Integer, primary_key=True)
-    name = Column(String(80, collation='utf8_bin'),
-                  nullable=False, unique=True)
+    name = Column(String(80, collation='utf8_bin'), nullable=False)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
 
     distgrids = relationship(
@@ -182,13 +186,13 @@ class DistSet(Base):
 
 class ShelfCode(Base):
     __tablename__ = 'shelfcode'
+    __table_args__ = (
+        UniqueConstraint('code', 'system_id', name='uix_shelfcode'), )
 
     did = Column(Integer, primary_key=True)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
     code = Column(String(3))
     name = Column(String(50), nullable=False)
-
-    UniqueConstraint('system_id', 'code')
 
     def __repr__(self):
         state = inspect(self)
@@ -227,13 +231,14 @@ class FundBranchJoiner(Base):
 
 class Fund(Base):
     __tablename__ = 'fund'
+    __table_args__ = (
+        UniqueConstraint('code', 'system_id', name='uix_fund'),
+        Index('ix_fund', 'code', 'system_id', unique=True))
 
     did = Column(Integer, primary_key=True)
-    code = Column(String(25), nullable=False)
+    code = Column(String(25))
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
     describ = Column(String(100))
-
-    UniqueConstraint('code', 'system_id')
 
     audns = relationship('FundAudnJoiner',
                          cascade='all, delete-orphan',
@@ -244,6 +249,10 @@ class Fund(Base):
     branches = relationship('FundBranchJoiner',
                             cascade='all, delete-orphan',
                             lazy='joined')
+
+    libraries = relationship('FundLibraryJoiner',
+                             cascade='all, delete-orphan',
+                             lazy='joined')
 
     def __repr__(self):
         state = inspect(self)
@@ -301,7 +310,6 @@ class DataAccessLayer:
 
     def connect(self):
         self.engine = create_engine(self.db_url)
-        # Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
 
