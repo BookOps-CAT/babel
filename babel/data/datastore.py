@@ -243,10 +243,12 @@ class Fund(Base):
     audns = relationship('FundAudnJoiner',
                          cascade='all, delete-orphan',
                          lazy='joined')
-    matTypes = relationship('FundMatTypeJoiner',
+
+    branches = relationship('FundBranchJoiner',
                             cascade='all, delete-orphan',
                             lazy='joined')
-    branches = relationship('FundBranchJoiner',
+
+    matTypes = relationship('FundMatTypeJoiner',
                             cascade='all, delete-orphan',
                             lazy='joined')
 

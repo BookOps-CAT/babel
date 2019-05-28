@@ -1,18 +1,23 @@
 """
 Methods to retrieve data from Babel datastore
 """
+import logging
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import UnmappedInstanceError
 
 
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
-                            FundLibraryJoiner, FundMatTypeJoiner, FundBranchJoiner,
-                            Library, MatType)
+                            FundLibraryJoiner, FundMatTypeJoiner,
+                            FundBranchJoiner, Library, MatType)
 from data.datastore_worker import (get_column_values, retrieve_record,
-                                   retrieve_records,
+                                   retrieve_records, insert,
                                    insert_or_ignore, delete_record,
                                    update_record)
 from errors import BabelError
+
+
+mlogger = logging.getLogger('babel_logger')
 
 
 def get_names(model, **kwargs):
@@ -38,8 +43,13 @@ def get_codes(model, **kwargs):
 def get_record(model, **kwargs):
     with session_scope() as session:
         instance = retrieve_record(session, model, **kwargs)
-        session.expunge(instance)
-        return instance
+        try:
+            session.expunge(instance)
+            return instance
+        except UnmappedInstanceError:
+            pass
+        finally:
+            return instance
 
 
 def get_records(model, **kwargs):
@@ -60,54 +70,78 @@ def save_record(model, did=None, **kwargs):
         raise BabelError(e)
 
 
-def save_fund(**kwargs):
+def save_new_fund(**kwargs):
     # if something goes wrong this method should rollback all
     # inserts; figure out and test!!!!
 
     for k, v in kwargs.items():
         if not v:
-            kwargs[k] = None
+            if k == 'libraries':
+                kwargs[k] = []
+            elif k == 'audns':
+                kwargs[k] = []
+            elif k == 'branches':
+                kwargs[k] = []
+            elif k == 'matTypes':
+                kwargs[k] = []
+            else:
+                kwargs[k] = None
+
+    mlogger.info('Saving new fund: {}'.format(
+        kwargs))
 
     with session_scope() as session:
-        fund_rec = insert_or_ignore(
+        # check if exists first
+        rec = retrieve_record(
             session, Fund,
             code=kwargs['code'],
-            describ=kwargs['describ'],
             system_id=kwargs['system_id'])
-        session.flush()
+        if rec:
+            msg = 'Fund record with code: {} already exists.'.format(
+                kwargs['code'])
+            mlogger.info(msg)
+            raise BabelError('Database Error', msg)
+        else:
+            branches = []
+            for code in kwargs['branches']:
+                rec = retrieve_record(
+                    session, Branch, code=code, system_id=kwargs['system_id'])
+                branches.append(
+                    FundBranchJoiner(branch_id=rec.did))
 
-        if kwargs['system_id'] == 2:
-            for name in kwargs['library']:
-                lib_rec = retrieve_record(session, Library, name=name)
-                insert_or_ignore(
-                    session, FundLibraryJoiner,
-                    fund_id=fund_rec.did,
-                    library_id=lib_rec.did)
+            libraries = []
+            for name in kwargs['libraries']:
+                rec = retrieve_record(
+                    session, Library, name=name)
+                libraries.append(FundLibraryJoiner, library_id=rec.did)
 
-        for name in kwargs['audn']:
-            audn_rec = retrieve_record(
-                session, Audn, name=name)
-            insert_or_ignore(
-                session, FundAudnJoiner,
-                fund_id=fund_rec.did,
-                audn_id=audn_rec.did)
+            audns = []
+            for name in kwargs['audns']:
+                rec = retrieve_record(
+                    session, Audn, name=name)
+                audns.append(
+                    FundAudnJoiner(audn_id=rec.did))
 
-        for code in kwargs['branch']:
-            branch_rec = retrieve_record(
-                session, Branch, code=code)
-            insert_or_ignore(
-                session, FundBranchJoiner,
-                fund_id=fund_rec.did,
-                branch_id=branch_rec.did)
+            matTypes = []
+            for name in kwargs['matTypes']:
+                rec = retrieve_record(
+                    session, MatType, name=name)
+                matTypes.append(
+                    FundMatTypeJoiner(matType_id=rec.did))
 
-        for name in kwargs['mattype']:
-            mattype_rec = retrieve_record(
-                session, MatType,
-                name=name)
-            insert_or_ignore(
-                session, FundMatTypeJoiner,
-                fund_id=fund_rec.did,
-                matType_id=mattype_rec.did)
+            fund_rec = insert(
+                session, Fund,
+                code=kwargs['code'],
+                describ=kwargs['describ'],
+                system_id=kwargs['system_id'],
+                audns=audns,
+                branches=branches,
+                matTypes=matTypes,
+                libraries=libraries)
+
+            mlogger.info(
+                'Fund {} saved successfully with did={}.'.format(
+                    fund_rec.code, fund_rec.did))
 
 
 def delete_records(records):

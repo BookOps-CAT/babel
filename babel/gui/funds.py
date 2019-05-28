@@ -12,7 +12,7 @@ from data.datastore import (Audn, Branch, Fund, FundAudnJoiner,
                             FundMatTypeJoiner, FundBranchJoiner, Library,
                             MatType)
 from gui.data_retriever import (get_codes, get_names, get_record,
-                                save_fund, save_record, delete_records)
+                                save_new_fund, save_record, delete_records)
 from gui.fonts import RFONT
 from gui.utils import disable_widgets, enable_widgets
 from paths import USER_DATA
@@ -64,7 +64,7 @@ class FundView(Frame):
             height=list_height,
             selectmode=SINGLE,
             yscrollcommand=scrollbarA.set)
-        self.fundLst.bind('<Double-Button-1>', self.active_fund)
+        self.fundLst.bind('<Double-Button-1>', self.show_fund)
         self.fundLst.grid(
             row=1, column=0, rowspan=40, sticky='snew')
         scrollbarA['command'] = self.fundLst.yview
@@ -354,6 +354,10 @@ class FundView(Frame):
         self.mattypeInLst.grid(
             row=0, column=2, rowspan=7, sticky='snew', padx=2, pady=2)
 
+    def show_fund(self):
+        self.active_fund.set(self.fundLst.get(ACTIVE))
+
+
     def add_data(self):
         self.fund_code.set('')
         self.fund_desc.set('')
@@ -381,14 +385,19 @@ class FundView(Frame):
             missing.append('valid material types')
 
         if not missing:
-            save_fund(
-                system_id=self.system.get(),
-                code=self.fund_code.get().strip(),
-                describ=self.fund_desc.get().strip(),
-                branch=self.branchInLst.get(0, END),
-                library=self.libInLst.get(0, END),
-                audn=self.audnInLst.get(0, END),
-                mattype=self.mattypeInLst.get(0, END))
+            try:
+                kwargs = dict(
+                    system_id=self.system.get(),
+                    code=self.fund_code.get().strip(),
+                    describ=self.fund_desc.get().strip(),
+                    branch=self.branchInLst.get(0, END),
+                    library=self.libInLst.get(0, END),
+                    audn=self.audnInLst.get(0, END),
+                    mattype=self.mattypeInLst.get(0, END))
+                save_new_fund(**kwargs)
+                disable_widgets(self.editFrm.winfo_children())
+            except BabelError as e:
+                messagebox.showerror(e)
         else:
             msg = 'Missing requried elements:\n-{}'.format(
                 '\n-'.join(missing))
@@ -441,6 +450,11 @@ class FundView(Frame):
 
         for value in sorted(out_values):
             widgetOut.insert(END, value)
+
+    def get_fund_records(self):
+        record = get_record(Fund, code=self.active_fund.get())
+        print(record)
+
 
     def display_funds(self):
         self.fundLst.delete(0, END)
@@ -511,6 +525,7 @@ class FundView(Frame):
         user_data.close()
 
         if self.activeW.get() == 'FundView':
+            self.display_funds()
             self.all_branches.set(0)
             self.display_branches()
             self.display_audiences()
