@@ -197,6 +197,13 @@ class ShelfCode(Base):
         return f"<ShelfCode({attrs})>"
 
 
+class FundLibraryJoiner(Base):
+    __tablename__ = 'fundlibraryjoiner'
+
+    fund_id = Column(Integer, ForeignKey('fund.did'), primary_key=True)
+    library_id = Column(Integer, ForeignKey('library.did'), primary_key=True)
+
+
 class FundAudnJoiner(Base):
     __tablename__ = 'fundaudnjoiner'
 
