@@ -1,15 +1,31 @@
+import logging
 from tkinter import *
 from tkinter.ttk import *
 
 
+mlogger = logging.getLogger('babel_logger')
+
+
+input_widgets = (
+    'Listbox', 'TButton', 'Entry', 'Combobox')
+
+
 def disable_widgets(widgets):
     for w in widgets:
-        w['state'] = DISABLED
+        for s in w.winfo_children():
+            if s.winfo_class() in input_widgets:
+                s['state'] = DISABLED
+        if w.winfo_class() in input_widgets:
+            w['state'] = DISABLED
 
 
 def enable_widgets(widgets):
     for w in widgets:
-        w['state'] = NORMAL
+        for s in w.winfo_children():
+            if s.winfo_class() in input_widgets:
+                s['state'] = NORMAL
+        if w.winfo_class() in input_widgets:
+            w['state'] = NORMAL
 
 
 class BusyManager:
