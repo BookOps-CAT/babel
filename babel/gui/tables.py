@@ -231,7 +231,7 @@ class TableView(Frame):
                     save_record(
                         model, did=record.did, **kwargs)
                     if model.__name__ == 'User':
-                        messagbox.showwarning(
+                        messagebox.showwarning(
                             'Restart',
                             'For changes to Users to take effect\n'
                             'Babel needs to be restarted.\n'
