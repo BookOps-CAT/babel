@@ -12,7 +12,7 @@ from data.datastore import (Audn, Branch, Fund, FundAudnJoiner,
                             FundMatTypeJoiner, FundBranchJoiner, Library,
                             MatType)
 from gui.data_retriever import (get_codes, get_names, get_record,
-                                save_record, delete_records)
+                                save_fund, save_record, delete_records)
 from gui.fonts import RFONT
 from gui.utils import disable_widgets, enable_widgets
 from paths import USER_DATA
@@ -43,6 +43,8 @@ class FundView(Frame):
         self.all_branches.trace('w', self.branch_selection_observer)
         self.all_branchesLbl = StringVar()
         self.all_branchesLbl.set('select all')
+        self.fund_code = StringVar()
+        self.fund_desc = StringVar()
 
         # setup small add/remove icons
         img = Image.open('./icons/Action-edit-add-iconS.png')
@@ -76,7 +78,7 @@ class FundView(Frame):
             command=self.add_data)
         self.addBtn.image = addImg
         self.addBtn.grid(
-            row=1, column=5, sticky='sw', padx=20, pady=10)
+            row=1, column=5, sticky='sw', padx=10, pady=10)
 
         img = Image.open('./icons/Action-reload-iconM.png')
         editImg = ImageTk.PhotoImage(img)
@@ -86,7 +88,7 @@ class FundView(Frame):
             command=self.edit_data)
         self.editBtn.image = editImg
         self.editBtn.grid(
-            row=2, column=5, sticky='sw', padx=20, pady=5)
+            row=2, column=5, sticky='sw', padx=10, pady=5)
 
         img = Image.open('./icons/Action-cancel-iconM.png')
         deleteImg = ImageTk.PhotoImage(img)
@@ -96,7 +98,7 @@ class FundView(Frame):
             command=self.delete_data)
         self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
-            row=3, column=5, sticky='sw', padx=20, pady=5)
+            row=3, column=5, sticky='sw', padx=10, pady=5)
 
         img = Image.open('./icons/Action-ok-iconM.png')
         saveImg = ImageTk.PhotoImage(img)
@@ -106,7 +108,7 @@ class FundView(Frame):
             command=self.insert_or_update_data)
         self.saveBtn.image = saveImg
         self.saveBtn.grid(
-            row=4, column=5, sticky='sw', padx=20, pady=5)
+            row=4, column=5, sticky='sw', padx=10, pady=5)
 
         img = Image.open('./icons/Action-button-info-iconM.png')
         helpImg = ImageTk.PhotoImage(img)
@@ -116,38 +118,62 @@ class FundView(Frame):
             command=self.help)
         self.helpBtn.image = helpImg
         self.helpBtn.grid(
-            row=5, column=5, sticky='sw', padx=20, pady=5)
+            row=5, column=5, sticky='sw', padx=10, pady=5)
 
         # details/edit frame
         self.detFrm = Frame(self)
         self.detFrm.grid(
             row=0, column=6, rowspan=40, columnspan=5, sticky='snew')
+
+        # fund data
+        self.editFrm = Frame(self.detFrm)
+        self.editFrm.grid(
+            row=1, column=0, rowspan=5, columnspan=2, sticky='snew',
+            padx=2)
+        Label(self.editFrm, text='Fund code').grid(
+            row=0, column=0, sticky='snw', pady=5)
+        self.fundcodeEnt = Entry(
+            self.editFrm,
+            font=RFONT,
+            textvariable=self.fund_code)
+        self.fundcodeEnt.grid(
+            row=1, column=0, columnspan=3, sticky='snew', pady=5)
+        Label(self.editFrm, text='Description').grid(
+            row=2, column=0, sticky='snw', pady=5)
+        self.funddescEnt = Entry(
+            self.editFrm,
+            font=RFONT,
+            textvariable=self.fund_desc)
+        self.funddescEnt.grid(
+            row=3, column=0, rowspan=2, columnspan=3, sticky='snew', pady=5)
+
         Label(self.detFrm, text='out').grid(
-            row=0, column=0, columnspan=2, padx=2, sticky='snw')
+            row=0, column=4, columnspan=2, padx=2, sticky='snw')
         Label(self.detFrm, text='in').grid(
-            row=0, column=3, columnspan=2, padx=2, sticky='snw')
-        Label(self.detFrm, text='out').grid(
             row=0, column=7, columnspan=2, padx=2, sticky='snw')
+        Label(self.detFrm, text='out').grid(
+            row=0, column=11, columnspan=2, padx=2, sticky='snw')
         Label(self.detFrm, text='in').grid(
-            row=0, column=10, columnspan=2, padx=2, sticky='snw')
+            row=0, column=14, columnspan=2, padx=2, sticky='snw')
 
         # branches
-        self.branchesFrm = LabelFrame(self.detFrm, text='Branches')
-        self.branchesFrm.grid(
-            row=1, column=0, rowspan=10, columnspan=5,
+        self.branchFrm = LabelFrame(self.detFrm, text='Branches')
+        self.branchFrm.grid(
+            row=1, column=4, rowspan=10, columnspan=5,
             sticky='snew', padx=5)
 
         Checkbutton(
-            self.branchesFrm, textvariable=self.all_branchesLbl,
+            self.branchFrm, textvariable=self.all_branchesLbl,
             variable=self.all_branches).grid(row=0, column=0, sticky='snw')
 
-        scrollbarB = Scrollbar(self.branchesFrm, orient=VERTICAL)
+        scrollbarB = Scrollbar(self.branchFrm, orient=VERTICAL)
         scrollbarB.grid(
             row=1, column=1, rowspan=20, sticky='nsw', pady=2)
         self.branchOutLst = Listbox(
-            self.branchesFrm,
+            self.branchFrm,
             font=RFONT,
             height=list_height,
+            width=14,
             selectmode=EXTENDED,
             yscrollcommand=scrollbarB.set)
         self.branchOutLst.grid(
@@ -155,7 +181,7 @@ class FundView(Frame):
         scrollbarB['command'] = self.branchOutLst.yview
 
         self.branchInBtn = Button(
-            self.branchesFrm,
+            self.branchFrm,
             image=addSImg,
             command=lambda: self.add_condition(
                 'branchLst',
@@ -166,7 +192,7 @@ class FundView(Frame):
             row=1, column=2, sticky='sw', padx=2, pady=2)
 
         self.branchOutBtn = Button(
-            self.branchesFrm,
+            self.branchFrm,
             image=removeSImg,
             command=lambda: self.remove_condition(
                 'branchLst',
@@ -176,12 +202,13 @@ class FundView(Frame):
         self.branchOutBtn.grid(
             row=2, column=2, sticky='sw', padx=2, pady=2)
 
-        scrollbarC = Scrollbar(self.branchesFrm, orient=VERTICAL)
+        scrollbarC = Scrollbar(self.branchFrm, orient=VERTICAL)
         scrollbarC.grid(
             row=1, column=4, rowspan=20, sticky='nsw', pady=2)
         self.branchInLst = Listbox(
-            self.branchesFrm,
+            self.branchFrm,
             font=RFONT,
+            width=14,
             height=list_height,
             selectmode=EXTENDED,
             yscrollcommand=scrollbarC.set)
@@ -192,12 +219,13 @@ class FundView(Frame):
         # library
         self.libraryFrm = LabelFrame(self.detFrm, text='Library')
         self.libraryFrm.grid(
-            row=1, column=7, rowspan=2, columnspan=5,
+            row=1, column=11, rowspan=2, columnspan=5,
             sticky='snew', padx=5)
 
         self.libOutLst = Listbox(
             self.libraryFrm,
             font=RFONT,
+            width=15,
             height=3,
             selectmode=EXTENDED)
         self.libOutLst.grid(
@@ -229,19 +257,21 @@ class FundView(Frame):
             self.libraryFrm,
             font=RFONT,
             height=2,
+            width=15,
             selectmode=EXTENDED)
         self.libInLst.grid(
             row=0, column=2, rowspan=2, sticky='snew', padx=2, pady=2)
 
-      # audience
+        # audience
         self.audienceFrm = LabelFrame(self.detFrm, text='Audience')
         self.audienceFrm.grid(
-            row=3, column=7, rowspan=2, columnspan=5,
+            row=3, column=11, rowspan=2, columnspan=5,
             sticky='snew', padx=5, pady=5)
 
         self.audnOutLst = Listbox(
             self.audienceFrm,
             font=RFONT,
+            width=15,
             height=3,
             selectmode=EXTENDED)
         self.audnOutLst.grid(
@@ -272,20 +302,22 @@ class FundView(Frame):
         self.audnInLst = Listbox(
             self.audienceFrm,
             font=RFONT,
+            width=15,
             height=2,
             selectmode=EXTENDED)
         self.audnInLst.grid(
             row=0, column=2, rowspan=2, sticky='snew', padx=2, pady=2)
 
-      # material type
+        # material type
         self.mattypeFrm = LabelFrame(self.detFrm, text='Material type')
         self.mattypeFrm.grid(
-            row=5, column=6, rowspan=7, columnspan=5,
+            row=5, column=11, rowspan=7, columnspan=5,
             sticky='snew', padx=5, pady=5)
 
         self.mattypeOutLst = Listbox(
             self.mattypeFrm,
             font=RFONT,
+            width=15,
             height=7,
             selectmode=EXTENDED)
         self.mattypeOutLst.grid(
@@ -316,27 +348,54 @@ class FundView(Frame):
         self.mattypeInLst = Listbox(
             self.mattypeFrm,
             font=RFONT,
+            width=15,
             height=6,
             selectmode=EXTENDED)
         self.mattypeInLst.grid(
             row=0, column=2, rowspan=7, sticky='snew', padx=2, pady=2)
 
     def add_data(self):
-        pass
+        self.fund_code.set('')
+        self.fund_desc.set('')
+        enable_widgets(self.editFrm.winfo_children())
 
     def edit_data(self):
-        pass
+        enable_widgets(self.editFrm.winfo_children())
 
     def delete_data(self):
         pass
 
     def insert_or_update_data(self):
-        pass
+        missing = []
+        if not self.system.get():
+            missing.append('system')
+        if not self.fund_code.get():
+            missing.append('fund code')
+        if not self.branchInLst.get(0, END):
+            missing.append('valid branches')
+        if self.system.get() == 2 and not self.libInLst.get(0, END):
+            missing.append('valid library')
+        if not self.audnInLst.get(0, END):
+            missing.append('valid audiences')
+        if not self.mattypeInLst.get(0, END):
+            missing.append('valid material types')
+
+        if not missing:
+            save_fund(
+                system_id=self.system.get(),
+                code=self.fund_code.get().strip(),
+                describ=self.fund_desc.get().strip(),
+                branch=self.branchInLst.get(0, END),
+                library=self.libInLst.get(0, END),
+                audn=self.audnInLst.get(0, END),
+                mattype=self.mattypeInLst.get(0, END))
+        else:
+            msg = 'Missing requried elements:\n-{}'.format(
+                '\n-'.join(missing))
+            messagebox.showwarning(
+                'Input Error', msg)
 
     def help(self):
-        pass
-
-    def select_library(self):
         pass
 
     def add_condition(self, category, widgetOut, widgetIn, selected):
@@ -401,7 +460,10 @@ class FundView(Frame):
         mlogger.debug('Displaying library.')
         self.libOutLst.delete(0, END)
         self.libInLst.delete(0, END)
+        if self.system.get() == 1:
+            disable_widgets(self.libraryFrm.winfo_children())
         if self.system.get() == 2:
+            enable_widgets(self.libraryFrm.winfo_children())
             libraries = get_names(Library)
             for library in libraries:
                 self.libOutLst.insert(END, library)
@@ -449,17 +511,13 @@ class FundView(Frame):
         user_data.close()
 
         if self.activeW.get() == 'FundView':
+            self.all_branches.set(0)
             self.display_branches()
             self.display_audiences()
             self.display_mattypes()
 
             # enable/disable widgets for library
-            if self.system.get() == 1:
-                self.display_library()
-                disable_widgets(self.libraryFrm.winfo_children())
-            elif self.system.get() == 2:
-                enable_widgets(self.libraryFrm.winfo_children())
-                self.display_library()
+            self.display_library()
 
     def observer(self, *args):
         if self.activeW.get() == 'FundView':
@@ -472,5 +530,5 @@ class FundView(Frame):
             self.display_mattypes()
             if self.system.get():
                 self.display_branches()
-
-
+                self.display_library()
+            disable_widgets(self.editFrm.winfo_children())
