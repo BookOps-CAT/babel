@@ -11,6 +11,13 @@ def insert_or_ignore(session, model, **kwargs):
     return instance
 
 
+def insert(session, model, **kwargs):
+    instance = model(**kwargs)
+    session.add(instance)
+    session.flush()
+    return instance
+
+
 def get_column_values(session, model, column, **kwargs):
     instances = session.query(model).filter_by(**kwargs).options(
         load_only(column)).order_by(column)
