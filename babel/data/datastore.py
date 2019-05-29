@@ -115,8 +115,7 @@ class MatType(Base):
 class Branch(Base):
     __tablename__ = 'branch'
     __table_args__ = (
-        UniqueConstraint('code', 'system_id', name='uix_branch'),
-        Index('ix_branch', 'code', 'system_id', unique=True))
+        UniqueConstraint('code', 'system_id', name='uix_branch'), )
 
     did = Column(Integer, primary_key=True)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
@@ -232,8 +231,7 @@ class FundBranchJoiner(Base):
 class Fund(Base):
     __tablename__ = 'fund'
     __table_args__ = (
-        UniqueConstraint('code', 'system_id', name='uix_fund'),
-        Index('ix_fund', 'code', 'system_id', unique=True))
+        UniqueConstraint('code', 'system_id', name='uix_fund'), )
 
     did = Column(Integer, primary_key=True)
     code = Column(String(25))
