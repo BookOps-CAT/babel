@@ -38,7 +38,7 @@ class FundView(Frame):
         self.system.trace('w', self.system_observer)
         list_height = int((self.winfo_screenheight() - 100) / 25)
 
-        self.active_fund = StringVar()
+        self.record = None
         self.all_branches = IntVar()
         self.all_branches.trace('w', self.branch_selection_observer)
         self.all_branchesLbl = StringVar()
@@ -121,7 +121,7 @@ class FundView(Frame):
             row=5, column=5, sticky='sw', padx=10, pady=5)
 
         # details/edit frame
-        self.detFrm = Frame(self)
+        self.detFrm = LabelFrame(self, text='Fund code and constrains')
         self.detFrm.grid(
             row=0, column=6, rowspan=40, columnspan=5, sticky='snew')
 
@@ -354,17 +354,29 @@ class FundView(Frame):
         self.mattypeInLst.grid(
             row=0, column=2, rowspan=7, sticky='snew', padx=2, pady=2)
 
-    def show_fund(self):
-        self.active_fund.set(self.fundLst.get(ACTIVE))
-
+    def show_fund(self, *args):
+        enable_widgets(self.detFrm.winfo_children())
+        self.record = get_record(Fund, code=self.fundLst.get(ACTIVE))
+        self.display_branches()
+        self.display_library()
+        self.display_audiences()
+        self.display_mattypes()
+        self.add_condition(
+            'branches', self.branchOutLst, self.branchInLst, )
+        disable_widgets(self.detFrm.winfo_children())
 
     def add_data(self):
+        self.record = None
         self.fund_code.set('')
         self.fund_desc.set('')
-        enable_widgets(self.editFrm.winfo_children())
+        enable_widgets(self.detFrm.winfo_children())
+        self.display_branches()
+        self.display_library()
+        self.display_audiences()
+        self.display_mattypes()
 
     def edit_data(self):
-        enable_widgets(self.editFrm.winfo_children())
+        enable_widgets(self.detFrm.winfo_children())
 
     def delete_data(self):
         pass
@@ -450,11 +462,6 @@ class FundView(Frame):
 
         for value in sorted(out_values):
             widgetOut.insert(END, value)
-
-    def get_fund_records(self):
-        record = get_record(Fund, code=self.active_fund.get())
-        print(record)
-
 
     def display_funds(self):
         self.fundLst.delete(0, END)
