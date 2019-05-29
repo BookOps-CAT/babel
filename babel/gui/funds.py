@@ -8,12 +8,10 @@ from PIL import Image, ImageTk
 
 
 from errors import BabelError
-from data.datastore import (Audn, Branch, Fund, FundAudnJoiner,
-                            FundMatTypeJoiner, FundBranchJoiner, Library,
-                            MatType)
+from data.datastore import (Audn, Branch, Fund, Library, MatType)
 from gui.data_retriever import (get_codes, get_names, get_record,
-                                get_fund_data,
-                                save_new_fund, save_record, delete_records)
+                                get_fund_data, update_fund,
+                                insert_fund, delete_data)
 from gui.fonts import RFONT
 from gui.utils import disable_widgets, enable_widgets
 from paths import USER_DATA
@@ -416,10 +414,13 @@ class FundView(Frame):
         self.display_mattypes()
 
     def edit_data(self):
-        enable_widgets(self.detFrm.winfo_children())
+        if self.record:
+            self.show_fund()
+            enable_widgets(self.detFrm.winfo_children())
 
     def delete_data(self):
-        pass
+        if self.record:
+            delete_data(self.record)
 
     def insert_or_update_data(self):
         missing = []
@@ -446,7 +447,12 @@ class FundView(Frame):
                     library=self.libInLst.get(0, END),
                     audn=self.audnInLst.get(0, END),
                     mattype=self.mattypeInLst.get(0, END))
-                save_new_fund(**kwargs)
+
+                if not self.record:
+                    insert_fund(**kwargs)
+                else:
+                    update_fund(**kwargs)
+
                 disable_widgets(self.editFrm.winfo_children())
             except BabelError as e:
                 messagebox.showerror(e)
@@ -587,6 +593,7 @@ class FundView(Frame):
         user_data.close()
 
         if self.activeW.get() == 'FundView':
+            self.record = None
             enable_widgets(self.detFrm.winfo_children())
             self.display_funds()
             self.all_branches.set(0)

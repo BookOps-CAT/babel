@@ -10,8 +10,8 @@ from PIL import Image, ImageTk
 from data.datastore import (Audn, Branch, Lang, MatType, ShelfCode,
                             User, Vendor)
 from errors import BabelError
-from gui.data_retriever import (get_names, get_record, save_record,
-                                delete_records)
+from gui.data_retriever import (get_names, get_record, save_data,
+                                delete_data)
 from gui.fonts import RFONT
 from gui.utils import disable_widgets, enable_widgets
 from paths import USER_DATA
@@ -38,7 +38,7 @@ class TableView(Frame):
         self.gen_list_select = StringVar()
         self.det_list_select = StringVar()
         self.det_list_select.trace('w', self.recreate_details_frame)
-        self.records = []
+        self.record = None
         list_height = int((self.winfo_screenheight() - 100) / 25)
 
         # layout
@@ -146,7 +146,7 @@ class TableView(Frame):
 
     def add_data(self):
         mlogger.debug('Add btn clicked.')
-        self.records = []
+        self.record = None
         self.det_list_select.set('')
         if self.gen_list_select.get():
             if self.gen_list_select.get() in (
@@ -171,20 +171,19 @@ class TableView(Frame):
     def delete_data(self):
         mlogger.debug('Delete btn clicked.')
         # ask before deletion
-        if self.records:
+        if self.record:
             msg = 'Are you sure you want to delete\n{}?'.format(
-                '\n'.join([str(x) for x in self.records]))
+                str(self.record))
             if messagebox.askokcancel('Deletion', msg):
                 mlogger.info('Data for deletion: {}'.format(
-                    ','.join([str(x) for x in self.records])))
-                delete_records(self.records)
-                for record in self.records:
-                    if type(record).__name__ == 'User':
-                        messagebox.showwarning(
-                            'Restart',
-                            'For changes to Users to take effect\n'
-                            'Babel needs to be restarted.\n'
-                            'Please close and reopen Babel.')
+                    str(self.record)))
+                delete_data(self.record)
+                if type(self.record).__name__ == 'User':
+                    messagebox.showwarning(
+                        'Restart',
+                        'For changes to Users to take effect\n'
+                        'Babel needs to be restarted.\n'
+                        'Please close and reopen Babel.')
                 self.populate_detail_list()
                 self.detFrm.destroy()
                 self.initiate_details_frame()
@@ -198,47 +197,45 @@ class TableView(Frame):
         mlogger.debug('Save btn clicked.')
         kwargs = {}
         error_msg = False
-        if self.records:
+        if self.record:
             mlogger.debug('Saving existing data.')
-            for record in self.records:
+            if self.gen_list_select.get() in (
+                    'Audiences', 'Branches', 'Languages',
+                    'Shelf Codes'):
+                name = self.nameEnt.get().strip()
+                code = self.codeEnt.get().strip()
+                kwargs = {
+                    'name': name,
+                    'code': code}
 
-                if self.gen_list_select.get() in (
-                        'Audiences', 'Branches', 'Languages',
-                        'Shelf Codes'):
-                    name = self.nameEnt.get().strip()
-                    code = self.codeEnt.get().strip()
-                    kwargs = {
-                        'name': name,
-                        'code': code}
+            elif self.gen_list_select.get() in (
+                    'Users', 'Vendors'):
+                name = self.nameEnt.get().strip()
+                bpl_code = self.bplcodeEnt.get().strip()
+                nyp_code = self.nypcodeEnt.get().strip()
+                kwargs = {
+                    'name': name,
+                    'bpl_code': bpl_code,
+                    'nyp_code': nyp_code}
+                if self.gen_list_select.get() == 'Vendors':
+                    kwargs['note'] = self.noteEnt.get().strip()
 
-                elif self.gen_list_select.get() in (
-                        'Users', 'Vendors'):
-                    name = self.nameEnt.get().strip()
-                    bpl_code = self.bplcodeEnt.get().strip()
-                    nyp_code = self.nypcodeEnt.get().strip()
-                    kwargs = {
-                        'name': name,
-                        'bpl_code': bpl_code,
-                        'nyp_code': nyp_code}
-                    if self.gen_list_select.get() == 'Vendors':
-                        kwargs['note'] = self.noteEnt.get().strip()
-
-                for k, v in kwargs.items():
-                    if v == '':
-                        kwargs[k] = None
-                model, kwargs = self.get_corresponding_model(**kwargs)
-                try:
-                    save_record(
-                        model, did=record.did, **kwargs)
-                    if model.__name__ == 'User':
-                        messagebox.showwarning(
-                            'Restart',
-                            'For changes to Users to take effect\n'
-                            'Babel needs to be restarted.\n'
-                            'Please close and reopen Babel.')
-                except BabelError as e:
-                    error_msg = True
-                    messagebox.showerror('Database error', e)
+            for k, v in kwargs.items():
+                if v == '':
+                    kwargs[k] = None
+            model, kwargs = self.get_corresponding_model(**kwargs)
+            try:
+                save_data(
+                    model, did=record.did, **kwargs)
+                if model.__name__ == 'User':
+                    messagebox.showwarning(
+                        'Restart',
+                        'For changes to Users to take effect\n'
+                        'Babel needs to be restarted.\n'
+                        'Please close and reopen Babel.')
+            except BabelError as e:
+                error_msg = True
+                messagebox.showerror('Database error', e)
 
         else:
             mlogger.debug('Saving new data.')
@@ -278,7 +275,7 @@ class TableView(Frame):
             model, kwargs = self.get_corresponding_model(**kwargs)
             try:
                 if model is not None:
-                    save_record(
+                    save_data(
                         model, **kwargs)
                     if model.__name__ == 'User':
                         messagebox.showwarning(
@@ -348,37 +345,40 @@ class TableView(Frame):
                 'Audiences', 'Branches', 'Languages',
                 'Shelf Codes'):
             if self.det_list_select.get():
-                record = get_record(model, name=self.det_list_select.get())
-                self.records = [record]
-                self.simpleDetailFrame(record.name, record.code)
+                self.record = get_record(
+                    model, name=self.det_list_select.get())
+                self.simpleDetailFrame(
+                    self.record.name, self.record.code)
             else:
                 mlogger.debug('Creating empty details frame.')
                 self.simpleDetailFrame()
         elif self.gen_list_select.get() == 'Users':
             if self.det_list_select.get():
-                record = get_record(model, name=self.det_list_select.get())
-                self.records = [record]
+                self.record = get_record(
+                    model, name=self.det_list_select.get())
                 self.userDetailFrame(
-                    record.name, record.bpl_code, record.nyp_code)
+                    self.record.name, self.record.bpl_code,
+                    self.record.nyp_code)
             else:
                 mlogger.debug('Creating empty details frame.')
                 self.userDetailFrame()
         elif self.gen_list_select.get() == 'Vendors':
             if self.det_list_select.get():
-                record = get_record(model, name=self.det_list_select.get())
-                self.records = [record]
+                self.record = get_record(
+                    model, name=self.det_list_select.get())
                 self.vendorDetailFrame(
-                    record.name, record.note, record.bpl_code, record.nyp_code)
+                    self.record.name, self.record.note,
+                    self.record.bpl_code, self.record.nyp_code)
             else:
                 mlogger.debug('Creating empty details frame.')
                 self.vendorDetailFrame()
         elif self.gen_list_select.get() == 'Material Types':
             if self.det_list_select.get():
-                record = get_record(model, name=self.det_list_select.get())
-                self.records = [record]
+                self.record = get_record(model, name=self.det_list_select.get())
                 self.mattypeDetailFrame(
-                    record.name, record.bpl_bib_code, record.bpl_ord_code,
-                    record.nyp_bib_code, record.nyp_ord_code)
+                    self.record.name, self.record.bpl_bib_code,
+                    self.record.bpl_ord_code,
+                    self.record.nyp_bib_code, self.record.nyp_ord_code)
             else:
                 mlogger.debug('Creating empty details frame.')
                 self.mattypeDetailFrame()
@@ -554,7 +554,7 @@ class TableView(Frame):
     def recreate_details_frame(self, *args):
         mlogger.debug('Recreating details frame.')
         self.detFrm.destroy()
-        self.records = []
+        self.record = None
         self.initiate_details_frame()
 
     def populate_detail_list(self, redo_detail_frame=True, *args):

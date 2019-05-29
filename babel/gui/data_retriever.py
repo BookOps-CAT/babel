@@ -59,7 +59,7 @@ def get_records(model, **kwargs):
         return instances
 
 
-def save_record(model, did=None, **kwargs):
+def save_data(model, did=None, **kwargs):
     try:
         with session_scope() as session:
             if did:
@@ -117,7 +117,7 @@ def get_fund_data(fund_rec):
         return
 
 
-def save_new_fund(**kwargs):
+def insert_fund(**kwargs):
     # if something goes wrong this method should rollback all
     # inserts; figure out and test!!!!
 
@@ -191,8 +191,11 @@ def save_new_fund(**kwargs):
                     fund_rec.code, fund_rec.did))
 
 
-def delete_records(records):
+def update_fund(**kwargs):
+    pass
+
+
+def delete_data(record):
     with session_scope() as session:
-        for record in records:
-            model = type(record)
-            delete_record(session, model, did=record.did)
+        model = type(record)
+        delete_record(session, model, did=record.did)
