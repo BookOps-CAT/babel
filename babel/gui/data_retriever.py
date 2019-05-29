@@ -70,6 +70,53 @@ def save_record(model, did=None, **kwargs):
         raise BabelError(e)
 
 
+def get_fund_data(fund_rec):
+    """
+    Retrieves fund record and related data
+    args:
+        fund_rec: Fund obj
+    returns:
+        fund_data: dict, key(value): did(int), code(str), discrib(str),
+                               system_id(int), libraries(list)
+                               audns(list), branches(list), mattypes(list)
+    """
+
+    if fund_rec:
+        if fund_rec.describ is None:
+            fund_desc = ''
+        else:
+            fund_desc = fund_rec.describ
+
+        branches = []
+        for rec in fund_rec.branches:
+            b = get_record(Branch, did=rec.branch_id)
+            branches.append(b.code)
+        audns = []
+        for rec in fund_rec.audns:
+            a = get_record(Audn, did=rec.audn_id)
+            audns.append(a.name)
+        matTypes = []
+        for rec in fund_rec.matTypes:
+            m = get_record(MatType, did=rec.matType_id)
+            matTypes.append(m.name)
+        libraries = []
+        for rec in fund_rec.libraries:
+            lib = get_record(Library, did=rec.library_id)
+            libraries.append(lib.name)
+
+        return dict(
+            did=fund_rec.did,
+            code=fund_rec.code,
+            system_id=fund_rec.system_id,
+            describ=fund_desc,
+            branches=branches,
+            audns=audns,
+            matTypes=matTypes,
+            libraries=libraries)
+    else:
+        return
+
+
 def save_new_fund(**kwargs):
     # if something goes wrong this method should rollback all
     # inserts; figure out and test!!!!

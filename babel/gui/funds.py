@@ -12,6 +12,7 @@ from data.datastore import (Audn, Branch, Fund, FundAudnJoiner,
                             FundMatTypeJoiner, FundBranchJoiner, Library,
                             MatType)
 from gui.data_retriever import (get_codes, get_names, get_record,
+                                get_fund_data,
                                 save_new_fund, save_record, delete_records)
 from gui.fonts import RFONT
 from gui.utils import disable_widgets, enable_widgets
@@ -256,7 +257,7 @@ class FundView(Frame):
         self.libInLst = Listbox(
             self.libraryFrm,
             font=RFONT,
-            height=2,
+            height=3,
             width=15,
             selectmode=EXTENDED)
         self.libInLst.grid(
@@ -272,7 +273,7 @@ class FundView(Frame):
             self.audienceFrm,
             font=RFONT,
             width=15,
-            height=3,
+            height=4,
             selectmode=EXTENDED)
         self.audnOutLst.grid(
             row=0, column=0, rowspan=2, sticky='snew', padx=2, pady=2)
@@ -303,7 +304,7 @@ class FundView(Frame):
             self.audienceFrm,
             font=RFONT,
             width=15,
-            height=2,
+            height=4,
             selectmode=EXTENDED)
         self.audnInLst.grid(
             row=0, column=2, rowspan=2, sticky='snew', padx=2, pady=2)
@@ -349,20 +350,59 @@ class FundView(Frame):
             self.mattypeFrm,
             font=RFONT,
             width=15,
-            height=6,
+            height=7,
             selectmode=EXTENDED)
         self.mattypeInLst.grid(
             row=0, column=2, rowspan=7, sticky='snew', padx=2, pady=2)
 
     def show_fund(self, *args):
+        mlogger.debug('Displaying fund details.')
         enable_widgets(self.detFrm.winfo_children())
         self.record = get_record(Fund, code=self.fundLst.get(ACTIVE))
         self.display_branches()
         self.display_library()
         self.display_audiences()
         self.display_mattypes()
+        fund_data = get_fund_data(self.record)
+        mlogger.debug('Fund data: {}'.format(fund_data))
+
+        # display code & description
+        self.fund_code.set(fund_data['code'])
+        self.fund_desc.set(fund_data['describ'])
+
+        # convert values to listbox indices and add conditions
+        # branchLst
+        branch_idx = self.get_listbox_indices(
+            self.branchOutLst, fund_data['branches'])
+        mlogger.debug('branchOutLst index matches: {}'.format(branch_idx))
         self.add_condition(
-            'branches', self.branchOutLst, self.branchInLst, )
+            'branchLst', self.branchOutLst, self.branchInLst,
+            branch_idx)
+
+        # audnLst
+        audn_idx = self.get_listbox_indices(
+            self.audnOutLst, fund_data['audns'])
+        mlogger.debug('audnOutLst index matches: {}'.format(audn_idx))
+        self.add_condition(
+            'audnLst', self.audnOutLst, self.audnInLst, audn_idx)
+        # libLst
+        library_idx = self.get_listbox_indices(
+            self.libOutLst, fund_data['libraries'])
+        mlogger.debug('libOutLst index matches: {}'.format(
+            library_idx))
+        self.add_condition(
+            'libLst', self.libOutLst, self.libInLst, library_idx)
+
+        # mattypeOutLst
+        mattype_idx = self.get_listbox_indices(
+            self.mattypeOutLst, fund_data['matTypes'])
+        mlogger.debug('mattypeOutLst index matches: {}'.format(
+            mattype_idx))
+        self.add_condition(
+            'mattypeLst', self.mattypeOutLst, self.mattypeInLst,
+            mattype_idx)
+
+        # lock the interface
         disable_widgets(self.detFrm.winfo_children())
 
     def add_data(self):
@@ -419,8 +459,23 @@ class FundView(Frame):
     def help(self):
         pass
 
+    def get_listbox_indices(self, widgetLst, data):
+        """
+        Given list of values, retrieves their index in listbox (widgetLst)
+        args:
+            widgetLst: tkinter listbox obj, listbox to be queried
+            data: list of strings, values to be queried
+        returns:
+            indices: list of widgetLst indices for given values
+        """
+
+        mlogger.debug('Retrieving indices for values {} in a listbox.'.format(
+            data))
+        values = widgetLst.get(0, END)
+        return [values.index(d) for d in data]
+
     def add_condition(self, category, widgetOut, widgetIn, selected):
-        mlogger.debug('Adding condition(s) to {} initaited.'.format(
+        mlogger.debug('Adding condition(s) to {} initiated.'.format(
             category))
         values = [widgetOut.get(x) for x in selected]
         mlogger.debug('Selected condition values: {}'.format(values))
@@ -532,6 +587,7 @@ class FundView(Frame):
         user_data.close()
 
         if self.activeW.get() == 'FundView':
+            enable_widgets(self.detFrm.winfo_children())
             self.display_funds()
             self.all_branches.set(0)
             self.display_branches()
@@ -540,6 +596,7 @@ class FundView(Frame):
 
             # enable/disable widgets for library
             self.display_library()
+            disable_widgets(self.detFrm.winfo_children())
 
     def observer(self, *args):
         if self.activeW.get() == 'FundView':
@@ -553,4 +610,4 @@ class FundView(Frame):
             if self.system.get():
                 self.display_branches()
                 self.display_library()
-            disable_widgets(self.editFrm.winfo_children())
+            disable_widgets(self.detFrm.winfo_children())
