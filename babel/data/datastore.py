@@ -149,12 +149,12 @@ class DistGrid(Base):
     __tablename__ = 'distgrid'
     __table_args__ = (
         UniqueConstraint(
-            'name', 'distgridset_id', name='uix_distgrid'), )
+            'name', 'distset_id', name='uix_distgrid'), )
 
     did = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
-    distgridset_id = Column(Integer, ForeignKey('distset.did'),
-                            nullable=False)
+    distset_id = Column(Integer, ForeignKey('distset.did'),
+                        nullable=False)
 
     def __repr__(self):
         state = inspect(self)
@@ -167,11 +167,12 @@ class DistSet(Base):
     __tablename__ = 'distset'
     __table_args__ = (
         UniqueConstraint(
-            'name', 'system_id', name='uix_distset'), )
+            'name', 'system_id', 'user_id', name='uix_distset'), )
 
     did = Column(Integer, primary_key=True)
     name = Column(String(80, collation='utf8_bin'), nullable=False)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.did'), nullable=False)
 
     distgrids = relationship(
         'DistGrid', lazy='joined', cascade='all, delete-orphan')
