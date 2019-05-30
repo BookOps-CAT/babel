@@ -76,7 +76,7 @@ class HomeView(Frame):
             image=gridImg,
             compound=TOP,
             text='Grids',
-            command=None)
+            command=lambda: controller.show_frame('GridView'))
         self.gridBtn.image = gridImg
         self.gridBtn.grid(
             row=2, column=0, sticky='sw', padx=20, pady=10)

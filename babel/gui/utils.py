@@ -80,13 +80,13 @@ class ToolTip(object):
         x, y, cx, cy = self.widget.bbox("insert")
         x = x + self.widget.winfo_rootx() + 27
         y = y + cy + self.widget.winfo_rooty() + 27
-        self.tipwindow = tw = tk.Toplevel(self.widget)
+        self.tipwindow = tw = Toplevel(self.widget)
         tw.wm_overrideredirect(1)
         tw.wm_geometry("+%d+%d" % (x, y))
 
-        label = tk.Label(
-            tw, text=self.text, justify=tk.LEFT,
-            background="#ffffe0", relief=tk.SOLID, borderwidth=1,
+        label = Label(
+            tw, text=self.text, justify=LEFT,
+            background="#ffffe0", relief=SOLID, borderwidth=1,
             font=("tahoma", "8", "normal"))
         label.pack(ipadx=1)
 

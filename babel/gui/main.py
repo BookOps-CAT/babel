@@ -10,6 +10,7 @@ from gui.home import HomeView
 from gui.reports import ReportView
 from gui.tables import TableView
 from gui.funds import FundView
+from gui.grids import GridView
 
 
 class Base(Tk):
@@ -87,7 +88,7 @@ class Base(Tk):
             command=None)
         navig_menu.add_command(
             label='Grids',
-            command=None)
+            command=lambda: self.show_fram('GridView'))
         navig_menu.add_command(
             label='Funds',
             command=lambda: self.show_frame('FundView'))
@@ -125,7 +126,7 @@ class Base(Tk):
 
         # spawn Babel frames
         self.frames = {}
-        for F in (FundView, HomeView, ReportView, TableView):
+        for F in (FundView, GridView, HomeView, ReportView, TableView):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
                       **self.app_data)
