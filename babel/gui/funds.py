@@ -404,14 +404,18 @@ class FundView(Frame):
         disable_widgets(self.detFrm.winfo_children())
 
     def add_data(self):
-        self.record = None
-        self.fund_code.set('')
-        self.fund_desc.set('')
-        enable_widgets(self.detFrm.winfo_children())
-        self.display_branches()
-        self.display_library()
-        self.display_audiences()
-        self.display_mattypes()
+        if self.system.get():
+            self.record = None
+            self.fund_code.set('')
+            self.fund_desc.set('')
+            enable_widgets(self.detFrm.winfo_children())
+            self.display_branches()
+            self.display_library()
+            self.display_audiences()
+            self.display_mattypes()
+        else:
+            msg = 'Please select system first.'
+            messagebox.showwarning('Input Error', msg)
 
     def edit_data(self):
         if self.record:
@@ -443,17 +447,17 @@ class FundView(Frame):
                     system_id=self.system.get(),
                     code=self.fund_code.get().strip(),
                     describ=self.fund_desc.get().strip(),
-                    branch=self.branchInLst.get(0, END),
-                    library=self.libInLst.get(0, END),
-                    audn=self.audnInLst.get(0, END),
-                    mattype=self.mattypeInLst.get(0, END))
+                    branches=self.branchInLst.get(0, END),
+                    libraries=self.libInLst.get(0, END),
+                    audns=self.audnInLst.get(0, END),
+                    matTypes=self.mattypeInLst.get(0, END))
 
                 if not self.record:
                     insert_fund(**kwargs)
                 else:
                     update_fund(**kwargs)
-
-                disable_widgets(self.editFrm.winfo_children())
+                self.display_funds()
+                disable_widgets(self.detFrm.winfo_children())
             except BabelError as e:
                 messagebox.showerror(e)
         else:
