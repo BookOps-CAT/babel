@@ -28,6 +28,20 @@ def enable_widgets(widgets):
             w['state'] = NORMAL
 
 
+def get_id_from_index(value, inx):
+    """
+    Finds datastore id of given value in id/value dictionary
+    args:
+        value: str, value to be searched
+        inx: dict, dictionary of with ids as keys
+    returns:
+        did: int, datastore id of matching value
+    """
+    for k, v in inx.items():
+        if v == value:
+            return k
+
+
 class BusyManager:
     """cursor manager"""
 
