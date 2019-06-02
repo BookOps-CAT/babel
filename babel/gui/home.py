@@ -15,6 +15,8 @@ class HomeView(Frame):
         self.controller = controller
         self.app_data = app_data
         self.profile = self.app_data['profile']
+        self.activeW = app_data['activeW']
+        self.activeW.trace('w', self.observer)
 
         img = Image.open('./icons/App-ark-icon.png')
         importImg = ImageTk.PhotoImage(img)
@@ -134,5 +136,10 @@ class HomeView(Frame):
             row=3, column=0, sticky='sw', padx=20, pady=10)
 
     def import_sheet(self):
-        print('setting new profile')
-        self.profile.set('Libbhy')
+        pass
+
+    def observer(self, *args):
+        if self.activeW.get() == 'MainView':
+            user_data = shelve.open(USER_DATA)
+            self.profile.set(user_data['profile'])
+            user_data.close()

@@ -1,16 +1,18 @@
 from tkinter import *
 from tkinter.ttk import *
+import shelve
 
 from PIL import Image, ImageTk
 
 
 from data.datastore import User
-from gui.data_retriever import get_names
+from gui.data_retriever import get_names, create_name_index
 from gui.home import HomeView
 from gui.reports import ReportView
 from gui.tables import TableView
 from gui.funds import FundView
 from gui.grids import GridView
+from paths import USER_DATA
 
 
 class Base(Tk):
@@ -20,7 +22,7 @@ class Base(Tk):
 
         # use in prod
         w, h = self.winfo_screenwidth() - 100, self.winfo_screenheight() - 100
-        self.geometry("%dx%d+0+0" % (w, h))
+        self.geometry("%dx%d+80+0" % (w, h))
 
         # container where frames are stacked
         container = Frame(self)
@@ -29,6 +31,7 @@ class Base(Tk):
         # bind shared data between windows
         self.activeW = StringVar()
         self.profile = StringVar()
+        self.profile.trace('w', self.profile_observer)
         self.system = IntVar()  # BPL 1, NYPL 2
 
         img = Image.open('./icons/App-personal-icon.png')
@@ -68,6 +71,9 @@ class Base(Tk):
         self.bind("<F11>", self.toggle_fullscreen)
         self.bind("<Escape>", self.end_fullscreen)
 
+        Separator(container, orient=HORIZONTAL).grid(
+            row=1, column=0, columnspan=7, sticky='snew')
+
         # set up menu bar
         menubar = Menu(self)
         navig_menu = Menu(menubar, tearoff=0)
@@ -88,7 +94,7 @@ class Base(Tk):
             command=None)
         navig_menu.add_command(
             label='Grids',
-            command=lambda: self.show_fram('GridView'))
+            command=lambda: self.show_frame('GridView'))
         navig_menu.add_command(
             label='Funds',
             command=lambda: self.show_frame('FundView'))
@@ -116,12 +122,19 @@ class Base(Tk):
 
         self.config(menu=menubar)
 
-        # retrieve current profile from user_data and set below
-        # !!!! code needed
+        # profiles index for quick reference
+        self.profile_idx = create_name_index(User)
+
+        # profile
+        user_data = shelve.open(USER_DATA)
+        self.profile.set(user_data['profile'])
+        user_data.close()
+
         self.profile.set('All users')
         self.app_data = {
             'activeW': self.activeW,
             'profile': self.profile,
+            'profile_idx': self.profile_idx,
             'system': self.system}
 
         # spawn Babel frames
@@ -146,6 +159,12 @@ class Base(Tk):
         # set tier for behavioral control
         self.activeW.set(page_name)
         frame.tkraise()
+
+    def profile_observer(self, *args):
+        if self.profile.get() != 'All users':
+            user_data = shelve.open(USER_DATA)
+            user_data['profile'] = self.profile.get()
+            user_data.close()
 
     def toggle_fullscreen(self, event=None):
         self.state = not self.state  # Just toggling the boolean

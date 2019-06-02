@@ -592,10 +592,6 @@ class FundView(Frame):
                 self.display_branches()
 
     def system_observer(self, *args):
-        user_data = shelve.open(USER_DATA)
-        user_data['system'] = self.system.get()
-        user_data.close()
-
         if self.activeW.get() == 'FundView':
             self.record = None
             enable_widgets(self.detFrm.winfo_children())

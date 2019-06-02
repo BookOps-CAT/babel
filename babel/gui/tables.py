@@ -197,11 +197,10 @@ class TableView(Frame):
         mlogger.debug('Save btn clicked.')
         kwargs = {}
         error_msg = False
-        if self.record:
-            mlogger.debug('Saving existing data.')
+
+        try:
             if self.gen_list_select.get() in (
-                    'Audiences', 'Branches', 'Languages',
-                    'Shelf Codes'):
+                    'Audiences', 'Branches', 'Languages'):
                 name = self.nameEnt.get().strip()
                 code = self.codeEnt.get().strip()
                 kwargs = {
@@ -220,72 +219,61 @@ class TableView(Frame):
                 if self.gen_list_select.get() == 'Vendors':
                     kwargs['note'] = self.noteEnt.get().strip()
 
+            elif self.gen_list_select.get() == 'Shelf Codes':
+                name = self.nameEnt.get().strip()
+                code = self.codeEnt.get().strip()
+                includes_audn = self.includes_audn.get()
+                kwargs = {
+                    'name': name,
+                    'code': code,
+                    'includes_audn': includes_audn}
+
+            elif self.gen_list_select.get() == 'Material Types':
+                name = self.nameEnt.get().strip()
+                bpl_bib_code = self.bplbibcodeEnt.get().strip()
+                bpl_ord_code = self.bplordcodeEnt.get().strip()
+                nyp_bib_code = self.nypbibcodeEnt.get().strip()
+                nyp_ord_code = self.nypordcodeEnt.get().strip()
+
+                kwargs = {
+                    'name': name,
+                    'bpl_bib_code': bpl_bib_code,
+                    'bpl_ord_code': bpl_ord_code,
+                    'nyp_bib_code': nyp_bib_code,
+                    'nyp_ord_code': nyp_ord_code
+                }
+
             for k, v in kwargs.items():
                 if v == '':
                     kwargs[k] = None
             model, kwargs = self.get_corresponding_model(**kwargs)
+
+        except TclError:
+            pass
+
+        if self.record:
+            mlogger.debug('Saving existing data.')
+
             try:
                 save_data(
-                    model, did=record.did, **kwargs)
-                if model.__name__ == 'User':
-                    messagebox.showwarning(
-                        'Restart',
-                        'For changes to Users to take effect\n'
-                        'Babel needs to be restarted.\n'
-                        'Please close and reopen Babel.')
+                    model, did=self.record.did, **kwargs)
             except BabelError as e:
                 error_msg = True
                 messagebox.showerror('Database error', e)
-
         else:
             mlogger.debug('Saving new data.')
-            if self.gen_list_select.get() in (
-                    'Audiences', 'Branches', 'Languages',
-                    'Shelf Codes'):
+            if model is not None:
                 try:
-                    name = self.nameEnt.get()
-                    code = self.codeEnt.get()
-                    # validate
-                    kwargs = {
-                        'name': name,
-                        'code': code}
-                except TclError:
-                    pass
+                    save_data(model, **kwargs)
+                except BabelError as e:
+                    messagebox.showerror('Database error', e)
 
-            elif self.gen_list_select.get() in (
-                    'Users', 'Vendors'):
-                try:
-                    name = self.nameEnt.get().strip()
-                    bpl_code = self.bplcodeEnt.get().strip()
-                    nyp_code = self.nypcodeEnt.get().strip()
-                    kwargs = {
-                        'name': name,
-                        'bpl_code': bpl_code,
-                        'nyp_code': nyp_code}
-
-                    if self.gen_list_select.get() == 'Vendors':
-                        kwargs['note'] = self.noteEnt.get().strip()
-                except TclError:
-                    pass
-
-            for k, v in kwargs.items():
-                if v == '':
-                    kwargs[k] = None
-
-            model, kwargs = self.get_corresponding_model(**kwargs)
-            try:
-                if model is not None:
-                    save_data(
-                        model, **kwargs)
-                    if model.__name__ == 'User':
-                        messagebox.showwarning(
-                            'Restart',
-                            'For changes to Users to take effect\n'
-                            'Babel needs to be restarted.\n'
-                            'Please close and reopen Babel.')
-            except BabelError as e:
-                error_msg = True
-                messagebox.showerror('Database error', e)
+        if model is not None and model.__name__ == 'User':
+            messagebox.showwarning(
+                'Restart',
+                'For changes to Users to take effect\n'
+                'Babel needs to be restarted.\n'
+                'Please close and reopen Babel.')
 
         self.populate_detail_list(redo_detail_frame=False)
         if not error_msg:
@@ -342,8 +330,7 @@ class TableView(Frame):
             self.gen_list_select.get(), self.det_list_select.get()))
         model = self.get_corresponding_model()[0]
         if self.gen_list_select.get() in (
-                'Audiences', 'Branches', 'Languages',
-                'Shelf Codes'):
+                'Audiences', 'Branches', 'Languages'):
             if self.det_list_select.get():
                 self.record = get_record(
                     model, name=self.det_list_select.get())
@@ -374,7 +361,8 @@ class TableView(Frame):
                 self.vendorDetailFrame()
         elif self.gen_list_select.get() == 'Material Types':
             if self.det_list_select.get():
-                self.record = get_record(model, name=self.det_list_select.get())
+                self.record = get_record(
+                    model, name=self.det_list_select.get())
                 self.mattypeDetailFrame(
                     self.record.name, self.record.bpl_bib_code,
                     self.record.bpl_ord_code,
@@ -382,6 +370,17 @@ class TableView(Frame):
             else:
                 mlogger.debug('Creating empty details frame.')
                 self.mattypeDetailFrame()
+
+        elif self.gen_list_select.get() == 'Shelf Codes':
+            if self.det_list_select.get():
+                self.record = get_record(
+                    model, name=self.det_list_select.get())
+                self.shelfcodeDetailFrame(
+                    self.record.name, self.record.code,
+                    self.record.includes_audn)
+            else:
+                mlogger.debug('Creating empty details frame.')
+                self.shelfcodeDetailFrame()
 
     def userDetailFrame(self, name='', bpl_code='', nyp_code=''):
         mlogger.debug('userDetailFrame activated.')
@@ -545,6 +544,47 @@ class TableView(Frame):
             self.nameEnt, self.bplbibcodeEnt, self.bplordcodeEnt,
             self.nypbibcodeEnt, self.nypordcodeEnt])
 
+    def shelfcodeDetailFrame(self, name='', code='', includes_audn=True):
+        mlogger.debug('shelfcodeDetailFrame activated.')
+        self.includes_audn = IntVar()
+        if includes_audn:
+            self.includes_audn.set(1)
+        else:
+            self.includes_audn.set(0)
+        if code is None:
+            code = ''
+
+        Label(self.detFrm, text='name').grid(
+            row=0, column=0, sticky='snw', padx=5, pady=5)
+        Label(self.detFrm, text='code').grid(
+            row=1, column=0, sticky='snw', padx=5, pady=5)
+        Label(self.detFrm, text='includes audn code').grid(
+            row=2, column=0, sticky='snw', padx=5, pady=5)
+        self.nameEnt = Entry(
+            self.detFrm,
+            font=RFONT)
+        self.nameEnt.grid(
+            row=0, column=1, columnspan=3, padx=5, pady=5)
+        self.codeEnt = Entry(
+            self.detFrm,
+            font=RFONT)
+        self.codeEnt.grid(
+            row=1, column=1, columnspan=3, padx=5, pady=5)
+        self.includesaudnChx = Checkbutton(
+            self.detFrm,
+            variable=self.includes_audn,
+            onvalue=1, offvalue=0)
+        self.includesaudnChx.grid(
+            row=2, column=1, columnspan=3, padx=5, pady=5)
+        self.nameEnt.insert(0, name)
+        self.codeEnt.insert(0, code)
+        if includes_audn:
+            self.includes_audn.set(1)
+        else:
+            self.includes_audn.set(0)
+        disable_widgets(
+            [self.nameEnt, self.codeEnt, self.includesaudnChx])
+
     def initiate_details_frame(self):
         mlogger.debug('Initiating details frame.')
         # Details frame
@@ -580,16 +620,17 @@ class TableView(Frame):
                 self.detLst.insert(END, v)
 
     def system_observer(self, *args):
-        mlogger.debug('System_observer triggered.')
-        if self.gen_list_select.get():
-            mlogger.debug('Table {} active'.format(
-                self.gen_list_select.get()))
-            self.populate_detail_list()
+        if self.activeW.get() == 'TableView':
+            mlogger.debug('System_observer triggered.')
+            if self.gen_list_select.get():
+                mlogger.debug('Table {} active'.format(
+                    self.gen_list_select.get()))
+                self.populate_detail_list()
 
-            # persist current system
-            user_data = shelve.open(USER_DATA)
-            user_data['system'] = self.system.get()
-            user_data.close()
+                # persist current system
+                user_data = shelve.open(USER_DATA)
+                user_data['system'] = self.system.get()
+                user_data.close()
 
     def observer(self, *args):
         if self.activeW.get() == 'TableView':
