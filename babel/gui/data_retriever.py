@@ -59,6 +59,46 @@ def get_records(model, **kwargs):
         return instances
 
 
+def create_name_index(model, **kwargs):
+    """
+    Creates an value/id index of the model
+    args:
+        model: datatstore class, babel datastore table
+        kwargs: dict, filters to be applied to query
+    returns:
+        idx: dict, {column value: datastore id}
+    """
+    idx = {}
+    with session_scope() as session:
+        instances = retrieve_records(session, model, **kwargs)
+        for i in instances:
+            if i.name is None:
+                idx[i.did] = ''
+            else:
+                idx[i.did] = i.name
+    return idx
+
+
+def create_code_index(model, **kwargs):
+    """
+    Creates an value/id index of the model
+    args:
+        model: datatstore class, babel datastore table
+        kwargs: dict, filters to be applied to query
+    returns:
+        idx: dict, {column value: datastore id}
+    """
+    idx = {}
+    with session_scope() as session:
+        instances = retrieve_records(session, model, **kwargs)
+        for i in instances:
+            if i.code is None:
+                idx[i.did] = ''
+            else:
+                idx[i.did] = i.code
+    return idx
+
+
 def save_data(model, did=None, **kwargs):
     try:
         with session_scope() as session:
