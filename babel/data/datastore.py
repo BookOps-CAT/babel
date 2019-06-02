@@ -5,7 +5,7 @@ Defines and initiates local DB that stores Babel data
 from contextlib import contextmanager
 from datetime import datetime
 
-from sqlalchemy import (DateTime, Column, ForeignKey, Integer,
+from sqlalchemy import (Boolean, DateTime, Column, ForeignKey, Integer,
                         String, Index, UniqueConstraint)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
@@ -145,6 +145,22 @@ class Vendor(Base):
         return f"<Vendor({attrs})>"
 
 
+class Location(Base):
+    __tablename__ = 'location'
+
+    did = Column(Integer, primary_key=True)
+    distgrid_id = Column(Integer, ForeignKey('distgrid.did'), nullable=False)
+    branch_id = Column(Integer, ForeignKey('branch.did'), nullable=False)
+    shelfcode_id = Column(Integer, ForeignKey('shelfcode.did'), nullable=False)
+    qty = Column(Integer, nullable=False, default=1)
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<DistGrid({attrs})>"
+
+
 class DistGrid(Base):
     __tablename__ = 'distgrid'
     __table_args__ = (
@@ -155,6 +171,14 @@ class DistGrid(Base):
     name = Column(String(50), nullable=False)
     distset_id = Column(Integer, ForeignKey('distset.did'),
                         nullable=False)
+    library_id = Column(Integer, ForeignKey('library.did'))
+    lang_id = Column(Integer, ForeignKey('lang.did'))
+    vendor_id = Column(Integer, ForeignKey('vendor.did'))
+    audn_id = Column(Integer, ForeignKey('audn.did'))
+    matType_id = Column(Integer, ForeignKey('mattype.did'))
+
+    locations = relationship(
+        'Location', lazy='joined', cascade='all, delete-orphan')
 
     def __repr__(self):
         state = inspect(self)
@@ -193,6 +217,7 @@ class ShelfCode(Base):
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
     code = Column(String(3))
     name = Column(String(50), nullable=False)
+    includes_audn = Column(Boolean, nullable=False, default=True)
 
     def __repr__(self):
         state = inspect(self)
