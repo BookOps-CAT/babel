@@ -7,7 +7,8 @@ mlogger = logging.getLogger('babel_logger')
 
 
 input_widgets = (
-    'Combobox', 'Listbox', 'TButton', 'TEntry', 'TCheckbutton')
+    'TCombobox', 'Listbox', 'TButton', 'TEntry', 'TCheckbutton',
+    'TSpinbox')
 
 
 def disable_widgets(widgets):
