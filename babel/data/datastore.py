@@ -145,8 +145,8 @@ class Vendor(Base):
         return f"<Vendor({attrs})>"
 
 
-class Location(Base):
-    __tablename__ = 'location'
+class GridLocation(Base):
+    __tablename__ = 'gridlocation'
 
     did = Column(Integer, primary_key=True)
     distgrid_id = Column(Integer, ForeignKey('distgrid.did'), nullable=False)
@@ -158,7 +158,7 @@ class Location(Base):
         state = inspect(self)
         attrs = ', '.join([
             f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
-        return f"<DistGrid({attrs})>"
+        return f"<GridLocation({attrs})>"
 
 
 class DistGrid(Base):
@@ -177,8 +177,8 @@ class DistGrid(Base):
     audn_id = Column(Integer, ForeignKey('audn.did'))
     matType_id = Column(Integer, ForeignKey('mattype.did'))
 
-    locations = relationship(
-        'Location', lazy='joined', cascade='all, delete-orphan')
+    gridlocations = relationship(
+        'GridLocation', lazy='joined', cascade='all, delete-orphan')
 
     def __repr__(self):
         state = inspect(self)
