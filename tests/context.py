@@ -9,3 +9,5 @@ sys.path.insert(0, p)
 from babel.ingest import xlsx
 from babel.data import data_objs
 from babel.data import validators
+from babel.data import datastore
+from babel.data import datastore_worker
