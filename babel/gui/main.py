@@ -33,6 +33,7 @@ class Base(Tk):
         self.profile = StringVar()
         self.profile.trace('w', self.profile_observer)
         self.system = IntVar()  # BPL 1, NYPL 2
+        self.system.trace('w', self.system_observer)
 
         img = Image.open('./icons/App-personal-icon.png')
         profileImg = ImageTk.PhotoImage(img)
@@ -125,12 +126,15 @@ class Base(Tk):
         # profiles index for quick reference
         self.profile_idx = create_name_index(User)
 
-        # profile
+        # profile & system
         user_data = shelve.open(USER_DATA)
-        self.profile.set(user_data['profile'])
+        try:
+            self.profile.set(user_data['profile'])
+            self.system.set(user_data['system'])
+        except KeyError:
+            pass
         user_data.close()
 
-        self.profile.set('All users')
         self.app_data = {
             'activeW': self.activeW,
             'profile': self.profile,
@@ -165,6 +169,11 @@ class Base(Tk):
             user_data = shelve.open(USER_DATA)
             user_data['profile'] = self.profile.get()
             user_data.close()
+
+    def system_observer(self, *args):
+        user_data = shelve.open(USER_DATA)
+        user_data['system'] = self.system.get()
+        user_data.close()
 
     def toggle_fullscreen(self, event=None):
         self.state = not self.state  # Just toggling the boolean
