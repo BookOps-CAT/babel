@@ -43,5 +43,3 @@ def update_record(session, model, did, **kwargs):
 def delete_record(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).one()
     session.delete(instance)
-
-
