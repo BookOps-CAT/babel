@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 import shelve
 from tkinter import *
@@ -8,12 +9,13 @@ from PIL import Image, ImageTk
 
 
 from errors import BabelError
-from data.datastore import (Audn, Branch, DistSet, DistGrid, GridLocation,
-                            Lang, Library, MatType,
+from data.datastore import (Audn, Branch, DistSet, DistGrid,
+                            GridLocation, Lang, Library, MatType,
                             Vendor, ShelfCode)
-from gui.data_retriever import (get_codes, get_names, get_record,
-                                delete_data, create_name_index,
-                                create_code_index, save_data)
+from gui.data_retriever import (get_names, get_record,
+                                delete_data, delete_data_by_did,
+                                create_name_index,
+                                create_code_index, save_data, save_grid_data)
 from gui.fonts import RFONT
 from gui.utils import (disable_widgets, enable_widgets, get_id_from_index,
                        ToolTip)
@@ -50,7 +52,9 @@ class GridView(Frame):
         self.vendor = StringVar()
         self.audn = StringVar()
         self.mattype = StringVar()
-        self.locations = {}
+        self.locations = OrderedDict()
+        self.delete_locations = []
+        self.last_row = 0
         self.counter = StringVar()
 
         # records if updates
@@ -343,55 +347,72 @@ class GridView(Frame):
     def onFrameConfigure(self, event):
         self.locCnv.config(scrollregion=self.locCnv.bbox('all'))
 
+    def create_loc_unit(self, loc=(None, '', '', '')):
+        unitFrm = Frame(self.lf)
+        unitFrm.grid(
+            row=self.last_row, column=0, sticky='ne')
+        removeBtn = Button(
+            unitFrm,
+            image=self.removeImg)
+        removeBtn.image = self.removeImg
+        removeBtn.grid(row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
+        removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
+
+        branchCbx = Combobox(unitFrm, font=RFONT, width=3)
+        branchCbx.grid(
+            row=self.last_row, column=1, sticky='snew', padx=2, pady=4)
+        branchCbx['values'] = sorted(self.branch_idx.values())
+        branchCbx.set(loc[1])
+        shelfCbx = Combobox(unitFrm, font=RFONT, width=3)
+        shelfCbx.grid(
+            row=self.last_row, column=2, sticky='snew', padx=2, pady=4)
+        shelfCbx['values'] = sorted(self.shelf_idx.values())
+        shelfCbx.set(loc[2])
+        qtySbx = Spinbox(
+            unitFrm, font=RFONT, from_=1, to=250, width=3)
+        qtySbx.grid(
+            row=self.last_row, column=3, sticky='snew', padx=2, pady=4)
+        qtySbx.set(loc[3])
+
+        gunit = {
+            'did': loc[0],
+            'parent': unitFrm,
+            'removebtn': removeBtn,
+            'branchCbx': branchCbx,
+            'shelfCbx': shelfCbx,
+            'qtySbx': qtySbx
+        }
+
+        self.locations[removeBtn.winfo_id()] = gunit
+
+        self.last_row += 1
+
     def create_loc_widgets(self, locs=[(None, '', '', '')]):
-        row = 0
+        # reset locations dictionary
+        self.locations = OrderedDict()
+        self.delete_locations = []
+        self.last_row = 0
         for loc in locs:
-            unitFrm = Frame(self.lf)
-            unitFrm.grid(
-                row=row, column=0, sticky='ne')
-            removeBtn = Button(
-                unitFrm,
-                image=self.removeImg)
-            removeBtn.image = self.removeImg
-            removeBtn.grid(row=row, column=0, sticky='ne', padx=5, pady=2)
-            removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
+            self.create_loc_unit(loc)
 
-            branchCbx = Combobox(unitFrm, font=RFONT, width=3)
-            branchCbx.grid(
-                row=row, column=1, sticky='snew', padx=2, pady=4)
-            branchCbx['values'] = sorted(self.branch_idx.values())
-            branchCbx.set(loc[1])
-            shelfCbx = Combobox(unitFrm, font=RFONT, width=3)
-            shelfCbx.grid(
-                row=row, column=2, sticky='snew', padx=2, pady=4)
-            shelfCbx['values'] = sorted(self.shelf_idx.values())
-            shelfCbx.set(loc[2])
-            qtySbx = Spinbox(
-                unitFrm, font=RFONT, from_=1, to=250, width=3)
-            qtySbx.grid(
-                row=row, column=3, sticky='snew', padx=2, pady=4)
-            qtySbx.set(loc[3])
+        self.create_add_locationBtn()
 
-            gunit = {
-                'did': loc[1],
-                'parent': unitFrm,
-                'removebtn': removeBtn,
-                'branchCbx': branchCbx,
-                'shelfCbx': shelfCbx,
-                'qtySbx': qtySbx
-            }
+    def create_add_locationBtn(self):
+        # class wide accessible add button
+        # first try to destroy it
+        try:
+            self.add_locationBtn.destroy()
+        except AttributeError:
+            pass
 
-            self.locations[removeBtn.winfo_id()] = gunit
-
-            row += 1
-
-        add_locationBtn = Button(
+        # rereate in new row
+        self.add_locationBtn = Button(
             self.lf,
             image=self.addImg,
             command=self.add_location)
-        add_locationBtn.image = self.addImg
-        add_locationBtn.grid(
-            row=row + 1, column=0, sticky='nw', padx=5, pady=2)
+        self.add_locationBtn.image = self.addImg
+        self.add_locationBtn.grid(
+            row=self.last_row + 1, column=0, sticky='nw', padx=5, pady=2)
 
     def show_distribution(self, *args):
         name = self.distLst.get(ACTIVE)
@@ -399,13 +420,14 @@ class GridView(Frame):
         self.distr_record = get_record(
             DistSet, name=name, system_id=self.system.get())
 
-        self.gridLst.delete(0, END)
-        for grid in self.distr_record.distgrids:
-            self.gridLst.insert(END, grid.name)
+        self.update_gridLst()
 
         disable_widgets([self.distnameEnt])
 
     def show_grid(self, *args):
+        self.locations = OrderedDict()
+        self.delete_locations = []
+        self.last_row = 0
         enable_widgets(self.gridFrm.winfo_children())
         enable_widgets(self.lf.winfo_children())
         self.grid_name.set(self.gridLst.get(ACTIVE))
@@ -435,21 +457,23 @@ class GridView(Frame):
 
     def add_distribution(self):
         # allow edits in distribution name box
-        enable_widgets([self.distnameEnt])
-        self.distr_name.set('')
-        self.distr_record = None
+        if self.system.get():
+            enable_widgets([self.distnameEnt])
+            self.distr_name.set('')
+            self.distr_record = None
 
-        # remove any data from previous lookups
-        self.grid_name.set('')
-        self.grid_record = None
-        self.gridLst.delete(0, END)
+            # remove any data from previous lookups
+            self.grid_name.set('')
+            self.grid_record = None
+            self.gridLst.delete(0, END)
 
     def edit_distribution(self):
-        self.show_distribution()
-        enable_widgets([self.distnameEnt])
+        # enable Entry wid
+        if self.distr_name.get():
+            enable_widgets([self.distnameEnt])
 
     def delete_distribution(self):
-        if self.distr_record:
+        if self.distr_record and self.distr_name.get():
             msg = 'Are you sure you want to delete\n{}?'.format(
                 str(self.distr_record))
             if messagebox.askokcancel('Deletion', msg):
@@ -458,7 +482,7 @@ class GridView(Frame):
                 delete_data(self.distr_record)
 
                 mlogger.debug('Data deleted.')
-                self.update_distributions()
+                self.reset()
 
             else:
                 mlogger.debug('Delection cancelled by user.')
@@ -490,7 +514,7 @@ class GridView(Frame):
                     messagebox.showerror('Database error', e)
 
             # refresh distributions list
-            self.update_distributions()
+            self.update_distributionLst()
             disable_widgets([self.distnameEnt])
 
     def copy_distribution(self):
@@ -512,6 +536,9 @@ class GridView(Frame):
             enable_widgets(self.gridFrm.winfo_children())
             enable_widgets(self.lf.winfo_children())
 
+            if self.system.get() == 1:
+                disable_widgets([self.libCbx])
+
     def delete_grid(self):
         if self.grid_record:
             msg = 'Are you sure you want to delete\n{}?'.format(
@@ -522,33 +549,85 @@ class GridView(Frame):
                 delete_data(self.grid_record)
 
                 mlogger.debug('Data deleted.')
-                self.update_grids()
+                self.locations = OrderedDict()
+                self.delete_locations = []
+                self.last_row = 0
+                self.grid_name.set('')
+                self.grid_record = None
+                self.update_gridLst()
 
             else:
                 mlogger.debug('Delection cancelled by user.')
 
     def insert_or_update_grid(self):
         if self.distr_record:
-            pass
+            if self.grid_record:
+                grid_id = self.grid_record.did
+            else:
+                grid_id = None
+
+            if self.delete_locations:
+                for did in self.delete_locations:
+                    delete_data_by_did(GridLocation, did)
+
+            gridlocs = []
+
+            for loc in self.locations.values():
+                gridlocs.append(
+                    dict(
+                        gridloc_id=loc['did'],
+                        distgrid_id=grid_id,
+                        branch=loc['branchCbx'].get().strip(),
+                        shelf=loc['shelfCbx'].get().strip(),
+                        qty=loc['qtySbx'].get()
+                    )
+                )
+            try:
+                save_grid_data(
+                    grid_did=grid_id,
+                    name=self.gridEnt.get().strip(),
+                    distset_id=self.distr_record.did,
+                    library=self.libCbx.get().strip(),
+                    lang=self.langCbx.get().strip(),
+                    vendor=self.vendorCbx.get().strip(),
+                    audn=self.audnCbx.get().strip(),
+                    matType=self.mattypeCbx.get().strip(),
+                    gridlocs=gridlocs,
+                    lib_idx=self.lib_idx,
+                    lang_idx=self.lang_idx,
+                    vendor_idx=self.vendor_idx,
+                    audn_idx=self.audn_idx,
+                    mattype_idx=self.mattype_idx,
+                    branch_idx=self.branch_idx,
+                    shelf_idx=self.shelf_idx,
+                )
+
+                self.update_gridLst()
+                disable_widgets(self.gridFrm.winfo_children())
+                disable_widgets(self.lf.winfo_children())
+            except BabelError as e:
+                messagebox.showerror('Database Error', e)
 
     def copy_grid(self):
         pass
 
     def remove_location(self, n):
-        unit = self.locations[n]
-        print(unit['branchCbx'].get())
-        print(unit['shelfCbx'].get())
-        print(unit['qtySbx'].get())
-        print(unit['qtySbx'].winfo_class())
+        # add removed location to list for deletion
+        if self.locations[n]['did']:
+            self.delete_locations.append(self.locations[n]['did'])
+        self.locations[n]['parent'].destroy()
+        self.locations.pop(n, None)
+        self.last_row -= 1
 
     def add_location(self):
-        for c in self.lf.winfo_children():
-            print(c.winfo_class(), c.winfo_id(), c.winfo_name())
+        self.add_locationBtn.destroy()
+        self.create_loc_unit()
+        self.create_add_locationBtn()
 
     def help(self):
-        pass
+        messagebox.showwarning('Help', 'Under construction..')
 
-    def update_grids(self):
+    def update_gridLst(self):
         self.gridLst.delete(0, END)
         if self.distr_record:
             values = get_names(
@@ -556,7 +635,7 @@ class GridView(Frame):
             for v in sorted(values):
                 self.gridLst.insert(END, v)
 
-    def update_distributions(self):
+    def update_distributionLst(self):
         self.distLst.delete(0, END)
         user_id = get_id_from_index(self.profile.get(), self.profile_idx)
         values = get_names(
@@ -580,10 +659,12 @@ class GridView(Frame):
         self.mattype.set('')
         self.distr_record = None
         self.grid_record = None
-        self.locations = {}
+        self.locations = OrderedDict()
+        self.delete_locations = []
+        self.last_row = 0
         self.counter.set('')
-        self.update_grids()
-        self.update_distributions()
+        self.update_gridLst()
+        self.update_distributionLst()
         self.recreate_location_widgets()
 
         disable_widgets([self.distnameEnt])
@@ -594,7 +675,7 @@ class GridView(Frame):
         if self.activeW.get() == 'GridView':
             # redo display for new user
             self.reset()
-            self.update_distributions()
+            self.update_distributionLst()
 
     def system_observer(self, *args):
         if self.activeW.get() == 'GridView':
@@ -631,7 +712,7 @@ class GridView(Frame):
                 self.shelf_idx = create_code_index(
                     ShelfCode, system_id=self.system.get())
 
-                self.update_distributions()
+                self.update_distributionLst()
                 self.recreate_location_widgets()
 
             if self.system.get() == 1:
