@@ -3,18 +3,20 @@ Methods to retrieve data from Babel datastore
 """
 import logging
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, InternalError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 
 
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
                             FundLibraryJoiner, FundMatTypeJoiner,
-                            FundBranchJoiner, Library, MatType)
+                            FundBranchJoiner, Library, MatType, DistGrid,
+                            GridLocation)
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
                                    insert_or_ignore, delete_record,
                                    update_record)
 from errors import BabelError
+from gui.utils import get_id_from_index
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -108,6 +110,76 @@ def save_data(model, did=None, **kwargs):
                 insert_or_ignore(session, model, **kwargs)
     except IntegrityError as e:
         raise BabelError(e)
+
+
+def save_grid_data(**kwargs):
+    # first update existing gridlocations
+    library_id = get_id_from_index(kwargs['library'], kwargs['lib_idx'])
+    lang_id = get_id_from_index(kwargs['lang'], kwargs['lang_idx'])
+    vendor_id = get_id_from_index(kwargs['vendor'], kwargs['vendor_idx'])
+    audn_id = get_id_from_index(kwargs['audn'], kwargs['audn_idx'])
+    matType_id = get_id_from_index(kwargs['matType'], kwargs['mattype_idx'])
+
+    locs = []
+    for loc in kwargs['gridlocs']:
+        branch_id = get_id_from_index(loc['branch'], kwargs['branch_idx'])
+        shelf_id = get_id_from_index(loc['shelf'], kwargs['shelf_idx'])
+        if loc['gridloc_id']:
+            locs.append(
+                GridLocation(
+                    did=loc['gridloc_id'],
+                    distgrid_id=loc['distgrid_id'],
+                    branch_id=branch_id,
+                    shelfcode_id=shelf_id,
+                    qty=loc['qty']))
+        else:
+            if loc['distgrid_id']:
+                locs.append(
+                    GridLocation(
+                        distgrid_id=loc['distgrid_id'],
+                        branch_id=branch_id,
+                        shelfcode_id=shelf_id,
+                        qty=loc['qty']
+                    ))
+            else:
+                locs.append(
+                    GridLocation(
+                        branch_id=branch_id,
+                        shelfcode_id=shelf_id,
+                        qty=loc['qty']
+                    ))
+
+    with session_scope() as session:
+        try:
+            if kwargs['grid_did']:
+                update_record(
+                    session,
+                    DistGrid,
+                    kwargs['grid_did'],
+                    name=kwargs['name'],
+                    distset_id=kwargs['distset_id'],
+                    library_id=library_id,
+                    lang_id=lang_id,
+                    vendor_id=vendor_id,
+                    audn_id=audn_id,
+                    matType_id=matType_id,
+                    gridlocations=locs)
+            else:
+                insert(
+                    session,
+                    DistGrid,
+                    name=kwargs['name'],
+                    distset_id=kwargs['distset_id'],
+                    library_id=library_id,
+                    lang_id=lang_id,
+                    vendor_id=vendor_id,
+                    audn_id=audn_id,
+                    matType_id=matType_id,
+                    gridlocations=locs)
+        except IntegrityError as e:
+            raise BabelError(e)
+        except InternalError as e:
+            raise BabelError(e)
 
 
 def get_fund_data(fund_rec):
@@ -239,3 +311,12 @@ def delete_data(record):
     with session_scope() as session:
         model = type(record)
         delete_record(session, model, did=record.did)
+    mlogger.debug('Deleted {} record did={}'.format(
+        model.__name__, record.did))
+
+
+def delete_data_by_did(model, did):
+    with session_scope() as session:
+        delete_record(session, model, did=did)
+    mlogger.debug('Deleted {} record did={}'.format(
+        model.__name__, did))
