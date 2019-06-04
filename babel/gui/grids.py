@@ -518,7 +518,9 @@ class GridView(Frame):
             disable_widgets([self.distnameEnt])
 
     def copy_distribution(self):
-        pass
+        messagebox.showwarning(
+            'Copy Distribution',
+            'Please be patient.\nCopying entire distribution feature is under construction.')
 
     def add_grid(self):
         if self.distr_name.get():
@@ -609,7 +611,9 @@ class GridView(Frame):
                 messagebox.showerror('Database Error', e)
 
     def copy_grid(self):
-        pass
+        messagebox.showwarning(
+            'Copy Grid',
+            'Please be patient.\nCopying grid feature is under construction.')
 
     def remove_location(self, n):
         # add removed location to list for deletion
