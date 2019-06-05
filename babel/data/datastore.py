@@ -287,6 +287,111 @@ class Fund(Base):
         return f"<ShelfCode({attrs})>"
 
 
+class Resource(Base):
+    __tablename__ = 'resource'
+
+    did = Column(Integer, primary_key=True)
+    title = Column(String(length=250, collation='utf8_bin'), nullable=False)
+    author = Column(String(length=150, collation='utf8_bin'))
+    series = Column(String(length=250, collation='utf8_bin'))
+    publisher = Column(String(length=150, collation='utf8_bin'))
+    pub_date = Column(String(25))
+    summary = Column(String(length=500, collation='utf8_bin'))
+    isbn = Column(String(13))
+    upc = Column(String(20))
+    other_no = Column(String(25))
+    price_list = Column(Integer)
+    price_disc = Column(Integer, default=0.0, nullable=False)
+    desc_url = Column(String(length=500, collation='utf8_bin'))
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Resource({attrs})>"
+
+
+class Cart(Base):
+    __tablename__ = 'cart'
+    __table_args__ = (
+        UniqueConstraint('name', 'system_id', name='uix_cart'), )
+
+    did = Column(Integer, primary_key=True)
+    name = Column(String(50, nullable=False))
+    created = Column(DateTime, nullable=False, default=datetime.now())
+    updated = Column(DateTime, nullable=False)
+    status_id = Column(
+        Integer, ForeignKey('status.did'), nullable=False,
+        default=1)
+    user_id = Column(Integer, ForeignKey('user.did'), nullable=False)
+    system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
+    blanketPO = Column(String(25), nullable=False)
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Cart({attrs})>"
+
+
+class Order(Base):
+    __tablename__ = 'order'
+
+    did = Column(Integer, primary_key=True)
+    oid = Column(String(8))  # include prefix?
+    bid = Column(String(9))  # include prefix?
+    wlo = Column(String(13))
+    resouce_id = Column(Integer, ForeignKey('resource.did'), nullable=False)
+    lang_id = Column(Integer, ForeignKey('lang.did'))
+    audn_id = Column(Integer, ForeignKey('audn.did'))
+    vendor_id = Column(Integer, ForeignKey('vendor.did'))
+    matType_id = Column(Integer, ForeignKey('matType.did'))
+    poPerLine = Column(String(50))
+    note = Column(String(50))
+    comment = Column(String(250))
+
+    locations = relationship(
+        'OrderLocation',
+        cascade='all, delete-orphan',
+        lazy='joined')
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Order({attrs})>"
+
+
+class OrderLocation(Base):
+    __tablename__ = 'orderlocation'
+
+    did = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey('Order.did'), nullable=False)
+    branch_id = Column(Integer, ForeignKey('Branch.did'), nullable=False)
+    shelfcode_id = Column(Integer, ForeignKey('ShelfCode.did'), nullable=False)
+    qty = Column(Integer, nullable=False)
+    fund_id = Column(Integer, ForeignKey('Fund.did'), nullable=False)
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<OrderLocation({attrs})>"
+
+
+class Status(Base):
+    __tablename__ = 'status'
+
+    did = Column(Integer, primary_key=True)
+    name = Column(String(15))
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Status({attrs})>"
+
+
 class Wlos(Base):
     """
     stores unique wlo numbers that can be used for retrieval of bibs
