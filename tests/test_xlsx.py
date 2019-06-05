@@ -49,6 +49,7 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertIsNone(d.series)
                 self.assertEqual(d.publisher, 'Orion')
                 self.assertEqual(d.pub_date, '2016')
+                self.assertIsNone(d.pub_place)
                 self.assertEqual(d.isbn, '9785389109476')
                 self.assertEqual(d.summary, 'Summary 1 here')
                 self.assertEqual(d.price_list, 29.00)
@@ -57,12 +58,14 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertEqual(d.other_no, 'A12')
                 self.assertEqual(
                     d.desc_url, 'https://en.wikipedia.org/wiki/Zendegi')
+                self.assertIsNone(d.misc)
             if c == 1:
                 self.assertEqual(d.title, 'Reamde :  a novel')
                 self.assertEqual(d.author, 'Stephenson, Neal')
                 self.assertIsNone(d.series)
                 self.assertEqual(d.publisher, 'Harper')
                 self.assertEqual(d.pub_date, '2019')
+                self.assertIsNone(d.pub_place)
                 self.assertEqual(d.isbn, '9785389109452')
                 self.assertEqual(d.summary, 'Summary 2 here')
                 self.assertEqual(d.price_list, 13.00)
@@ -71,12 +74,14 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertEqual(d.other_no, 'A13')
                 self.assertEqual(
                     d.desc_url, 'https://en.wikipedia.org/wiki/Reamde')
+                self.assertIsNone(d.misc)
             if c == 2:
                 self.assertEqual(d.title, 'The Best Science fiction of 2019')
                 self.assertIsNone(d.author)
                 self.assertEqual(d.series, 'Asimov Magazine Selection')
                 self.assertIsNone(d.publisher)
                 self.assertIsNone(d.pub_date)
+                self.assertIsNone(d.pub_place)
                 self.assertEqual(d.isbn, '9785389112308')
                 self.assertIsNone(d.summary)
                 self.assertEqual(d.price_list, 15.99)
@@ -84,6 +89,7 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertEqual(d.upc, '5060099503827')
                 self.assertEqual(d.other_no, 'A14')
                 self.assertIsNone(d.desc_url)
+                self.assertIsNone(d.misc)
             c += 1
 
 

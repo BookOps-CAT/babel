@@ -44,3 +44,11 @@ def normalize_price(value):
             return 0.0
     else:
         return 0.0
+
+
+def normalize_whitespaces(value):
+    if type(value) is str:
+        value = value.replace('\t', ' ').replace('\n', ' ')
+        return value
+    else:
+        return value
