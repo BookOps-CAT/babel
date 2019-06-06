@@ -27,7 +27,7 @@ mlogger = logging.getLogger('babel_logger')
 
 class GridView(Frame):
     """
-    Shared among settings widgets frame
+    Distribution templates window
     """
 
     def __init__(self, parent, controller, **app_data):
