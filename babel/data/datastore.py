@@ -317,7 +317,7 @@ class Cart(Base):
         UniqueConstraint('name', 'system_id', name='uix_cart'), )
 
     did = Column(Integer, primary_key=True)
-    name = Column(String(50, nullable=False))
+    name = Column(String(50), nullable=False)
     created = Column(DateTime, nullable=False, default=datetime.now())
     updated = Column(DateTime, nullable=False)
     status_id = Column(
@@ -345,7 +345,7 @@ class Order(Base):
     lang_id = Column(Integer, ForeignKey('lang.did'))
     audn_id = Column(Integer, ForeignKey('audn.did'))
     vendor_id = Column(Integer, ForeignKey('vendor.did'))
-    matType_id = Column(Integer, ForeignKey('matType.did'))
+    matType_id = Column(Integer, ForeignKey('mattype.did'))
     poPerLine = Column(String(50))
     note = Column(String(50))
     comment = Column(String(250))
@@ -366,11 +366,11 @@ class OrderLocation(Base):
     __tablename__ = 'orderlocation'
 
     did = Column(Integer, primary_key=True)
-    order_id = Column(Integer, ForeignKey('Order.did'), nullable=False)
-    branch_id = Column(Integer, ForeignKey('Branch.did'), nullable=False)
-    shelfcode_id = Column(Integer, ForeignKey('ShelfCode.did'), nullable=False)
+    order_id = Column(Integer, ForeignKey('order.did'), nullable=False)
+    branch_id = Column(Integer, ForeignKey('branch.did'), nullable=False)
+    shelfcode_id = Column(Integer, ForeignKey('shelfcode.did'), nullable=False)
     qty = Column(Integer, nullable=False)
-    fund_id = Column(Integer, ForeignKey('Fund.did'), nullable=False)
+    fund_id = Column(Integer, ForeignKey('fund.did'), nullable=False)
 
     def __repr__(self):
         state = inspect(self)
@@ -390,6 +390,39 @@ class Status(Base):
         attrs = ', '.join([
             f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
         return f"<Status({attrs})>"
+
+
+class Sheet(Base):
+    __tablename__ = 'sheet'
+    __table_args__ = (
+        UniqueConstraint('name', 'user_id', name='uix_sheet'), )
+
+    did = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.did'), nullable=False)
+    created = Column(DateTime, nullable=False, default=datetime.now())
+    updated = Column(DateTime, nullable=False, default=datetime.now())
+    header_row = Column(Integer, nullable=False)
+    title_col = Column(String(1), nullable=False)
+    author_col = Column(String(1))
+    series_col = Column(String(1))
+    publisher_col = Column(String(1))
+    pub_date_col = Column(String(1))
+    pub_place_col = Column(String(1))
+    summary_col = Column(String(1))
+    isbn_col = Column(String(1))
+    upc_col = Column(String(1))
+    other_no_col = Column(String(1))
+    price_list_col = Column(String(1))
+    price_disc_col = Column(String(1))
+    desc_url_col = Column(String(1))
+    misc_col = Column(String(1))
+
+    def __repr__(self):
+        state = inspect(self)
+        attrs = ', '.join([
+            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
+        return f"<Sheet({attrs})>"
 
 
 class Wlos(Base):
