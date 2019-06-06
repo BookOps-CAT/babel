@@ -26,7 +26,7 @@ class HomeView(Frame):
             image=importImg,
             compound=TOP,
             text='Import',
-            command=self.import_sheet)
+            command=lambda: controller.show_frame('ImportView'))
         self.importBtn.image = importImg
         self.importBtn.grid(
             row=1, column=0, sticky='sw', padx=20, pady=10)
@@ -134,9 +134,6 @@ class HomeView(Frame):
         self.settingsBtn.image = settingsImg
         self.settingsBtn.grid(
             row=3, column=0, sticky='sw', padx=20, pady=10)
-
-    def import_sheet(self):
-        pass
 
     def observer(self, *args):
         if self.activeW.get() == 'MainView':

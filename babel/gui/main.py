@@ -12,6 +12,7 @@ from gui.reports import ReportView
 from gui.tables import TableView
 from gui.funds import FundView
 from gui.grids import GridView
+from gui.ingest import ImportView
 from paths import USER_DATA
 
 
@@ -83,7 +84,7 @@ class Base(Tk):
             command=lambda: self.show_frame('HomeView'))
         navig_menu.add_command(
             label='Import',
-            command=None)
+            command=lambda: self.show_frame('ImportView'))
         navig_menu.add_command(
             label='Carts',
             command=None)
@@ -143,7 +144,8 @@ class Base(Tk):
 
         # spawn Babel frames
         self.frames = {}
-        for F in (FundView, GridView, HomeView, ReportView, TableView):
+        for F in (FundView, GridView, HomeView, ReportView, TableView,
+                  ImportView):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
                       **self.app_data)
