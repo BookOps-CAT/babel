@@ -18,7 +18,7 @@ class HomeView(Frame):
         self.activeW = app_data['activeW']
         self.activeW.trace('w', self.observer)
 
-        img = Image.open('./icons/App-ark-icon.png')
+        img = Image.open('./icons/App-ark-iconL.png')
         importImg = ImageTk.PhotoImage(img)
         self.importBtn = Button(
             self,
