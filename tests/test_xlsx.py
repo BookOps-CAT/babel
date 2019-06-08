@@ -14,16 +14,16 @@ class TestOrderDataReader(unittest.TestCase):
 
     def test_no_header_provided(self):
         with self.assertRaises(AttributeError):
-            xlsx.OrderDataReader(self.fh_eng)
+            xlsx.ResourceDataReader(self.fh_eng)
 
     def test_no_title_col_provided(self):
         with self.assertRaises(AttributeError):
-            xlsx.OrderDataReader(self.fh_eng, header_row=1)
+            xlsx.ResourceDataReader(self.fh_eng, header_row=1)
 
     def test_eng_sheet(self):
-        data = xlsx.OrderDataReader(
+        data = xlsx.ResourceDataReader(
             self.fh_eng,
-            header_row=1,
+            header_row=2,
             title_col=2,
             author_col=1,
             series_col=3,

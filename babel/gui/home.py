@@ -44,17 +44,17 @@ class HomeView(Frame):
         self.cartBtn.grid(
             row=1, column=1, sticky='sw', padx=20, pady=10)
 
-        img = Image.open('./icons/App-floppy-icon.png')
-        exportImg = ImageTk.PhotoImage(img)
-        self.exportBtn = Button(
+        img = Image.open('./icons/App-chart-icon.png')
+        reportsImg = ImageTk.PhotoImage(img)
+        self.reportsBtn = Button(
             self,
             # style='Regular.TButton',
-            image=exportImg,
+            image=reportsImg,
             compound=TOP,
-            text='Export',
+            text='Reports',
             command=None)
-        self.exportBtn.image = exportImg
-        self.exportBtn.grid(
+        self.reportsBtn.image = reportsImg
+        self.reportsBtn.grid(
             row=1, column=2, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/Action-find-icon.png')
@@ -96,19 +96,6 @@ class HomeView(Frame):
         self.fundBtn.grid(
             row=2, column=1, sticky='sw', padx=20, pady=10)
 
-        img = Image.open('./icons/App-chart-icon.png')
-        reportsImg = ImageTk.PhotoImage(img)
-        self.reportsBtn = Button(
-            self,
-            # style='Regular.TButton',
-            image=reportsImg,
-            compound=TOP,
-            text='Reports',
-            command=None)
-        self.reportsBtn.image = reportsImg
-        self.reportsBtn.grid(
-            row=2, column=2, sticky='sw', padx=20, pady=10)
-
         img = Image.open('./icons/App-database-icon.png')
         dbImg = ImageTk.PhotoImage(img)
         self.dbBtn = Button(
@@ -120,7 +107,7 @@ class HomeView(Frame):
             command=lambda: controller.show_frame('TableView'))
         self.dbBtn.image = dbImg
         self.dbBtn.grid(
-            row=2, column=3, sticky='sw', padx=20, pady=10)
+            row=2, column=2, sticky='sw', padx=20, pady=10)
 
         img = Image.open('./icons/Action-run-icon.png')
         settingsImg = ImageTk.PhotoImage(img)
@@ -133,7 +120,7 @@ class HomeView(Frame):
             command=None)
         self.settingsBtn.image = settingsImg
         self.settingsBtn.grid(
-            row=3, column=0, sticky='sw', padx=20, pady=10)
+            row=2, column=3, sticky='sw', padx=20, pady=10)
 
     def observer(self, *args):
         if self.activeW.get() == 'MainView':

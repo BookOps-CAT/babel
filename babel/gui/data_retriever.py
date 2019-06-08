@@ -1,6 +1,7 @@
 """
 Methods to retrieve data from Babel datastore
 """
+from datetime import datetime
 import logging
 
 from sqlalchemy.exc import IntegrityError, InternalError
@@ -11,13 +12,14 @@ from sqlalchemy.inspection import inspect
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
                             FundLibraryJoiner, FundMatTypeJoiner,
                             FundBranchJoiner, Library, MatType, DistGrid,
-                            GridLocation)
+                            GridLocation, Resource, Cart, Order)
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
                                    insert_or_ignore, delete_record,
                                    update_record)
 from errors import BabelError
 from gui.utils import get_id_from_index
+from ingest.xlsx import ResourceDataReader
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -37,6 +39,28 @@ def convert4datastore(kwargs):
         if value == '':
             kwargs[key] = None
     return kwargs
+
+
+def create_resource_reader(template_record, sheet_fh):
+    record = template_record
+    reader = ResourceDataReader(
+        sheet_fh,
+        header_row=record.header_row,
+        title_col=record.title_col,
+        author_col=record.author_col,
+        series_col=record.series_col,
+        publisher_col=record.publisher_col,
+        pub_date_col=record.pub_date_col,
+        pub_place_col=record.pub_place_col,
+        summary_col=record.summary_col,
+        isbn_col=record.isbn_col,
+        upc_col=record.upc_col,
+        other_no_col=record.other_no_col,
+        price_list_col=record.price_list_col,
+        price_disc_col=record.price_disc_col,
+        desc_url_col=record.desc_url_col,
+        misc_col=record.misc_col)
+    return reader
 
 
 def get_names(model, **kwargs):
@@ -128,6 +152,64 @@ def save_data(model, did=None, **kwargs):
                 insert_or_ignore(session, model, **kwargs)
     except IntegrityError as e:
         raise BabelError(e)
+
+
+def create_cart(
+        cart_name, system_id, profile_id,
+        resource_data, progbar):
+
+    with session_scope() as session:
+
+        # create Cart record
+        name_exists = True
+        n = 0
+        while name_exists and n < 10:
+            name_exists = retrieve_record(
+                session, Cart, name=cart_name)
+            if name_exists:
+                n += 1
+                if '(' in cart_name:
+                    end = cart_name.index('(')
+                    cart_name = cart_name[:end]
+                cart_name = f'{cart_name}({n})'
+
+        cart_rec = insert(
+            session, Cart,
+            name=cart_name,
+            created=datetime.now(),
+            updated=datetime.now(),
+            system_id=system_id,
+            user_id=profile_id)
+
+        progbar['value'] += 1
+        progbar.update()
+
+        # create Resource records
+        for d in resource_data:
+            mlogger.debug(f'{d}')
+            res_rec = insert(
+                session, Resource,
+                title=d.title,
+                author=d.author,
+                series=d.series,
+                publisher=d.publisher,
+                pub_date=d.pub_date,
+                summary=d.summary,
+                isbn=d.isbn,
+                upc=d.upc,
+                other_no=d.other_no,
+                price_list=d.price_list,
+                price_disc=d.price_disc,
+                desc_url=d.desc_url,
+                misc=d.misc)
+
+            ord_rec = insert(
+                session, Order,
+                cart_id=cart_rec.did,
+                resource_id=res_rec.did)
+
+            progbar['value'] += 1
+            progbar.update()
 
 
 def save_grid_data(**kwargs):

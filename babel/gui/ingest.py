@@ -11,12 +11,13 @@ from PIL import Image, ImageTk
 from errors import BabelError
 from data.datastore import Resource, Sheet
 from gui.data_retriever import (get_names, save_data, get_record,
-                                convert4display, delete_data)
+                                convert4display, delete_data,
+                                create_resource_reader, create_cart)
 from gui.fonts import RFONT, LFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets)
 from paths import USER_DATA, MY_DOCS
-from ingest.xlsx import OrderDataReader, SheetReader
+from ingest.xlsx import SheetReader
 
 mlogger = logging.getLogger('babel_logger')
 
@@ -33,6 +34,7 @@ class ImportView(Frame):
         self.app_data = app_data
         self.activeW = app_data['activeW']
         self.activeW.trace('w', self.observer)
+        self.system = app_data['system']
         self.profile = app_data['profile']
         self.profile.trace('w', self.profile_observer)
         self.profile_idx = app_data['profile_idx']
@@ -60,6 +62,7 @@ class ImportView(Frame):
         self.misc_col = StringVar()
         self.created = StringVar()
         self.updated = StringVar()
+        self.fh = None
 
         self.actionFrm = Frame(self)
         self.actionFrm.grid(
@@ -127,13 +130,16 @@ class ImportView(Frame):
             row=0, column=1, sticky='snew', padx=5, pady=10)
 
         # validation of column comboboxes
-        vlcl = (self.register(self.onValidateCol),
-                '%d', '%i', '%P', '%W')
+        self.vlcl = (self.register(self.onValidateCol),
+                     '%d', '%i', '%P', '%W')
+        self.vlen = (self.register(self.onValidateName),
+                     '%P')
 
         self.sheetCbx = Combobox(
             self.templateFrm,
             font=RFONT,
-            textvariable=self.sheet_name)
+            textvariable=self.sheet_name,
+            validate="key", validatecommand=self.vlen)
         self.sheetCbx.grid(
             row=0, column=0, columnspan=2, sticky='snew', padx=5, pady=5)
 
@@ -153,7 +159,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.header_row,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.headerrowEnt.grid(
             row=3, column=1, sticky='snw', padx=5, pady=2)
 
@@ -164,7 +170,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.title_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.titlecolEnt.grid(
             row=4, column=1, sticky='snw', padx=5, pady=2)
 
@@ -175,7 +181,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.author_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.authorcolEnt.grid(
             row=5, column=1, sticky='snw', padx=5, pady=2)
 
@@ -186,7 +192,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.series_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.seriescolEnt.grid(
             row=6, column=1, sticky='snw', padx=5, pady=2)
 
@@ -197,7 +203,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.publisher_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.publishercolEnt.grid(
             row=7, column=1, sticky='snw', padx=5, pady=2)
 
@@ -208,7 +214,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.pub_date_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.pubdatecolEnt.grid(
             row=8, column=1, sticky='snw', padx=5, pady=2)
 
@@ -219,7 +225,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.pub_place_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.pubplacecolEnt.grid(
             row=9, column=1, sticky='snw', padx=5, pady=2)
 
@@ -230,7 +236,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.summary_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.summarycolEnt.grid(
             row=10, column=1, sticky='snw', padx=5, pady=2)
 
@@ -241,7 +247,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.isbn_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.isbncolEnt.grid(
             row=11, column=1, sticky='snw', padx=5, pady=2)
 
@@ -252,7 +258,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.upc_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.upccolEnt.grid(
             row=12, column=1, sticky='snw', padx=5, pady=2)
 
@@ -263,7 +269,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.other_no_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.othernocolEnt.grid(
             row=13, column=1, sticky='snw', padx=5, pady=2)
 
@@ -274,7 +280,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.price_list_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.pricelistcolEnt.grid(
             row=14, column=1, sticky='snw', padx=5, pady=2)
 
@@ -285,7 +291,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.price_disc_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.pricedisccolEnt.grid(
             row=15, column=1, sticky='snw', padx=5, pady=2)
 
@@ -296,7 +302,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.desc_url_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.urldesccolEnt.grid(
             row=16, column=1, sticky='snw', padx=5, pady=2)
 
@@ -307,7 +313,7 @@ class ImportView(Frame):
             font=RFONT,
             width=5,
             textvariable=self.misc_col,
-            validate="key", validatecommand=vlcl)
+            validate="key", validatecommand=self.vlcl)
         self.misccolEnt.grid(
             row=17, column=1, sticky='snw', padx=5, pady=2)
 
@@ -337,7 +343,7 @@ class ImportView(Frame):
             text='import',
             compound=TOP,
             width=10,
-            command=self.import_sheet)
+            command=self.name_cart_widget)
         self.importBtn.image = importImg
         self.importBtn.grid(
             row=0, column=0, sticky='sne', padx=50, pady=20)
@@ -545,6 +551,8 @@ class ImportView(Frame):
 
                 self.updated.set(
                     f'updated:{kwargs["updated"]:%y-%m-%d %H:%M}')
+
+                self.record = get_record(Sheet, name=self.sheet_name.get().strip())
                 self.update_sheet_templates()
                 disable_widgets(self.templateFrm.winfo_children())
                 enable_widgets([self.sheetCbx])
@@ -580,8 +588,85 @@ class ImportView(Frame):
 
         user_data.close()
 
-    def import_sheet(self):
-        pass
+    def name_cart_widget(self):
+        if self.fh and self.record:
+            top = Toplevel()
+            top.title('New cart')
+
+            cart_name = StringVar()
+
+            if self.system.get() == 1:
+                system = 'system: BPL'
+            elif self.system.get() == 2:
+                system = 'system: NYPL'
+
+            profile = f'profile: {self.profile.get()}'
+            profile_id = get_id_from_index(
+                self.profile.get(), self.profile_idx)
+
+            # calculate number of resources
+            c = 0
+            data = create_resource_reader(
+                self.record, self.fh)
+            for d in data:
+                c += 1
+
+            frm = Frame(top)
+            frm.grid(
+                row=0, column=0, sticky='snew', padx=20, pady=20)
+            Label(frm, text='enter cart name:').grid(
+                row=0, column=0, columnspan=2, sticky='snew')
+            nameEnt = Entry(
+                frm,
+                font=RFONT,
+                textvariable=cart_name,
+                validate="key", validatecommand=self.vlen)
+            nameEnt.grid(
+                row=1, column=0, columnspan=2, sticky='snew')
+            Label(frm, text=system).grid(
+                row=2, column=0, sticky='snew', pady=5)
+            Label(frm, text=profile).grid(
+                row=3, column=0, sticky='snew', pady=5)
+
+            progbar = Progressbar(
+                frm,
+                mode='determinate',
+                orient=HORIZONTAL,)
+            progbar.grid(
+                row=3, column=0, columnspan=2, sticky='snew', pady=10)
+            progbar['maximum'] = c + 1
+
+            okBtn = Button(
+                frm,
+                text='create',
+                command=lambda: self.import_sheet(
+                    top, progbar, cart_name.get(),
+                    self.system.get(), profile_id))
+            okBtn.grid(
+                row=4, column=0, sticky='snew', padx=25, pady=10)
+            cancelBtn = Button(
+                frm,
+                text='cancel',
+                command=top.destroy)
+            cancelBtn.grid(
+                row=4, column=1, sticky='snew', padx=25, pady=10)
+
+            top.wait_window()
+
+    def import_sheet(
+            self, top_widget, progbar, cart_name,
+            system_id, profile_id):
+        if cart_name:
+            data = create_resource_reader(
+                self.record, self.fh)
+            try:
+                create_cart(
+                    cart_name, system_id, profile_id, data,
+                    progbar)
+            except BabelError as e:
+                messagebox.showerror('Database Error', e)
+            finally:
+                top_widget.destroy()
 
     def update_sheet_templates(self):
         if self.profile.get() == 'All users':
@@ -629,6 +714,12 @@ class ImportView(Frame):
         if int(i) > 1:
             valid = False
         if P == '0' and W == str(self.header_row):
+            valid = False
+        return valid
+
+    def onValidateName(self, P):
+        valid = True
+        if len(P) > 50:
             valid = False
         return valid
 

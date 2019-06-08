@@ -35,7 +35,7 @@ class SheetReader:
             yield data
 
 
-class OrderDataReader:
+class ResourceDataReader:
     """
     Parses specified rows and columns of the xlsx spreadsheet
     The reader can be iterater over in a loop
@@ -108,7 +108,7 @@ class OrderDataReader:
         self.misc_col = misc_col
 
         try:
-            self.min_row = header_row + 2
+            self.min_row = header_row + 1
         except TypeError:
             raise AttributeError(
                 'Header row number is a required argument')
