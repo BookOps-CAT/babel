@@ -5,8 +5,8 @@ Defines and initiates local DB that stores Babel data
 from contextlib import contextmanager
 from datetime import datetime
 
-from sqlalchemy import (Boolean, DateTime, Column, ForeignKey, Integer,
-                        String, Index, UniqueConstraint)
+from sqlalchemy import (Boolean, DateTime, Float, Column, ForeignKey,
+                        Integer, String, Index, UniqueConstraint)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
@@ -300,9 +300,10 @@ class Resource(Base):
     isbn = Column(String(13))
     upc = Column(String(20))
     other_no = Column(String(25))
-    price_list = Column(Integer)
-    price_disc = Column(Integer, default=0.0, nullable=False)
+    price_list = Column(Float(asdecimal=True))
+    price_disc = Column(Float(asdecimal=True), default=0.0, nullable=False)
     desc_url = Column(String(length=500, collation='utf8_bin'))
+    misc = Column(String(250))
 
     def __repr__(self):
         state = inspect(self)
@@ -325,7 +326,7 @@ class Cart(Base):
         default=1)
     user_id = Column(Integer, ForeignKey('user.did'), nullable=False)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
-    blanketPO = Column(String(25), nullable=False)
+    blanketPO = Column(String(25))
 
     def __repr__(self):
         state = inspect(self)
@@ -403,20 +404,20 @@ class Sheet(Base):
     created = Column(DateTime, nullable=False, default=datetime.now())
     updated = Column(DateTime, nullable=False, default=datetime.now())
     header_row = Column(Integer, nullable=False)
-    title_col = Column(String(1), nullable=False)
-    author_col = Column(String(1))
-    series_col = Column(String(1))
-    publisher_col = Column(String(1))
-    pub_date_col = Column(String(1))
-    pub_place_col = Column(String(1))
-    summary_col = Column(String(1))
-    isbn_col = Column(String(1))
-    upc_col = Column(String(1))
-    other_no_col = Column(String(1))
-    price_list_col = Column(String(1))
-    price_disc_col = Column(String(1))
-    desc_url_col = Column(String(1))
-    misc_col = Column(String(1))
+    title_col = Column(Integer, nullable=False)
+    author_col = Column(Integer)
+    series_col = Column(Integer)
+    publisher_col = Column(Integer)
+    pub_date_col = Column(Integer)
+    pub_place_col = Column(Integer)
+    summary_col = Column(Integer)
+    isbn_col = Column(Integer)
+    upc_col = Column(Integer)
+    other_no_col = Column(Integer)
+    price_list_col = Column(Integer)
+    price_disc_col = Column(Integer)
+    desc_url_col = Column(Integer)
+    misc_col = Column(Integer)
 
     def __repr__(self):
         state = inspect(self)
@@ -576,6 +577,12 @@ def create_datastore(
             name=item[0],
             bpl_code=item[1][1],
             nyp_code=item[2][1])
+
+    for item in STATUS:
+        insert_or_ignore(
+            session, Status,
+            did=item[0],
+            name=item[1])
 
     session.commit()
     session.close()
