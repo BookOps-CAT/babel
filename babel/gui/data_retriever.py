@@ -5,6 +5,7 @@ import logging
 
 from sqlalchemy.exc import IntegrityError, InternalError
 from sqlalchemy.orm.exc import UnmappedInstanceError
+from sqlalchemy.inspection import inspect
 
 
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
@@ -20,6 +21,22 @@ from gui.utils import get_id_from_index
 
 
 mlogger = logging.getLogger('babel_logger')
+
+
+def convert4display(record):
+    state = inspect(record)
+    for attr in state.attrs:
+        if attr.loaded_value is None:
+            setattr(record, attr.key, '')
+        # if type(attr.loaded_value) == int
+    return record
+
+
+def convert4datastore(kwargs):
+    for key, value in kwargs.items():
+        if value == '':
+            kwargs[key] = None
+    return kwargs
 
 
 def get_names(model, **kwargs):
@@ -102,6 +119,7 @@ def create_code_index(model, **kwargs):
 
 
 def save_data(model, did=None, **kwargs):
+    kwargs = convert4datastore(kwargs)
     try:
         with session_scope() as session:
             if did:
