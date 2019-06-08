@@ -89,10 +89,10 @@ class Base(Tk):
             label='Carts',
             command=None)
         navig_menu.add_command(
-            label='Search',
+            label='Reports',
             command=None)
         navig_menu.add_command(
-            label='Export',
+            label='Search',
             command=None)
         navig_menu.add_command(
             label='Grids',
@@ -103,9 +103,6 @@ class Base(Tk):
         navig_menu.add_command(
             label='Tables',
             command=lambda: self.show_frame('TableView'))
-        navig_menu.add_command(
-            label='Reports',
-            command=None)
         navig_menu.add_command(
             label='Settings',
             command=None)
