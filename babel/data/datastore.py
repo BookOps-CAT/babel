@@ -342,7 +342,8 @@ class Order(Base):
     oid = Column(String(8))  # include prefix?
     bid = Column(String(9))  # include prefix?
     wlo = Column(String(13))
-    resouce_id = Column(Integer, ForeignKey('resource.did'), nullable=False)
+    cart_id = Column(Integer, ForeignKey('cart.did'), nullable=False)
+    resource_id = Column(Integer, ForeignKey('resource.did'), nullable=False)
     lang_id = Column(Integer, ForeignKey('lang.did'))
     audn_id = Column(Integer, ForeignKey('audn.did'))
     vendor_id = Column(Integer, ForeignKey('vendor.did'))
