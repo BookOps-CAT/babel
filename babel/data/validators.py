@@ -7,10 +7,12 @@ p3 = re.compile(r'\d{1,4}\.\d{1,}|\d{1,4}')
 
 
 def value2string(value):
-    if type(value) is int or type(value) is float:
-        return str(value)
-    elif type(value) is str:
+    if type(value) is str:
         return value
+    elif value is None:
+        return value
+    else:
+        return str(value)
 
 
 def normalize_date(value):

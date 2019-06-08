@@ -27,6 +27,11 @@ class TestValue2String(unittest.TestCase):
         value_as_uni = validators.value2string(value)
         self.assertIsNone(value_as_uni)
 
+    def test_long_number_to_unicode(self):
+        value = 5060099503825
+        value_as_uni = validators.value2string(value)
+        self.assertEqual(value_as_uni, '5060099503825')
+
 
 class TestNormalizeDate(unittest.TestCase):
     """Test date parsing"""
