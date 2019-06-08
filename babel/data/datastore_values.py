@@ -230,3 +230,9 @@ MATERIAL = [
 USERS = [
     ('generic', ('BPL', '-'), ('NYPL', '-'))
 ]
+
+STATUS = [
+    (1, 'in-process'),
+    (2, 'finalized'),
+    (3, 'cancelled'),
+    (4, 'on-hold')]
