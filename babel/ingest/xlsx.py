@@ -2,11 +2,37 @@
 # how about list of namedtuples as output parsing spreadsheet? pros: immutable, access by name, default values
 
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter, column_index_from_string
 # from openpyxl import Workbook
 
 
 from data.data_objs import VenData
 from data import validators
+
+
+class SheetReader:
+
+    def __init__(self, file):
+        self.wb = load_workbook(
+            filename=file,
+            data_only=True)
+        self.ws = self.wb.active
+        self.max_row = 0
+        self.max_column = 1
+        for row in self.ws.rows:
+            self.max_row += 1
+            max_column = len(row)
+            if max_column > self.max_column:
+                self.max_column = max_column
+        self.range = 'A1:' + str(
+            get_column_letter(self.max_column)) + str(self.max_row)
+
+    def __iter__(self):
+        for row in self.ws[self.range]:
+            data = []
+            for cell in row:
+                data.append(cell.value)
+            yield data
 
 
 class OrderDataReader:
