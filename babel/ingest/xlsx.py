@@ -1,6 +1,8 @@
 # xlsx spreadsheet parser
 # how about list of namedtuples as output parsing spreadsheet? pros: immutable, access by name, default values
 
+import logging
+
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter, column_index_from_string
 # from openpyxl import Workbook
@@ -8,6 +10,9 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 
 from data.data_objs import VenData
 from data import validators
+
+
+mlogger = logging.getLogger('babel_logger')
 
 
 class SheetReader:
@@ -129,8 +134,8 @@ class ResourceDataReader:
         for row in self.ws.iter_rows(
                 values_only=True, min_row=self.min_row):
             data = self._map_content(row)
-            data = self._normalize(data)
             if data:
+                data = self._normalize(data)
                 yield data
 
     def _normalize(self, data):
@@ -157,7 +162,7 @@ class ResourceDataReader:
         kwargs = dict()
         if row[self.title_col] is not None:
             title = row[self.title_col].strip()
-            if title:
+            if title != '':
                 kwargs['title'] = title
                 if self.author_col is not None:
                     kwargs['author'] = row[self.author_col]
