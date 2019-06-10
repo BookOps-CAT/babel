@@ -16,7 +16,7 @@ from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
                                    insert_or_ignore, delete_record,
-                                   update_record)
+                                   update_record, get_cart_data_view_records)
 from errors import BabelError
 from gui.utils import get_id_from_index
 from ingest.xlsx import ResourceDataReader
@@ -420,3 +420,19 @@ def delete_data_by_did(model, did):
         delete_record(session, model, did=did)
     mlogger.debug('Deleted {} record did={}'.format(
         model.__name__, did))
+
+
+def get_carts_data(
+        system_id, user='All users', status=''):
+    data = []
+    with session_scope() as session:
+        recs = get_cart_data_view_records(
+            session,
+            system_id, user, status)
+        for r in recs:
+            data.append((r.cart_id, (
+                r.cart_name,
+                f'{r.cart_date:%y-%m-%d %H:%M}',
+                r.cart_status,
+                r.cart_owner)))
+    return data

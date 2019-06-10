@@ -315,7 +315,7 @@ class Resource(Base):
 class Cart(Base):
     __tablename__ = 'cart'
     __table_args__ = (
-        UniqueConstraint('name', 'system_id', name='uix_cart'), )
+        UniqueConstraint('name', 'system_id', 'user_id', name='uix_cart'), )
 
     did = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
@@ -586,5 +586,20 @@ def create_datastore(
             name=item[1])
 
     session.commit()
+
+    print('creating carts data view...')
+    stmn = """
+    CREATE VIEW carts_data AS
+        SELECT cart.did AS cart_id, cart.name AS cart_name,
+               cart.updated AS cart_date, cart.system_id AS system_id,
+               status.name AS cart_status, user.name AS cart_owner 
+        FROM cart
+            JOIN status ON status.did = cart.status_id
+            JOIN user ON user.did = cart.user_id
+    """
+    session.execute(stmn)
+
+    session.close()
+
     session.close()
     print('DB set-up complete.')

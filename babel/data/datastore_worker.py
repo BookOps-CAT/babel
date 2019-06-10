@@ -1,6 +1,7 @@
 # datastore transations and methods
 
 from sqlalchemy.orm import load_only
+from sqlalchemy.sql import text
 
 
 def insert_or_ignore(session, model, **kwargs):
@@ -43,3 +44,38 @@ def update_record(session, model, did, **kwargs):
 def delete_record(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).one()
     session.delete(instance)
+
+
+def get_cart_data_view_records(
+        session, system_id, user='All users', status=''):
+    if user == 'All users' and status:
+        stmn = text("""
+            SELECT cart_id, cart_name, cart_date, system_id, cart_status, cart_owner
+            FROM carts_data
+            WHERE system_id=:system_id AND cart_status=:status
+        """)
+        stmn = stmn.bindparams(system_id=system_id, status=status)
+
+    elif user == 'All users' and not status:
+        stmn = text("""
+            SELECT cart_id, cart_name, cart_date, system_id, cart_status, cart_owner
+            FROM carts_data
+            WHERE system_id=:system_id
+        """)
+        stmn = stmn.bindparams(system_id=system_id)
+    elif user != 'All users' and not status:
+        stmn = text("""
+            SELECT cart_id, cart_name, cart_date, system_id, cart_status, cart_owner
+            FROM carts_data
+            WHERE system_id=:system_id AND cart_owner=:user
+        """)
+        stmn = stmn.bindparams(system_id=system_id, user=user)
+    else:
+        stmn = text("""
+            SELECT cart_id, cart_name, cart_date, system_id, cart_status, cart_owner
+            FROM carts_data
+            WHERE system_id=:system_id AND cart_owner=:user AND cart_status=:status
+        """)
+        stmn = stmn.bindparams(system_id=system_id, user=user, status=status)
+    instances = session.execute(stmn)
+    return instances
