@@ -13,6 +13,8 @@ from gui.tables import TableView
 from gui.funds import FundView
 from gui.grids import GridView
 from gui.ingest import ImportView
+from gui.carts import CartsView
+from gui.cart import CartView
 from paths import USER_DATA
 
 
@@ -87,7 +89,7 @@ class Base(Tk):
             command=lambda: self.show_frame('ImportView'))
         navig_menu.add_command(
             label='Carts',
-            command=None)
+            command=lambda: self.show_frame('CartsView'))
         navig_menu.add_command(
             label='Reports',
             command=None)
@@ -133,16 +135,62 @@ class Base(Tk):
             pass
         user_data.close()
 
+        # create icons and share them among widgets
+        img = Image.open('./icons/Action-edit-add-iconM.png')
+        addImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-reload-iconM.png')
+        editImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-cancel-iconM.png')
+        deleteImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-ok-iconM.png')
+        saveImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-button-info-iconM.png')
+        helpImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-arrow-blue-double-down-iconM.png')
+        copyImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-viewmag-iconM.png')
+        viewImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-floppy-iconM.png')
+        marcImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-spreadsheet-iconM.png')
+        sheetImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-proxy-iconM.png')
+        linkImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-arrow-blue-left-iconS.png')
+        previousImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-arrow-blue-right-iconS.png')
+        nextImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-arrow-blue-double-left-iconS.png')
+        startImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-arrow-blue-double-right-iconS.png')
+        endImg = ImageTk.PhotoImage(img)
+
         self.app_data = {
             'activeW': self.activeW,
             'profile': self.profile,
             'profile_idx': self.profile_idx,
-            'system': self.system}
+            'system': self.system,
+            'value': None,
+            'img': {
+                'add': addImg,
+                'edit': editImg,
+                'delete': deleteImg,
+                'save': saveImg,
+                'help': helpImg,
+                'copy': copyImg,
+                'view': viewImg,
+                'marc': marcImg,
+                'sheet': sheetImg,
+                'link': linkImg,
+                'previous': previousImg,
+                'next': nextImg,
+                'start': startImg,
+                'end': endImg}}
 
         # spawn Babel frames
         self.frames = {}
         for F in (FundView, GridView, HomeView, ReportView, TableView,
-                  ImportView):
+                  ImportView, CartsView, CartView):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
                       **self.app_data)

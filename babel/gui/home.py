@@ -39,7 +39,7 @@ class HomeView(Frame):
             image=cartImg,
             compound=TOP,
             text='Cart',
-            command=None)
+            command=lambda: controller.show_frame('CartsView'))
         self.cartBtn.image = cartImg
         self.cartBtn.grid(
             row=1, column=1, sticky='sw', padx=20, pady=10)
@@ -52,7 +52,7 @@ class HomeView(Frame):
             image=reportsImg,
             compound=TOP,
             text='Reports',
-            command=None)
+            command=lambda: controller.show_frame('CartView'))
         self.reportsBtn.image = reportsImg
         self.reportsBtn.grid(
             row=1, column=2, sticky='sw', padx=20, pady=10)

@@ -38,7 +38,7 @@ class ImportView(Frame):
         self.profile = app_data['profile']
         self.profile.trace('w', self.profile_observer)
         self.profile_idx = app_data['profile_idx']
-        list_height = int((self.winfo_screenheight() - 100) / 25)
+        # list_height = int((self.winfo_screenheight() - 100) / 25)
 
         # variables
         self.sheet_name = StringVar()
