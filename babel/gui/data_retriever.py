@@ -43,6 +43,15 @@ def convert4datastore(kwargs):
 
 def create_resource_reader(template_record, sheet_fh):
     record = template_record
+
+    # convert any empty strings back to None
+    state = inspect(record)
+    for attr in state.attrs:
+        if attr.loaded_value == '':
+            setattr(record, attr.key, None)
+
+    mlogger.debug('Applying following sheet template: {}'.format(record))
+
     reader = ResourceDataReader(
         sheet_fh,
         header_row=record.header_row,
@@ -60,6 +69,7 @@ def create_resource_reader(template_record, sheet_fh):
         price_disc_col=record.price_disc_col,
         desc_url_col=record.desc_url_col,
         misc_col=record.misc_col)
+
     return reader
 
 
@@ -186,7 +196,6 @@ def create_cart(
 
         # create Resource records
         for d in resource_data:
-            mlogger.debug(f'{d}')
             res_rec = insert(
                 session, Resource,
                 title=d.title,
@@ -203,7 +212,7 @@ def create_cart(
                 desc_url=d.desc_url,
                 misc=d.misc)
 
-            ord_rec = insert(
+            insert(
                 session, Order,
                 cart_id=cart_rec.did,
                 resource_id=res_rec.did)

@@ -32,7 +32,6 @@ class CartsView(Frame):
         Frame.__init__(self, parent)
         self.controller = controller
         self.app_data = app_data
-        self.app_data['cart_id'] = 1
         self.activeW = app_data['activeW']
         self.activeW.trace('w', self.observer)
         self.system = app_data['system']
@@ -40,6 +39,7 @@ class CartsView(Frame):
         self.profile = app_data['profile']
         self.profile.trace('w', self.observer)
         self.profile_idx = app_data['profile_idx']
+        self.active_id = app_data['active_id']
 
         # local variables
         self.status_filter = StringVar()
@@ -59,8 +59,12 @@ class CartsView(Frame):
 
         list_height = int((self.winfo_screenheight() - 100) / 25)
 
-        Label(self, text='Carts:').grid(
+        Label(self, text='selected: ').grid(
             row=0, column=0, sticky='snw', padx=10, pady=5)
+        self.selcartLbl = Label(
+            self, textvariable=self.selected_cart, font=RFONT)
+        self.selcartLbl.grid(
+            row=0, column=0, sticky='sne', pady=5)
 
         # carts treeview
         columns = (
@@ -94,7 +98,7 @@ class CartsView(Frame):
         scrollbar.grid(row=1, column=1, rowspan=20, sticky='ns')
         self.cartTrv.configure(yscrollcommand=scrollbar.set)
 
-        self.cartTrv.bind('<Button-1>', self.selectItem)
+        self.cartTrv.bind('<ButtonRelease-1>', self.selectItem)
 
         # action buttons frame
         self.actionFrm = Frame(self)
@@ -189,8 +193,7 @@ class CartsView(Frame):
         pass
 
     def edit_data(self):
-        self.app_data['value'] = self.cart_idx[self.selected_cart.get()]
-        print(self.app_data['value'])
+        self.active_id.set(self.cart_idx[self.selected_cart.get()])
         self.controller.show_frame('CartView')
 
     def copy_data(self):
@@ -213,7 +216,10 @@ class CartsView(Frame):
 
     def selectItem(self, a):
         curItem = self.cartTrv.focus()
-        self.selected_cart.set(self.cartTrv.item(curItem)['values'][0])
+        try:
+            self.selected_cart.set(self.cartTrv.item(curItem)['values'][0])
+        except IndexError:
+            pass
 
     def treeview_sort_column(self, tv, col, reverse):
         tree_list = [(tv.set(k, col), k) for k in tv.get_children('')]

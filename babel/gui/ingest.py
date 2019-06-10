@@ -18,6 +18,7 @@ from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets)
 from paths import USER_DATA, MY_DOCS
 from ingest.xlsx import SheetReader
+from logging_settings import format_traceback
 
 mlogger = logging.getLogger('babel_logger')
 
@@ -608,8 +609,15 @@ class ImportView(Frame):
             c = 0
             data = create_resource_reader(
                 self.record, self.fh)
-            for d in data:
-                c += 1
+            try:
+                for d in data:
+                    c += 1
+            except Exception as exc:
+                _, _, exc_traceback = sys.exc_info()
+                tb = format_traceback(exc, exc_traceback)
+                mlogger.error(
+                    f'Unhandled error while using ResourceDataReader.'
+                    'Traceback: {tb}')
 
             frm = Frame(top)
             frm.grid(

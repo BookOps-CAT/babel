@@ -37,6 +37,7 @@ class Base(Tk):
         self.profile.trace('w', self.profile_observer)
         self.system = IntVar()  # BPL 1, NYPL 2
         self.system.trace('w', self.system_observer)
+        self.active_id = IntVar()
 
         img = Image.open('./icons/App-personal-icon.png')
         profileImg = ImageTk.PhotoImage(img)
@@ -170,7 +171,7 @@ class Base(Tk):
             'profile': self.profile,
             'profile_idx': self.profile_idx,
             'system': self.system,
-            'value': None,
+            'active_id': self.active_id,
             'img': {
                 'add': addImg,
                 'edit': editImg,

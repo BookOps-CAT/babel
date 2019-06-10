@@ -28,13 +28,14 @@ class CartView(Frame):
         Frame.__init__(self, parent)
         self.controller = controller
         self.app_data = app_data
+        self.cart_id = app_data['active_id']
         self.activeW = app_data['activeW']
         self.activeW.trace('w', self.observer)
         self.system = app_data['system']
         self.system.trace('w', self.observer)
         self.profile = app_data['profile']
         self.profile.trace('w', self.observer)
-        max_height = int((self.winfo_screenheight() - 150))
+        max_height = int((self.winfo_screenheight() - 200))
 
         # local variables
         self.cart_name = StringVar()
@@ -309,11 +310,9 @@ class CartView(Frame):
     def nav_next(self):
         pass
 
-
     def observer(self, *args):
         if self.activeW.get() == 'CartView':
-            print(self.app_data['value'])
-            cart = get_record(Cart, did=self.app_data['value'])
+            cart = get_record(Cart, did=self.cart_id.get())
             self.cart_name.set(cart.name)
 
     def preview(self):
