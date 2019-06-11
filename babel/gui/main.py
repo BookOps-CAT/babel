@@ -165,6 +165,18 @@ class Base(Tk):
         startImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-arrow-blue-double-right-iconS.png')
         endImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-browser-iconM.png')
+        sierraImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-cancel-iconS.png')
+        deleteImgS = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-reload-iconS.png')
+        editImgS = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-develop-iconS.png')
+        notFoundImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-konqueror-iconS.png')
+        foundImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-edit-add-iconS.png')
+        addImgS = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -186,7 +198,13 @@ class Base(Tk):
                 'previous': previousImg,
                 'next': nextImg,
                 'start': startImg,
-                'end': endImg}}
+                'end': endImg,
+                'sierra': sierraImg,
+                'deleteS': deleteImgS,
+                'editS': editImgS,
+                'notfound': notFoundImg,
+                'found': foundImg,
+                'addS': addImgS}}
 
         # spawn Babel frames
         self.frames = {}

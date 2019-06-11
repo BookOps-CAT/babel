@@ -108,7 +108,8 @@ def get_record(model, **kwargs):
 def get_records(model, **kwargs):
     with session_scope() as session:
         instances = retrieve_records(session, model, **kwargs)
-        session.expunge(instances)
+        for i in instances:
+            session.expunge(i)
         return instances
 
 
