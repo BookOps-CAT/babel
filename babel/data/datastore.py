@@ -296,6 +296,7 @@ class Resource(Base):
     series = Column(String(length=250, collation='utf8_bin'))
     publisher = Column(String(length=150, collation='utf8_bin'))
     pub_date = Column(String(25))
+    pub_place = Column(String(length=50, collation='utf8_bin'))
     summary = Column(String(length=500, collation='utf8_bin'))
     isbn = Column(String(13))
     upc = Column(String(20))
