@@ -175,7 +175,7 @@ class Base(Tk):
         notFoundImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-konqueror-iconS.png')
         foundImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/App-edit-add-iconS.png')
+        img = Image.open('./icons/Action-edit-add-iconS.png')
         addImgS = ImageTk.PhotoImage(img)
 
         self.app_data = {

@@ -371,7 +371,7 @@ class CartView(Frame):
 
 
         # instead pull in one session all data and here just provide each piece
-        orec = get_record(Order, did=order_id)  
+        orec = get_record(Order, did=order_id)
         rrec = get_record(Resource, did=orec.resource_id)
 
         # provide description data
@@ -403,7 +403,7 @@ class CartView(Frame):
         editBtn.image = self.editImgS
         editBtn.grid(
             row=0, column=4, sticky='se', padx=2, pady=2)
-        
+
         deleteBtn = Button(
             descFrm,
             image=self.deleteImgS,
@@ -463,28 +463,28 @@ class CartView(Frame):
         gridFrm.grid(
             row=1, column=1, sticky='snew', padx=10, pady=5)
 
-        removeBtn = Button(
-            gridFrm,
-            image=self.deleteImgS)
-        removeBtn.image = self.deleteImgS
-        removeBtn.grid(row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
-        removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
+        # removeBtn = Button(
+        #     gridFrm,
+        #     image=self.deleteImgS)
+        # removeBtn.image = self.deleteImgS
+        # removeBtn.grid(row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
+        # removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
 
-        branchCbx = Combobox(gridFrm, font=RFONT, width=3)
-        branchCbx.grid(
-            row=self.last_row, column=1, sticky='snew', padx=2, pady=4)
-        branchCbx['values'] = sorted(self.branch_idx.values())
-        branchCbx.set(loc[1])
-        shelfCbx = Combobox(gridFrm, font=RFONT, width=3)
-        shelfCbx.grid(
-            row=self.last_row, column=2, sticky='snew', padx=2, pady=4)
-        shelfCbx['values'] = sorted(self.shelf_idx.values())
-        shelfCbx.set(loc[2])
-        qtySbx = Spinbox(
-            gridFrm, font=RFONT, from_=1, to=250, width=3)
-        qtySbx.grid(
-            row=self.last_row, column=3, sticky='snew', padx=2, pady=4)
-        qtySbx.set(loc[3])
+        # branchCbx = Combobox(gridFrm, font=RFONT, width=3)
+        # branchCbx.grid(
+        #     row=self.last_row, column=1, sticky='snew', padx=2, pady=4)
+        # branchCbx['values'] = sorted(self.branch_idx.values())
+        # branchCbx.set(loc[1])
+        # shelfCbx = Combobox(gridFrm, font=RFONT, width=3)
+        # shelfCbx.grid(
+        #     row=self.last_row, column=2, sticky='snew', padx=2, pady=4)
+        # shelfCbx['values'] = sorted(self.shelf_idx.values())
+        # shelfCbx.set(loc[2])
+        # qtySbx = Spinbox(
+        #     gridFrm, font=RFONT, from_=1, to=250, width=3)
+        # qtySbx.grid(
+        #     row=self.last_row, column=3, sticky='snew', padx=2, pady=4)
+        # qtySbx.set(loc[3])
 
 
 
@@ -511,7 +511,7 @@ class CartView(Frame):
             if self.profile.get() != 'All users':
                 profile_id = get_id_from_index(
                     self.profile.get(), self.profile_idx)
-                
+
                 # distribution
                 self.distr = get_names(
                     DistSet,
