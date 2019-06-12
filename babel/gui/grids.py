@@ -47,11 +47,6 @@ class GridView(Frame):
         # local variables
         self.distr_name = StringVar()
         self.grid_name = StringVar()
-        self.library = StringVar()
-        self.lang = StringVar()
-        self.vendor = StringVar()
-        self.audn = StringVar()
-        self.mattype = StringVar()
         self.locations = OrderedDict()
         self.delete_locations = []
         self.last_row = 0
@@ -64,29 +59,16 @@ class GridView(Frame):
         # indexes to refernce names/codes to datastore id
         self.branch_idx = {}
         self.shelf_idx = {}
-        self.lib_idx = {}
-        self.lang_idx = {}
-        self.vendor_idx = {}
-        self.audn_idx = {}
-        self.matttype_idx = {}
 
         # icons
-        img = Image.open('./icons/Action-remove-iconS.png')
-        self.removeImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/Action-edit-add-iconS.png')
-        self.addImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/Action-edit-add-iconM.png')
-        addImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/Action-reload-iconM.png')
-        editImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/Action-arrow-blue-double-down-iconM.png')
-        copyImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/Action-cancel-iconM.png')
-        deleteImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/Action-ok-iconM.png')
-        saveImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/Action-button-info-iconM.png')
-        helpImg = ImageTk.PhotoImage(img)
+        self.removeImg = self.app_data['img']['deleteS']
+        self.addImg = self.app_data['img']['addS']
+        addImg = self.app_data['img']['add']
+        editImg = self.app_data['img']['edit']
+        copyImg = self.app_data['img']['copy']
+        deleteImg = self.app_data['img']['delete']
+        saveImg = self.app_data['img']['save']
+        helpImg = self.app_data['img']['help']
 
         # distributions list
         Label(self, text='Distributions:').grid(
@@ -107,13 +89,13 @@ class GridView(Frame):
 
         # distribution name
         Label(self, text='name').grid(
-            row=0, column=3, sticky='snw', padx=10)
+            row=1, column=3, sticky='snw', padx=10)
         self.distnameEnt = Entry(
             self,
             textvariable=self.distr_name,
             font=RFONT)
         self.distnameEnt.grid(
-            row=0, column=4, columnspan=4, sticky='snew')
+            row=1, column=4, columnspan=4, sticky='snew', pady=20)
 
         # distribution action buttons
         self.daddBtn = Button(
@@ -173,8 +155,8 @@ class GridView(Frame):
         # details frame
         self.detFrm = LabelFrame(self, text='Distribution details')
         self.detFrm.grid(
-            row=1, column=3, rowspan=40,
-            columnspan=10, sticky='snew', padx=10, pady=5)
+            row=2, column=3, rowspan=40,
+            columnspan=10, sticky='snew', padx=10, pady=10)
 
         # grid list
         Label(self.detFrm, text='Grids:').grid(
@@ -247,8 +229,8 @@ class GridView(Frame):
             row=0, column=3, rowspan=40, columnspan=10,
             sticky='snew', padx=5, pady=10)
         self.gridFrm.columnconfigure(2, minsize=20)
-        self.gridFrm.columnconfigure(3, minsize=230)
-        self.gridFrm.rowconfigure(8, minsize=250)
+        # self.gridFrm.columnconfigure(3, minsize=230)
+        # self.gridFrm.rowconfigure(8, minsize=250)
 
         Label(self.gridFrm, text='name').grid(
             row=0, column=0, sticky='snew', padx=5)
@@ -262,60 +244,10 @@ class GridView(Frame):
         self.counterLbl.grid(
             row=2, column=0, columnspan=2, sticky='snew', padx=5, pady=5)
 
-        Label(self.gridFrm, text='library').grid(
-            row=3, column=0, sticky='nsw', padx=5, pady=5)
-        self.libCbx = Combobox(
-            self.gridFrm,
-            textvariable=self.library,
-            font=RFONT,
-            width=10)
-        self.libCbx.grid(
-            row=3, column=1, sticky='snw', padx=5, pady=5)
-
-        Label(self.gridFrm, text='language').grid(
-            row=4, column=0, sticky='nsw', padx=5, pady=5)
-        self.langCbx = Combobox(
-            self.gridFrm,
-            textvariable=self.lang,
-            font=RFONT,
-            width=10)
-        self.langCbx.grid(
-            row=4, column=1, sticky='snw', padx=5, pady=5)
-
-        Label(self.gridFrm, text='vendor').grid(
-            row=5, column=0, sticky='nsw', padx=5, pady=5)
-        self.vendorCbx = Combobox(
-            self.gridFrm,
-            textvariable=self.vendor,
-            font=RFONT,
-            width=10)
-        self.vendorCbx.grid(
-            row=5, column=1, sticky='snw', padx=5, pady=5)
-
-        Label(self.gridFrm, text='audience').grid(
-            row=6, column=0, sticky='nsw', padx=5, pady=5)
-        self.audnCbx = Combobox(
-            self.gridFrm,
-            textvariable=self.audn,
-            font=RFONT,
-            width=10)
-        self.audnCbx.grid(
-            row=6, column=1, sticky='snw', padx=5, pady=5)
-
-        Label(self.gridFrm, text='mat. type').grid(
-            row=7, column=0, sticky='nsw', padx=5, pady=5)
-        self.mattypeCbx = Combobox(
-            self.gridFrm,
-            textvariable=self.mattype,
-            font=RFONT,
-            width=10)
-        self.mattypeCbx.grid(
-            row=7, column=1, sticky='snw', padx=5, pady=5)
-
         # location frame
         self.locFrm = LabelFrame(self.gridFrm, text='Locations')
         self.locFrm.grid(
-            row=0, column=3, rowspan=10)
+            row=3, column=0, rowspan=10)
         Label(self.locFrm, text='branch').grid(
             row=0, column=0, sticky='snew', pady=5)
         Label(self.locFrm, text='shelf').grid(
@@ -355,7 +287,8 @@ class GridView(Frame):
             unitFrm,
             image=self.removeImg)
         removeBtn.image = self.removeImg
-        removeBtn.grid(row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
+        removeBtn.grid(
+            row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
         removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
 
         branchCbx = Combobox(unitFrm, font=RFONT, width=3)
@@ -432,12 +365,6 @@ class GridView(Frame):
         enable_widgets(self.lf.winfo_children())
         self.grid_name.set(self.gridLst.get(ACTIVE))
         self.grid_record = get_record(DistGrid, name=self.grid_name.get())
-        self.langCbx.set(self.lang_idx[self.grid_record.lang_id])
-        self.vendorCbx.set(self.vendor_idx[self.grid_record.vendor_id])
-        self.audnCbx.set(self.audn_idx[self.grid_record.audn_id])
-        self.mattypeCbx.set(self.mattype_idx[self.grid_record.matType_id])
-        if self.system.get() == 2:
-            self.libCbx.set(self.lib_idx[self.grid_record.library_id])
 
         self.lf.destroy()
         self.display_frame()
@@ -530,16 +457,10 @@ class GridView(Frame):
             self.grid_record = None
             self.recreate_location_widgets()
 
-            if self.system.get() == 1:
-                disable_widgets([self.libCbx])
-
     def edit_grid(self):
         if self.grid_name.get():
             enable_widgets(self.gridFrm.winfo_children())
             enable_widgets(self.lf.winfo_children())
-
-            if self.system.get() == 1:
-                disable_widgets([self.libCbx])
 
     def delete_grid(self):
         if self.grid_record:
@@ -589,17 +510,7 @@ class GridView(Frame):
                     grid_did=grid_id,
                     name=self.gridEnt.get().strip(),
                     distset_id=self.distr_record.did,
-                    library=self.libCbx.get().strip(),
-                    lang=self.langCbx.get().strip(),
-                    vendor=self.vendorCbx.get().strip(),
-                    audn=self.audnCbx.get().strip(),
-                    matType=self.mattypeCbx.get().strip(),
                     gridlocs=gridlocs,
-                    lib_idx=self.lib_idx,
-                    lang_idx=self.lang_idx,
-                    vendor_idx=self.vendor_idx,
-                    audn_idx=self.audn_idx,
-                    mattype_idx=self.mattype_idx,
                     branch_idx=self.branch_idx,
                     shelf_idx=self.shelf_idx,
                 )
@@ -656,11 +567,6 @@ class GridView(Frame):
     def reset(self):
         self.distr_name.set('')
         self.grid_name.set('')
-        self.library.set('')
-        self.lang.set('')
-        self.vendor.set('')
-        self.audn.set('')
-        self.mattype.set('')
         self.distr_record = None
         self.grid_record = None
         self.locations = OrderedDict()
@@ -699,17 +605,6 @@ class GridView(Frame):
 
             # retireve datastore values and id to populate widgets
             # and create a quick reference
-            self.audn_idx = create_name_index(Audn)
-            self.audnCbx['values'] = sorted(self.audn_idx.values())
-            self.lang_idx = create_name_index(Lang)
-            self.langCbx['values'] = sorted(self.lang_idx.values())
-            self.lib_idx = create_name_index(Library)
-            self.libCbx['values'] = sorted(self.lib_idx.values())
-            self.mattype_idx = create_name_index(MatType)
-            self.mattypeCbx['values'] = sorted(self.mattype_idx.values())
-            self.vendor_idx = create_name_index(Vendor)
-            self.vendorCbx['values'] = sorted(self.vendor_idx.values())
-
             if self.system.get():
                 self.branch_idx = create_code_index(
                     Branch, system_id=self.system.get())
@@ -718,9 +613,6 @@ class GridView(Frame):
 
                 self.update_distributionLst()
                 self.recreate_location_widgets()
-
-            if self.system.get() == 1:
-                disable_widgets([self.libCbx])
 
             elif self.system.get() == 2:
                 enable_widgets([self.libCbx])

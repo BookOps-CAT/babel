@@ -16,7 +16,8 @@ from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
                                    insert_or_ignore, delete_record,
-                                   update_record, get_cart_data_view_records)
+                                   update_record, get_cart_data_view_records,
+                                   retrieve_cart_order_ids)
 from errors import BabelError
 from gui.utils import get_id_from_index
 from ingest.xlsx import ResourceDataReader
@@ -56,6 +57,7 @@ def create_resource_reader(template_record, sheet_fh):
         sheet_fh,
         header_row=record.header_row,
         title_col=record.title_col,
+        add_title_col=record.add_title_col,
         author_col=record.author_col,
         series_col=record.series_col,
         publisher_col=record.publisher_col,
@@ -97,7 +99,7 @@ def get_record(model, **kwargs):
     with session_scope() as session:
         instance = retrieve_record(session, model, **kwargs)
         try:
-            session.expunge(instance)
+            session.expunge_all()
             return instance
         except UnmappedInstanceError:
             pass
@@ -108,9 +110,28 @@ def get_record(model, **kwargs):
 def get_records(model, **kwargs):
     with session_scope() as session:
         instances = retrieve_records(session, model, **kwargs)
-        for i in instances:
-            session.expunge(i)
+        session.expunge_all()
         return instances
+
+
+def get_order_ids(cart_id):
+    ids = []
+    with session_scope() as session:
+        order_ids = retrieve_cart_order_ids(session, cart_id)
+        for i in order_ids:
+            ids.append(i[0])
+    return ids
+
+
+def get_orders_by_id(order_ids=[]):
+    orders = []
+    with session_scope() as session:
+        for did in order_ids:
+            instance = retrieve_record(session, Order, did=did)
+            if instance:
+                orders.append(instance)
+        session.expunge_all()
+    return orders
 
 
 def create_name_index(model, **kwargs):
@@ -197,9 +218,15 @@ def create_cart(
 
         # create Resource records
         for d in resource_data:
-            res_rec = insert(
+            ord_rec = insert(
+                session, Order,
+                cart_id=cart_rec.did)
+
+            insert(
                 session, Resource,
+                order_id=ord_rec.did,
                 title=d.title,
+                add_title=d.add_title,
                 author=d.author,
                 series=d.series,
                 publisher=d.publisher,
@@ -213,23 +240,12 @@ def create_cart(
                 desc_url=d.desc_url,
                 misc=d.misc)
 
-            insert(
-                session, Order,
-                cart_id=cart_rec.did,
-                resource_id=res_rec.did)
-
             progbar['value'] += 1
             progbar.update()
 
 
 def save_grid_data(**kwargs):
     # first update existing gridlocations
-    library_id = get_id_from_index(kwargs['library'], kwargs['lib_idx'])
-    lang_id = get_id_from_index(kwargs['lang'], kwargs['lang_idx'])
-    vendor_id = get_id_from_index(kwargs['vendor'], kwargs['vendor_idx'])
-    audn_id = get_id_from_index(kwargs['audn'], kwargs['audn_idx'])
-    matType_id = get_id_from_index(kwargs['matType'], kwargs['mattype_idx'])
-
     locs = []
     for loc in kwargs['gridlocs']:
         branch_id = get_id_from_index(loc['branch'], kwargs['branch_idx'])
@@ -268,11 +284,6 @@ def save_grid_data(**kwargs):
                     kwargs['grid_did'],
                     name=kwargs['name'],
                     distset_id=kwargs['distset_id'],
-                    library_id=library_id,
-                    lang_id=lang_id,
-                    vendor_id=vendor_id,
-                    audn_id=audn_id,
-                    matType_id=matType_id,
                     gridlocations=locs)
             else:
                 insert(
@@ -280,11 +291,6 @@ def save_grid_data(**kwargs):
                     DistGrid,
                     name=kwargs['name'],
                     distset_id=kwargs['distset_id'],
-                    library_id=library_id,
-                    lang_id=lang_id,
-                    vendor_id=vendor_id,
-                    audn_id=audn_id,
-                    matType_id=matType_id,
                     gridlocations=locs)
         except IntegrityError as e:
             raise BabelError(e)

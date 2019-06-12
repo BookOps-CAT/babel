@@ -30,6 +30,11 @@ def retrieve_record(session, model, **kwargs):
     return instance
 
 
+def retrieve_first_n(session, model, n, **kwargs):
+    instances = session.query(model).filter_by(**kwargs).limit(n).all()
+    return instances
+
+
 def retrieve_records(session, model, **kwargs):
     instances = session.query(model).filter_by(**kwargs).all()
     return instances
@@ -44,6 +49,17 @@ def update_record(session, model, did, **kwargs):
 def delete_record(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).one()
     session.delete(instance)
+
+
+def retrieve_cart_order_ids(session, cart_id):
+    stmn = text("""
+        SELECT `order`.did
+        FROM `order`
+        WHERE cart_id=:cart_id
+        """)
+    stmn = stmn.bindparams(cart_id=cart_id)
+    instances = session.execute(stmn)
+    return instances
 
 
 def get_cart_data_view_records(
