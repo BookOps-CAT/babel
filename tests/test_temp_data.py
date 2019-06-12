@@ -27,13 +27,13 @@ class TestDataPopulation(unittest.TestCase):
 
             distset = datastore_worker.insert_or_ignore(session, datastore.DistSet, name='test distr.', system_id=1, user_id=2)
             session.commit()
-            distgrid = datastore_worker.insert_or_ignore(session, datastore.DistGrid, name='grid A', lang_id=5, vendor_id=1, audn_id=1, matType_id=2, distset_id=distset.did)
+            distgrid = datastore_worker.insert_or_ignore(session, datastore.DistGrid, name='grid A', distset_id=distset.did)
             session.commit()
             datastore_worker.insert_or_ignore(session, datastore.GridLocation, distgrid_id=distgrid.did, branch_id=11, shelfcode_id=1, qty=2)
             datastore_worker.insert_or_ignore(session, datastore.GridLocation, distgrid_id=distgrid.did, branch_id=12, shelfcode_id=1, qty=1)
             datastore_worker.insert_or_ignore(session, datastore.GridLocation, distgrid_id=distgrid.did, branch_id=13, shelfcode_id=2, qty=3)
 
-            distgrid = datastore_worker.insert_or_ignore(session, datastore.DistGrid, name='grid C', lang_id=4, vendor_id=1, audn_id=2, matType_id=1, distset_id=distset.did)
+            distgrid = datastore_worker.insert_or_ignore(session, datastore.DistGrid, name='grid B', distset_id=distset.did)
             session.commit()
             datastore_worker.insert_or_ignore(session, datastore.GridLocation, distgrid_id=distgrid.did, branch_id=12, shelfcode_id=1, qty=2)
             datastore_worker.insert_or_ignore(session, datastore.GridLocation, distgrid_id=distgrid.did, branch_id=13, shelfcode_id=1, qty=1)
