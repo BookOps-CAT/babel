@@ -53,6 +53,8 @@ class ResourceDataReader:
         row number of a header, index starts with 0
     title_col: int
         title column number, index starts with 0
+    add_title_col: int
+        additional title column, index starts with 0
     author_col: int
         author column number, index starts with 0
     series_col: int
@@ -82,6 +84,7 @@ class ResourceDataReader:
             self, fh,
             header_row=None,
             title_col=None,
+            add_title_col=None,
             author_col=None,
             series_col=None,
             publisher_col=None,
@@ -98,6 +101,7 @@ class ResourceDataReader:
 
         self.header_row = header_row
         self.title_col = title_col
+        self.add_title_col = add_title_col
         self.author_col = author_col
         self.series_col = series_col
         self.publisher_col = publisher_col
@@ -141,6 +145,7 @@ class ResourceDataReader:
     def _normalize(self, data):
         data = data._replace(
             title=validators.normalize_whitespaces(data.title),
+            add_title=validators.normalize_whitespaces(data.add_title),
             author=validators.normalize_whitespaces(data.author),
             series=validators.normalize_whitespaces(data.series),
             publisher=validators.normalize_whitespaces(data.publisher),
@@ -164,6 +169,8 @@ class ResourceDataReader:
             title = row[self.title_col].strip()
             if title != '':
                 kwargs['title'] = title
+                if self.add_title_col is not None:
+                    kwargs['add_title'] = row[self.add_title_col]
                 if self.author_col is not None:
                     kwargs['author'] = row[self.author_col]
                 if self.series_col is not None:

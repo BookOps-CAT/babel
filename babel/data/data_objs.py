@@ -5,6 +5,7 @@ VenData = namedtuple(
     'VenData',
     [
         'title',
+        'add_title',
         'author',
         'series',
         'publisher',
@@ -22,5 +23,5 @@ VenData = namedtuple(
     defaults=[
         None, None, None, None,
         None, None, None, None,
-        None, None, None, 0.0,
-        None, None])
+        None, None, None, None,
+        0.0, None, None])

@@ -171,11 +171,6 @@ class DistGrid(Base):
     name = Column(String(50), nullable=False)
     distset_id = Column(Integer, ForeignKey('distset.did'),
                         nullable=False)
-    library_id = Column(Integer, ForeignKey('library.did'))
-    lang_id = Column(Integer, ForeignKey('lang.did'))
-    vendor_id = Column(Integer, ForeignKey('vendor.did'))
-    audn_id = Column(Integer, ForeignKey('audn.did'))
-    matType_id = Column(Integer, ForeignKey('mattype.did'))
 
     gridlocations = relationship(
         'GridLocation', lazy='joined', cascade='all, delete-orphan')
@@ -291,7 +286,9 @@ class Resource(Base):
     __tablename__ = 'resource'
 
     did = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey('order.did'), nullable=False)
     title = Column(String(length=250, collation='utf8_bin'), nullable=False)
+    add_title = Column(String(length=250, collation='utf8_bin'))
     author = Column(String(length=150, collation='utf8_bin'))
     series = Column(String(length=250, collation='utf8_bin'))
     publisher = Column(String(length=150, collation='utf8_bin'))
@@ -305,6 +302,11 @@ class Resource(Base):
     price_disc = Column(Float(asdecimal=True), default=0.0, nullable=False)
     desc_url = Column(String(length=500, collation='utf8_bin'))
     misc = Column(String(250))
+
+    order = relationship(
+        'Order',
+        back_populates='resource',
+        lazy='joined')
 
     def __repr__(self):
         state = inspect(self)
@@ -344,19 +346,25 @@ class Order(Base):
     bid = Column(String(9))  # include prefix?
     wlo = Column(String(13))
     cart_id = Column(Integer, ForeignKey('cart.did'), nullable=False)
-    resource_id = Column(Integer, ForeignKey('resource.did'), nullable=False)
     lang_id = Column(Integer, ForeignKey('lang.did'))
     audn_id = Column(Integer, ForeignKey('audn.did'))
     vendor_id = Column(Integer, ForeignKey('vendor.did'))
     matType_id = Column(Integer, ForeignKey('mattype.did'))
     poPerLine = Column(String(50))
     note = Column(String(50))
-    comment = Column(String(250))
+    comment = Column(String(150))
+
+    resource = relationship(
+        'Resource',
+        uselist=False,
+        back_populates='order',
+        lazy='joined')
 
     locations = relationship(
         'OrderLocation',
         cascade='all, delete-orphan',
-        lazy='joined')
+        lazy='joined',
+        order_by='OrderLocation.did')
 
     def __repr__(self):
         state = inspect(self)
@@ -407,6 +415,7 @@ class Sheet(Base):
     updated = Column(DateTime, nullable=False, default=datetime.now())
     header_row = Column(Integer, nullable=False)
     title_col = Column(Integer, nullable=False)
+    add_title_col = Column(Integer)
     author_col = Column(Integer)
     series_col = Column(Integer)
     publisher_col = Column(Integer)
@@ -593,7 +602,7 @@ def create_datastore(
     CREATE VIEW carts_data AS
         SELECT cart.did AS cart_id, cart.name AS cart_name,
                cart.updated AS cart_date, cart.system_id AS system_id,
-               status.name AS cart_status, user.name AS cart_owner 
+               status.name AS cart_status, user.name AS cart_owner
         FROM cart
             JOIN status ON status.did = cart.status_id
             JOIN user ON user.did = cart.user_id

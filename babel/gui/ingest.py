@@ -48,6 +48,7 @@ class ImportView(Frame):
         self.edit_mode = False
         self.header_row = StringVar()
         self.title_col = StringVar()
+        self.add_title_col = StringVar()
         self.author_col = StringVar()
         self.series_col = StringVar()
         self.publisher_col = StringVar()
@@ -175,8 +176,19 @@ class ImportView(Frame):
         self.titlecolEnt.grid(
             row=4, column=1, sticky='snw', padx=5, pady=2)
 
-        Label(self.templateFrm, text='author column:').grid(
+        Label(self.templateFrm, text='extra title col.:').grid(
             row=5, column=0, sticky='snw', padx=5, pady=2)
+        self.addtitlecolEnt = Entry(
+            self.templateFrm,
+            font=RFONT,
+            width=5,
+            textvariable=self.add_title_col,
+            validate="key", validatecommand=self.vlcl)
+        self.addtitlecolEnt.grid(
+            row=5, column=1, sticky='snw', padx=5, pady=2)
+
+        Label(self.templateFrm, text='author column:').grid(
+            row=6, column=0, sticky='snw', padx=5, pady=2)
         self.authorcolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -184,10 +196,10 @@ class ImportView(Frame):
             textvariable=self.author_col,
             validate="key", validatecommand=self.vlcl)
         self.authorcolEnt.grid(
-            row=5, column=1, sticky='snw', padx=5, pady=2)
+            row=6, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='series column:').grid(
-            row=6, column=0, sticky='snw', padx=5, pady=2)
+            row=7, column=0, sticky='snw', padx=5, pady=2)
         self.seriescolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -195,10 +207,10 @@ class ImportView(Frame):
             textvariable=self.series_col,
             validate="key", validatecommand=self.vlcl)
         self.seriescolEnt.grid(
-            row=6, column=1, sticky='snw', padx=5, pady=2)
+            row=7, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='publisher column:').grid(
-            row=7, column=0, sticky='snw', padx=5, pady=2)
+            row=8, column=0, sticky='snw', padx=5, pady=2)
         self.publishercolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -206,10 +218,10 @@ class ImportView(Frame):
             textvariable=self.publisher_col,
             validate="key", validatecommand=self.vlcl)
         self.publishercolEnt.grid(
-            row=7, column=1, sticky='snw', padx=5, pady=2)
+            row=8, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='pub. date column:').grid(
-            row=8, column=0, sticky='snw', padx=5, pady=2)
+            row=9, column=0, sticky='snw', padx=5, pady=2)
         self.pubdatecolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -217,10 +229,10 @@ class ImportView(Frame):
             textvariable=self.pub_date_col,
             validate="key", validatecommand=self.vlcl)
         self.pubdatecolEnt.grid(
-            row=8, column=1, sticky='snw', padx=5, pady=2)
+            row=9, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='pub. place column:').grid(
-            row=9, column=0, sticky='snw', padx=5, pady=2)
+            row=10, column=0, sticky='snw', padx=5, pady=2)
         self.pubplacecolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -228,10 +240,10 @@ class ImportView(Frame):
             textvariable=self.pub_place_col,
             validate="key", validatecommand=self.vlcl)
         self.pubplacecolEnt.grid(
-            row=9, column=1, sticky='snw', padx=5, pady=2)
+            row=10, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='summary column:').grid(
-            row=10, column=0, sticky='snw', padx=5, pady=2)
+            row=11, column=0, sticky='snw', padx=5, pady=2)
         self.summarycolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -239,10 +251,10 @@ class ImportView(Frame):
             textvariable=self.summary_col,
             validate="key", validatecommand=self.vlcl)
         self.summarycolEnt.grid(
-            row=10, column=1, sticky='snw', padx=5, pady=2)
+            row=11, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='ISBN column:').grid(
-            row=11, column=0, sticky='snw', padx=5, pady=2)
+            row=12, column=0, sticky='snw', padx=5, pady=2)
         self.isbncolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -250,10 +262,10 @@ class ImportView(Frame):
             textvariable=self.isbn_col,
             validate="key", validatecommand=self.vlcl)
         self.isbncolEnt.grid(
-            row=11, column=1, sticky='snw', padx=5, pady=2)
+            row=12, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='UPC column:').grid(
-            row=12, column=0, sticky='snw', padx=5, pady=2)
+            row=13, column=0, sticky='snw', padx=5, pady=2)
         self.upccolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -261,10 +273,10 @@ class ImportView(Frame):
             textvariable=self.upc_col,
             validate="key", validatecommand=self.vlcl)
         self.upccolEnt.grid(
-            row=12, column=1, sticky='snw', padx=5, pady=2)
+            row=13, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='other no. column:').grid(
-            row=13, column=0, sticky='snw', padx=5, pady=2)
+            row=14, column=0, sticky='snw', padx=5, pady=2)
         self.othernocolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -272,10 +284,10 @@ class ImportView(Frame):
             textvariable=self.other_no_col,
             validate="key", validatecommand=self.vlcl)
         self.othernocolEnt.grid(
-            row=13, column=1, sticky='snw', padx=5, pady=2)
+            row=14, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='list price column:').grid(
-            row=14, column=0, sticky='snw', padx=5, pady=2)
+            row=15, column=0, sticky='snw', padx=5, pady=2)
         self.pricelistcolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -283,10 +295,10 @@ class ImportView(Frame):
             textvariable=self.price_list_col,
             validate="key", validatecommand=self.vlcl)
         self.pricelistcolEnt.grid(
-            row=14, column=1, sticky='snw', padx=5, pady=2)
+            row=15, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='discount price col.:').grid(
-            row=15, column=0, sticky='snw', padx=5, pady=2)
+            row=16, column=0, sticky='snw', padx=5, pady=2)
         self.pricedisccolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -294,10 +306,10 @@ class ImportView(Frame):
             textvariable=self.price_disc_col,
             validate="key", validatecommand=self.vlcl)
         self.pricedisccolEnt.grid(
-            row=15, column=1, sticky='snw', padx=5, pady=2)
+            row=16, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='URL column:').grid(
-            row=16, column=0, sticky='snw', padx=5, pady=2)
+            row=17, column=0, sticky='snw', padx=5, pady=2)
         self.urldesccolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -305,10 +317,10 @@ class ImportView(Frame):
             textvariable=self.desc_url_col,
             validate="key", validatecommand=self.vlcl)
         self.urldesccolEnt.grid(
-            row=16, column=1, sticky='snw', padx=5, pady=2)
+            row=17, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.templateFrm, text='misc column:').grid(
-            row=17, column=0, sticky='snw', padx=5, pady=2)
+            row=18, column=0, sticky='snw', padx=5, pady=2)
         self.misccolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -316,7 +328,7 @@ class ImportView(Frame):
             textvariable=self.misc_col,
             validate="key", validatecommand=self.vlcl)
         self.misccolEnt.grid(
-            row=17, column=1, sticky='snw', padx=5, pady=2)
+            row=18, column=1, sticky='snw', padx=5, pady=2)
 
         # sheet frame
         self.sheetFrm = LabelFrame(self, text='sheet')
@@ -430,6 +442,8 @@ class ImportView(Frame):
 
         if self.record.title_col is not None:
             tmask[self.record.title_col] = 'title'
+        if self.record.add_title_col is not None:
+            tmask[self.record.add_title_col] = 'extra title'
         if self.record.author_col is not None:
             tmask[self.record.author_col] = 'author'
         if self.record.series_col is not None:
@@ -511,6 +525,7 @@ class ImportView(Frame):
             kwargs = {
                 'header_row': self.header_row.get().strip(),
                 'title_col': self.title_col.get().strip(),
+                'add_title_col': self.add_title_col.get().strip(),
                 'author_col': self.author_col.get().strip(),
                 'series_col': self.series_col.get().strip(),
                 'publisher_col': self.publisher_col.get().strip(),
@@ -696,6 +711,7 @@ class ImportView(Frame):
         self.updated.set('')
         self.header_row.set('')
         self.title_col.set('')
+        self.add_title_col.set('')
         self.author_col.set('')
         self.series_col.set('')
         self.publisher_col.set('')
@@ -749,6 +765,7 @@ class ImportView(Frame):
                 self.updated.set(f'updated:{drec.updated:%y-%m-%d %H:%M}')
                 self.header_row.set(drec.header_row)
                 self.title_col.set(drec.title_col)
+                self.add_title_col.set(drec.add_title_col)
                 self.author_col.set(drec.author_col)
                 self.series_col.set(drec.series_col)
                 self.publisher_col.set(drec.publisher_col)
