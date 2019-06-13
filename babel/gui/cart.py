@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 from tkinter import *
 from tkinter.ttk import *
@@ -13,7 +14,9 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 convert4display, delete_data,
                                 create_resource_reader, create_cart,
                                 get_carts_data, get_codes, get_orders_by_id,
-                                get_order_ids)
+                                get_order_ids, create_code_index,
+                                create_name_index,
+                                update_orders, apply_globals_to_cart)
 from gui.fonts import RFONT, RBFONT, LFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets)
@@ -348,7 +351,19 @@ class CartView(Frame):
         pass
 
     def apply_globals(self):
-        pass
+        # updates all order records even ones not displayed
+        widgets = {
+            'langCbx': self.langCbx,
+            'vendorCbx': self.vendorCbx,
+            'mattypeCbx': self.mattypeCbx,
+            'fundCbx': self.fundCbx,
+            'audnCbx': self.audnCbx,
+            'poperlineEnt': self.poperlineEnt,
+            'priceEnt': self.priceEnt,
+            'discEnt': self.discEnt  
+        }
+        apply_globals_to_cart(self.cart_id.get(), **widgets)
+
 
     def nav_start(self):
         pass
@@ -366,175 +381,195 @@ class CartView(Frame):
         recs = get_orders_by_id(order_ids)
         row = 0
         for orec in recs:
-            ntb = self.resource_widget(self.preview_frame, row + 1, orec)
+            ntb = self.order_widget(self.preview_frame, row + 1, orec)
             ntb.grid(
                 row=row, column=0, sticky='snew', padx=2, pady=2)
             row += 1
 
-    def resource_widget(self, parent, no, orec):
+    def create_resource_frame(self, parent, resource):
+        resourceFrm = Frame(parent)
+        resourceFrm.grid(
+            row=0, column=0, columnspan=2, sticky='snew', padx=5, pady=5)
+
+        # provide description data
+        sierraBtn = Button(
+            resourceFrm,
+            image=self.notfoundImg,
+            command=lambda: self.sierra_check(parent))
+        sierraBtn.image = self.notfoundImg
+        sierraBtn.grid(
+            row=0, column=0, sticky='nw', padx=2, pady=2)
+
+        line1 = f'{resource.title} / {resource.author}.'
+        line2 = f'{resource.add_title}'
+        line3 = f'\t{resource.pub_place} : {resource.publisher}, {resource.pub_date}. -- ({resource.series}).'
+        line4 = f'\tISBN: {resource.isbn} | UPC: {resource.upc} | other no.: {resource.other_no}'
+        line5 = f'\tlist price: ${resource.price_list} | discount price: ${resource.price_disc}'
+
+        Label(resourceFrm, text=line1, font=RBFONT).grid(
+            row=0, column=1, sticky='snw', padx=5, pady=5)
+        Label(resourceFrm, text=line2, font=RBFONT).grid(
+            row=1, column=1, sticky='snw', padx=5, pady=5)
+        Label(resourceFrm, text=line3, font=LFONT).grid(
+            row=2, column=1, sticky='snw', padx=5, pady=2)
+        Label(resourceFrm, text=line4, font=LFONT).grid(
+            row=3, column=1, sticky='snw', padx=5, pady=2)
+        pricesLbl = Label(resourceFrm, text=line5, font=LFONT)
+        pricesLbl.grid(
+            row=4, column=1, sticky='snw', padx=5, pady=2)
+
+        editBtn = Button(
+            resourceFrm,
+            image=self.editImgS,
+            command=lambda: self.edit_resource(parent))
+        editBtn.image = self.editImgS
+        editBtn.grid(
+            row=0, column=4, sticky='se', padx=2, pady=2)
+
+        deleteBtn = Button(
+            resourceFrm,
+            image=self.deleteImgS,
+            command=lambda: self.delete_resource(parent))
+        deleteBtn.imgage = self.deleteImgS
+        deleteBtn.grid(
+            row=0, column=5, sticky='se', padx=2, pady=2)
+
+        tracker = {
+            'resource_id': resource.did,
+            'frm': resourceFrm,
+            'sierraBtn': sierraBtn,
+            'pricesLbl': pricesLbl
+        }
+
+        return tracker
+
+    def create_order_frame(self, parent, order):
+        # Comboboxes and entries
+        orderFrm = Frame(parent)
+        orderFrm.grid(
+            row=1, column=0, sticky='snew', padx=5, pady=5)
+
+        Label(orderFrm, text='lang:').grid(
+            row=0, column=0, sticky='snw', padx=2, pady=2)
+        langCbx = Combobox(
+            orderFrm,
+            values=self.lang_idx.values(),
+            state='readonly')
+        langCbx.grid(
+            row=0, column=1, sticky='snew', padx=5, pady=2)
+        if order.lang_id:
+            langCbx.set(self.lang_idx[order.lang_id])
+
+
+        Label(orderFrm, text='ven:').grid(
+            row=1, column=0, sticky='snw', padx=2, pady=2)
+        venCbx = Combobox(
+            orderFrm,
+            values=self.vendor_idx.values(),
+            state='readonly')
+        venCbx.grid(
+            row=1, column=1, sticky='snew', padx=5, pady=2)
+
+        Label(orderFrm, text='audn:').grid(
+            row=2, column=0, sticky='snw', padx=2, pady=2)
+        audnCbx = Combobox(
+            orderFrm,
+            values=self.audn_idx.values(),
+            state='readonly')
+        audnCbx.grid(
+            row=2, column=1, sticky='snew', padx=5, pady=2)
+
+        Label(orderFrm, text='mat.:').grid(
+            row=3, column=0, sticky='snw', padx=2, pady=2)
+        matCbx = Combobox(
+            orderFrm,
+            values=self.mattype_idx.values(),
+            state='readonly')
+        matCbx.grid(
+            row=3, column=1, sticky='snew', padx=5, pady=2)
+
+        Label(orderFrm, text='PO').grid(
+            row=4, column=0, sticky='snw', padx=2, pady=2)
+        poEnt = Entry(orderFrm)
+        poEnt.grid(
+            row=4, column=1, sticky='snew', padx=5, pady=2)
+
+        Label(orderFrm, text='order note').grid(
+            row=5, column=0, sticky='snw', padx=2, pady=2)
+        noteEnt = Entry(orderFrm)
+        noteEnt.grid(
+            row=5, column=1, sticky='snew', padx=5, pady=2)
+
+        Label(orderFrm, text='comment').grid(
+            row=6, column=0, sticky='snw', padx=2, pady=2)
+        commentEnt = Entry(orderFrm)
+        commentEnt.grid(
+            row=6, column=1, columnspan=3, sticky='snew', padx=5, pady=2)
+
+        # ids
+        Label(orderFrm, text='order #: ').grid(
+            row=0, column=2, sticky='snw', padx=2, pady=2)
+        oidEnt = Entry(
+            orderFrm,
+            state='disable')
+        oidEnt.grid(
+            row=0, column=3, sticky='snew', padx=5, pady=2)
+
+        Label(orderFrm, text='bib #: ').grid(
+            row=1, column=2, sticky='snw', padx=2, pady=2)
+        bidEnt = Entry(
+            orderFrm,
+            state='disable')
+        bidEnt.grid(
+            row=1, column=3, sticky='snew', padx=5, pady=2)
+
+        Label(orderFrm, text='wlo #: ').grid(
+            row=2, column=2, sticky='snw', padx=2, pady=2)
+        wloEnt = Entry(
+            orderFrm,
+            state='disable')
+        wloEnt.grid(
+            row=2, column=3, sticky='snew', padx=5, pady=2)
+
+        tracker = {
+            'order_id': order.did,
+            'langCbx': langCbx,
+            'venCbx': venCbx,
+            'audnCbx': audnCbx,
+            'matCbx': matCbx,
+            'poEnt': poEnt,
+            'noteEnt': noteEnt,
+            'commentEnt': commentEnt,
+            'oidEnt': oidEnt,
+            'bidEnt': bidEnt,
+            'wloEnt': wloEnt
+        }
+
+        return tracker
+
+    def order_widget(self, parent, no, orec):
+
         orderNtb = Notebook(
             parent,
             width=800)
 
         # main tab
         mainTab = Frame(orderNtb)
-        descFrm = Frame(mainTab)
-        descFrm.grid(
-            row=0, column=0, sticky='snew', padx=5, pady=5)
+        res_tracker = self.create_resource_frame(mainTab, orec.resource)
+        ord_tracker = self.create_order_frame(mainTab, orec)
 
-        # provide description data
-        sierraBtn = Button(
-            descFrm,
-            image=self.notfoundImg,
-            command=lambda: self.sierra_check(orderNtb))
-        sierraBtn.image = self.notfoundImg
-        sierraBtn.grid(
-            row=0, column=0, sticky='nw', padx=2, pady=2)
-
-        line1 = f'{orec.resource.title} / {orec.resource.author}.'
-        line2 = f'{orec.resource.add_title}'
-        line3 = f'\t{orec.resource.pub_place} : {orec.resource.publisher}, {orec.resource.pub_date}. -- ({orec.resource.series}).'
-        line4 = f'\tISBN: {orec.resource.isbn} | UPC: {orec.resource.upc} | other no.: {orec.resource.other_no}'
-        line5 = f'\tlist price: ${orec.resource.price_list} | discount price: ${orec.resource.price_disc}'
-        Label(descFrm, text=line1, font=RBFONT).grid(
-            row=0, column=1, columnspan=3, sticky='snw', padx=5, pady=5)
-        Label(descFrm, text=line2, font=RBFONT).grid(
-            row=1, column=1, columnspan=3, sticky='snw', padx=5, pady=5)
-        Label(descFrm, text=line3, font=LFONT).grid(
-            row=2, column=1, columnspan=3, sticky='snw', padx=5, pady=2)
-        Label(descFrm, text=line4, font=LFONT).grid(
-            row=3, column=1, columnspan=3, sticky='snw', padx=5, pady=2)
-        Label(descFrm, text=line5, font=LFONT).grid(
-            row=4, column=1, columnspan=3, sticky='snw', padx=5, pady=2)
-
-        editBtn = Button(
-            descFrm,
-            image=self.editImgS,
-            command=lambda: self.edit_resource(ordNtb))
-        editBtn.image = self.editImgS
-        editBtn.grid(
-            row=0, column=4, sticky='se', padx=2, pady=2)
-
-        deleteBtn = Button(
-            descFrm,
-            image=self.deleteImgS,
-            command=lambda: self.delete_resource(ordNtb))
-        deleteBtn.imgage = self.deleteImgS
-        deleteBtn.grid(
-            row=0, column=5, sticky='se', padx=2, pady=2)
-
-        # Comboboxes and entries
-        actionFrm = Frame(mainTab)
-        actionFrm.grid(
-            row=1, column=0, sticky='snew', padx=5, pady=5)
-
-        Label(actionFrm, text='lang:').grid(
-            row=0, column=0, sticky='snw', padx=2, pady=2)
-        langCbx = Combobox(
-            actionFrm,
-            values=self.langs,
-            state='readonly')
-        langCbx.grid(
-            row=0, column=1, sticky='snew', padx=5, pady=2)
-
-        Label(actionFrm, text='ven:').grid(
-            row=1, column=0, sticky='snw', padx=2, pady=2)
-        venCbx = Combobox(
-            actionFrm,
-            values=self.vendors,
-            state='readonly')
-        venCbx.grid(
-            row=1, column=1, sticky='snew', padx=5, pady=2)
-
-        Label(actionFrm, text='audn:').grid(
-            row=2, column=0, sticky='snw', padx=2, pady=2)
-        audnCbx = Combobox(
-            actionFrm,
-            values=self.audns,
-            state='readonly')
-        audnCbx.grid(
-            row=2, column=1, sticky='snew', padx=5, pady=2)
-
-        Label(actionFrm, text='mat.:').grid(
-            row=3, column=0, sticky='snw', padx=2, pady=2)
-        matCbx = Combobox(
-            actionFrm,
-            values=self.mattypes,
-            state='readonly')
-        matCbx.grid(
-            row=3, column=1, sticky='snew', padx=5, pady=2)
-
-        Label(actionFrm, text='PO').grid(
-            row=4, column=0, sticky='snw', padx=2, pady=2)
-        poEnt = Entry(actionFrm)
-        poEnt.grid(
-            row=4, column=1, sticky='snew', padx=5, pady=2)
-
-        Label(actionFrm, text='order note').grid(
-            row=5, column=0, sticky='snw', padx=2, pady=2)
-        noteEnt = Entry(actionFrm)
-        noteEnt.grid(
-            row=5, column=1, sticky='snew', padx=5, pady=2)
-
-        Label(actionFrm, text='comment').grid(
-            row=6, column=0, sticky='snw', padx=2, pady=2)
-        commentEnt = Entry(actionFrm)
-        commentEnt.grid(
-            row=6, column=1, columnspan=3, sticky='snew', padx=5, pady=2)
-
-        # ids
-        Label(actionFrm, text='order #: ').grid(
-            row=0, column=2, sticky='snw', padx=2, pady=2)
-        oidEnt = Entry(
-            actionFrm,
-            state='disable')
-        oidEnt.grid(
-            row=0, column=3, sticky='snew', padx=5, pady=2)
-
-        Label(actionFrm, text='bib #: ').grid(
-            row=1, column=2, sticky='snw', padx=2, pady=2)
-        bidEnt = Entry(
-            actionFrm,
-            state='disable')
-        bidEnt.grid(
-            row=1, column=3, sticky='snew', padx=5, pady=2)
-
-        Label(actionFrm, text='wlo #: ').grid(
-            row=2, column=2, sticky='snw', padx=2, pady=2)
-        wloEnt = Entry(
-            actionFrm,
-            state='disable')
-        wloEnt.grid(
-            row=2, column=3, sticky='snew', padx=5, pady=2)
+        self.tracker[orderNtb.winfo_id()] = {
+            'resourceFrm': res_tracker,
+            'orderFrm': ord_tracker,
+            'gridFrm': None,
+            'delete': False
+        }
 
         gridFrm = LabelFrame(mainTab, text='grid')
         gridFrm.grid(
             row=1, column=1, sticky='snew', padx=10, pady=5)
 
-        # removeBtn = Button(
-        #     gridFrm,
-        #     image=self.deleteImgS)
-        # removeBtn.image = self.deleteImgS
-        # removeBtn.grid(row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
-        # removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
-
-        # branchCbx = Combobox(gridFrm, font=RFONT, width=3)
-        # branchCbx.grid(
-        #     row=self.last_row, column=1, sticky='snew', padx=2, pady=4)
-        # branchCbx['values'] = sorted(self.branch_idx.values())
-        # branchCbx.set(loc[1])
-        # shelfCbx = Combobox(gridFrm, font=RFONT, width=3)
-        # shelfCbx.grid(
-        #     row=self.last_row, column=2, sticky='snew', padx=2, pady=4)
-        # shelfCbx['values'] = sorted(self.shelf_idx.values())
-        # shelfCbx.set(loc[2])
-        # qtySbx = Spinbox(
-        #     gridFrm, font=RFONT, from_=1, to=250, width=3)
-        # qtySbx.grid(
-        #     row=self.last_row, column=3, sticky='snew', padx=2, pady=4)
-        # qtySbx.set(loc[3])
-
-
+        self.create_grid(gridFrm, 0)
 
         # miscellaneous tab
         otherTab = Frame(orderNtb)
@@ -543,6 +578,53 @@ class CartView(Frame):
         orderNtb.add(otherTab, text='misc.')
 
         return orderNtb
+
+    def create_grid(self, parent, row, loc=['', '', '', '']):
+        removeBtn = Button(
+            parent,
+            image=self.deleteImgS,)
+        removeBtn.image = self.deleteImgS
+        removeBtn.grid(row=row, column=0, sticky='ne', padx=5, pady=2)
+        removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
+
+        branchCbx = Combobox(parent, font=RFONT, width=3)
+        branchCbx.grid(
+            row=row, column=1, sticky='snew', padx=2, pady=4)
+        branchCbx['values'] = sorted(self.branch_idx.values())
+        branchCbx.set(loc[1])
+        shelfCbx = Combobox(parent, font=RFONT, width=3)
+        shelfCbx.grid(
+            row=row, column=2, sticky='snew', padx=2, pady=4)
+        shelfCbx['values'] = sorted(self.shelf_idx.values())
+        shelfCbx.set(loc[2])
+        qtySbx = Spinbox(
+            parent, font=RFONT, from_=1, to=250, width=3)
+        qtySbx.grid(
+            row=row, column=3, sticky='snew', padx=2, pady=4)
+        qtySbx.set(loc[3])
+
+    def create_add_locationBtn(self, parent, row):
+        # class wide accessible add button
+        # first try to destroy it
+        try:
+            parent.add_locationBtn.destroy()
+        except AttributeError:
+            pass
+
+        # recreate in new row
+        add_locationBtn = Button(
+            parent,
+            image=self.addImgS,
+            command=lambda: self.add_location(parent))
+        add_locationBtn.image = self.addImgS
+        add_locationBtn.grid(
+            row=row + 1, column=0, sticky='nw', padx=5, pady=2)
+
+    def add_location(self, parent):
+        pass
+
+    def remove_location(self, widget_id):
+        pass
 
     def sierra_check(self, ntb):
         pass
@@ -597,6 +679,9 @@ class CartView(Frame):
                 # trigger profile observer when Window active
                 self.profile_observer()
 
+                # create new data tracker
+                self.tracker = OrderedDict()
+
                 cart = get_record(Cart, did=self.cart_id.get())
                 self.cart_name.set(cart.name)
                 self.cartEnt['state'] = 'disable'
@@ -610,34 +695,34 @@ class CartView(Frame):
                     self.libCbx['state'] = '!disable'
 
                 # langs
-                self.langs = get_names(Lang)
-                self.langCbx['values'] = self.langs
+                self.lang_idx = create_name_index(Lang)
+                self.langCbx['values'] = self.lang_idx.values()
 
                 # vendors
-                self.vendors = get_names(Vendor)
-                self.vendorCbx['values'] = self.vendors
+                self.vendor_idx = create_name_index(Vendor)
+                self.vendorCbx['values'] = self.vendor_idx.values()
 
                 # mattype
-                self.mattypes = get_names(MatType)
-                self.mattypeCbx['values'] = self.mattypes
+                self.mattype_idx = create_name_index(MatType)
+                self.mattypeCbx['values'] = self.mattype_idx.values()
 
                 # audience
-                self.audns = get_names(Audn)
-                self.audnCbx['values'] = self.audns
+                self.audn_idx = create_name_index(Audn)
+                self.audnCbx['values'] = self.audn_idx.values()
 
                 # funs
-                self.funds = get_codes(
+                self.fund_idx = create_code_index(
                     Fund,
                     system_id=self.system.get())
-                self.fundCbx['values'] = self.funds
+                self.fundCbx['values'] = self.fund_idx.values()
 
                 # branches
-                self.branches = get_codes(
+                self.branch_idx = create_code_index(
                     Branch,
                     system_id=self.system.get())
 
                 # shelf codes
-                self.shelfcodes = get_codes(
+                self.shelf_idx = create_code_index(
                     ShelfCode,
                     system_id=self.system.get())
 

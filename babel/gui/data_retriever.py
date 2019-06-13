@@ -10,7 +10,7 @@ from sqlalchemy.inspection import inspect
 
 
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
-                            FundLibraryJoiner, FundMatTypeJoiner,
+                            FundLibraryJoiner, FundMatTypeJoiner, Lang, Fund,
                             FundBranchJoiner, Library, MatType, DistGrid,
                             GridLocation, Resource, Cart, Order)
 from data.datastore_worker import (get_column_values, retrieve_record,
@@ -452,3 +452,57 @@ def get_carts_data(
                 r.cart_status,
                 r.cart_owner)))
     return data
+
+
+def update_orders(orders_tracker):
+    for widget_id, values in orders_tracker.items():
+        if values['delete']:
+            print('delete ord/res records')
+        else:
+            # update prices by destroying lbl widget
+            # and recreating it
+            pass
+
+
+def populate_orders_data(cart_id, orders_tracker):
+    pass
+
+
+def apply_globals_to_cart(cart_id, **widgets):
+    with session_scope() as session:
+        kwargs = {}
+        if widgets['langCbx'].get() != '':
+            lang = retrieve_record(
+                session, Lang,
+                name=widgets['langCbx'].get())
+            kwargs['lang_id'] = lang.did
+        if widgets['vendorCbx'].get() != '':
+            vendor = retrieve_record(
+                session, Vendor,
+                name=widgets['vendorCbx'].get())
+        if widgets['mattypeCbx'].get() != '':
+            pass
+        if widgets['fundCbx'].get() != '':
+            pass
+        if widgets['audnCbx'].get() != '':
+            pass
+        if widgets['poperlineEnt'].get() != '':
+            pass
+        if widgets['priceEnt'].get() != '':
+            pass
+        if widgets['discEnt'].get() != '':
+            pass
+
+
+
+        ord_recs = retrieve_records(
+            session, Order, cart_id=cart_id)
+        for rec in ord_recs:
+            update_record(
+                session, Order, rec.did, **kwargs)
+
+
+
+
+
+
