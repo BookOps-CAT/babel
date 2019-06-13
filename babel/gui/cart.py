@@ -279,14 +279,12 @@ class CartView(Frame):
 
         self.dispLbl = Label(self.navFrm, text='1 ouf 100 displayed')
         self.dispLbl.grid(
-            row=0, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
+            row=0, column=0, columnspan=4, sticky='snw', padx=5, pady=5)
 
-        Label(self.navFrm, text='24 titles').grid(
+        Label(self.navFrm, text='24 titles / 62 copies', font=LFONT).grid(
             row=1, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
-        Label(self.navFrm, text='62 copies').grid(
-            row=2, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
-        Label(self.navFrm, text='total $: 1,234').grid(
-            row=3, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
+        Label(self.navFrm, text='206wl: $1,234.23 | 106wl: $923.00', font=LFONT).grid(
+            row=2, column=0, columnspan=4, sticky='snw', padx=5, pady=5)
 
         self.startBtn = Button(
             self.navFrm,
@@ -474,7 +472,6 @@ class CartView(Frame):
         if order.lang_id:
             langCbx.set(self.lang_idx[order.lang_id])
 
-
         Label(orderFrm, text='ven:').grid(
             row=1, column=0, sticky='snw', padx=2, pady=2)
         vendorCbx = Combobox(
@@ -635,13 +632,15 @@ class CartView(Frame):
             row=row, column=3, sticky='snew', padx=2, pady=4)
         qtySbx.set(loc[3])
 
+        self.create_add_locationBtn(parent, row)
+
     def create_add_locationBtn(self, parent, row):
         # class wide accessible add button
         # first try to destroy it
         try:
             parent.add_locationBtn.destroy()
         except AttributeError:
-            pass
+            print('nothing to destroy')
 
         # recreate in new row
         add_locationBtn = Button(
@@ -653,7 +652,9 @@ class CartView(Frame):
             row=row + 1, column=0, sticky='nw', padx=5, pady=2)
 
     def add_location(self, parent):
-        pass
+        ntb_id = parent.master.master.winfo_id()
+        print(self.tracker[ntb_id])
+        # and go down to gridFrm and count values to find out the last row
 
     def remove_location(self, widget_id):
         pass
@@ -666,7 +667,6 @@ class CartView(Frame):
 
     def delete_resource(self, ntb):
         pass
-
 
     def profile_observer(self, *args):
         if self.activeW.get() == 'CartView':
@@ -776,7 +776,8 @@ class CartView(Frame):
         self.preview_base.config(scrollregion=self.preview_base.bbox('all'))
 
     def on_mousewheel(self, event):
-        self.preview_base.yview_scroll(int(-1*(event.delta/120)), "units")
+        self.preview_base.yview_scroll(
+            int(-1 * (event.delta / 120)), "units")
 
     def onValidateName(self, i, W):
         valid = True
