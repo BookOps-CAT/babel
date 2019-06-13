@@ -520,9 +520,3 @@ def apply_globals_to_cart(cart_id, **widgets):
         for rec in ord_recs:
             update_record(
                 session, Order, rec.did, **okwargs)
-
-
-
-
-
-

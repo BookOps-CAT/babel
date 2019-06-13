@@ -145,10 +145,14 @@ class Base(Tk):
         deleteImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-ok-iconM.png')
         saveImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-ok-iconS.png')
+        saveImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-button-info-iconM.png')
         helpImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-arrow-blue-double-down-iconM.png')
         copyImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-arrow-blue-double-down-iconS.png')
+        copyImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-viewmag-iconM.png')
         viewImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-floppy-iconM.png')
@@ -189,8 +193,10 @@ class Base(Tk):
                 'edit': editImg,
                 'delete': deleteImg,
                 'save': saveImg,
+                'saveS': saveImgS,
                 'help': helpImg,
                 'copy': copyImg,
+                'copyS': copyImgS,
                 'view': viewImg,
                 'marc': marcImg,
                 'sheet': sheetImg,

@@ -17,7 +17,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 get_order_ids, create_code_index,
                                 create_name_index,
                                 update_orders, apply_globals_to_cart)
-from gui.fonts import RFONT, RBFONT, LFONT
+from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets)
 
@@ -77,6 +77,8 @@ class CartView(Frame):
         self.addImgS = self.app_data['img']['addS']
         self.foundImg = self.app_data['img']['found']
         self.notfoundImg = self.app_data['img']['notfound']
+        self.copyImgS = self.app_data['img']['copyS']
+        self.saveImgS = self.app_data['img']['saveS']
 
         # action buttons frame
         self.actionFrm = Frame(self)
@@ -584,21 +586,56 @@ class CartView(Frame):
 
         # main tab
         mainTab = Frame(orderNtb)
+
         res_tracker = self.create_resource_frame(mainTab, orec.resource)
         ord_tracker = self.create_order_frame(mainTab, orec)
 
-        self.tracker[orderNtb.winfo_id()] = {
-            'resourceFrm': res_tracker,
-            'orderFrm': ord_tracker,
-            'gridFrm': None,
-            'delete': False
-        }
-
         gridFrm = LabelFrame(mainTab, text='grid')
         gridFrm.grid(
-            row=1, column=1, sticky='snew', padx=10, pady=5)
+            row=1, column=1, sticky='snew', padx=10)
+        mlogger.debug('New gridFrm ({})'.format(gridFrm.winfo_id()))
 
-        self.create_grid(gridFrm, 0)
+        gridCbx = Combobox(
+            gridFrm,
+            values=sorted(self.grid_idx.values()),
+            state='readonly')
+        gridCbx.grid(
+            row=0, column=0, columnspan=4, sticky='snew', padx=5, pady=2)
+
+        applyBtn = Button(
+            gridFrm,
+            image=self.saveImgS,
+            command=lambda: self.apply_grid_template(gridFrm))
+        applyBtn.grid(
+            row=0, column=5, sticky='snw', padx=5, pady=2)
+        applyBtn.image=self.saveImgS
+
+        copyBtn = Button(
+            gridFrm,
+            image=self.copyImgS,
+            command=lambda: self.copy_grid(gridFrm))
+        copyBtn.grid(
+            row=0, column=6, sticky='snw', padx=5, pady=2)
+        copyBtn.image = self.copyImgS
+
+        grids = []
+        if orec.locations:
+            r = 0
+            for loc in orec.locations:
+                r += 1
+                grid_tracker = self.create_grid(
+                    gridFrm,
+                    r,
+                    (loc.did,
+                        self.branch_idx[loc.branch_id],
+                        self.shelf_idx[loc.shelf_id],
+                        loc.qty,
+                        loc.fund_idx[loc.fund_id]))
+                grids.append(grid_tracker)
+
+        else:
+            grid_tracker = self.create_grid(gridFrm, 1)
+            grids.append(grid_tracker)
 
         # miscellaneous tab
         otherTab = Frame(orderNtb)
@@ -606,55 +643,110 @@ class CartView(Frame):
         orderNtb.add(mainTab, text=f'title {no}')
         orderNtb.add(otherTab, text='misc.')
 
+        self.tracker[orderNtb.winfo_id()] = {
+            'resourceFrm': res_tracker,
+            'orderFrm': ord_tracker,
+            'gridFrm': {
+                'gridCbx': gridCbx,
+                'grids': grids
+            },
+            'delete': False
+        }
+
         return orderNtb
 
-    def create_grid(self, parent, row, loc=['', '', '', '']):
+    def create_grid(self, parent, row, loc=(None, '', '', '', '')):
+        unitFrm = Frame(parent)
+        unitFrm.grid(
+            row=row, column=0, sticky='snew')
+        mlogger.debug('New grid unitFrm ({}): row: {}, parent: {}'.format(
+            unitFrm.winfo_id(), row, parent.winfo_id()))
         removeBtn = Button(
-            parent,
+            unitFrm,
             image=self.deleteImgS,)
         removeBtn.image = self.deleteImgS
-        removeBtn.grid(row=row, column=0, sticky='ne', padx=5, pady=2)
+        removeBtn.grid(row=0, column=0, sticky='ne', padx=5, pady=2)
         removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
 
-        branchCbx = Combobox(parent, font=RFONT, width=3)
+        branchCbx = Combobox(unitFrm, font=RFONT, width=3)
         branchCbx.grid(
-            row=row, column=1, sticky='snew', padx=2, pady=4)
+            row=0, column=1, sticky='snew', padx=2, pady=4)
         branchCbx['values'] = sorted(self.branch_idx.values())
         branchCbx.set(loc[1])
-        shelfCbx = Combobox(parent, font=RFONT, width=3)
+
+        shelfCbx = Combobox(unitFrm, font=RFONT, width=3)
         shelfCbx.grid(
-            row=row, column=2, sticky='snew', padx=2, pady=4)
+            row=0, column=2, sticky='snew', padx=2, pady=4)
         shelfCbx['values'] = sorted(self.shelf_idx.values())
         shelfCbx.set(loc[2])
+
         qtySbx = Spinbox(
-            parent, font=RFONT, from_=1, to=250, width=3)
+            unitFrm, font=RBFONT, from_=1, to=250, width=3)
         qtySbx.grid(
-            row=row, column=3, sticky='snew', padx=2, pady=4)
+            row=0, column=3, sticky='snew', padx=2)
         qtySbx.set(loc[3])
 
-        self.create_add_locationBtn(parent, row)
+        fundCbx = Combobox(
+            unitFrm, font=RFONT, width=5,
+            values=sorted(self.fund_idx.values()))
+        fundCbx.grid(
+            row=0, column=4, sticky='snew', padx=2, pady=4)
+        fundCbx.set(loc[4])
+
+        lastFrm = self.create_add_locationBtn(parent, row)
+
+        tracker = {
+            'did': loc[0],
+            'parent': unitFrm,
+            'removeBtn': removeBtn,
+            'branchCbx': branchCbx,
+            'lastFrm': lastFrm,
+            'shelfCbx': shelfCbx,
+            'qtySbx': qtySbx,
+            'fundCbx': fundCbx,
+            'delete': False
+        }
+
+        return tracker
 
     def create_add_locationBtn(self, parent, row):
-        # class wide accessible add button
-        # first try to destroy it
+        # destroy previous one
         try:
-            parent.add_locationBtn.destroy()
-        except AttributeError:
-            print('nothing to destroy')
+            ntb_id = parent.master.master.winfo_id()
+            lastFrm = self.tracker[ntb_id]['gridFrm']['grids'][-1]['lastFrm']
+            mlogger.debug('Destroying last frame in gridFrm: {}'.format(
+                lastFrm.winfo_id()))
+            lastFrm.destroy()
+        except KeyError:
+            pass
 
+        # create new last frame
+        unitFrm = Frame(parent)
+        unitFrm.grid(
+            row=row + 1, column=0, sticky='snew')
+        mlogger.debug('AddLoc frame ({}), row: {}, parent: {}'.format(
+            unitFrm.winfo_id(), row + 1, parent.winfo_id()))
         # recreate in new row
         add_locationBtn = Button(
-            parent,
+            unitFrm,
             image=self.addImgS,
             command=lambda: self.add_location(parent))
         add_locationBtn.image = self.addImgS
         add_locationBtn.grid(
-            row=row + 1, column=0, sticky='nw', padx=5, pady=2)
+            row=0, column=0, sticky='nw', padx=5, pady=2)
+
+        return unitFrm
 
     def add_location(self, parent):
         ntb_id = parent.master.master.winfo_id()
-        print(self.tracker[ntb_id])
-        # and go down to gridFrm and count values to find out the last row
+        r = 0
+        for g in self.tracker[ntb_id]['gridFrm']['grids']:
+            if not g['delete']:
+                r += 1
+        self.create_grid(parent.master, r)
+
+    def apply_grid_template(self, parent):
+        pass
 
     def remove_location(self, widget_id):
         pass
@@ -700,9 +792,14 @@ class CartView(Frame):
                         system_id=self.system.get(),
                         user_id=profile_id)
 
-                    self.grids = get_names(
+                    self.grid_idx = create_name_index(
                         DistGrid,
-                        distset_id = dist_rec.did)
+                        distset_id=dist_rec.did)
+
+                    # populate gridCbx values
+                    for values in self.tracker.values():
+                        gridCbx = values['gridFrm']['gridCbx']
+                        gridCbx['values'] = sorted(self.grid_idx.values())
 
     def observer(self, *args):
         if self.activeW.get() == 'CartView':
@@ -713,6 +810,7 @@ class CartView(Frame):
 
                 # create new data tracker
                 self.tracker = OrderedDict()
+                self.grid_idx = {}
 
                 cart = get_record(Cart, did=self.cart_id.get())
                 self.cart_name.set(cart.name)
@@ -742,7 +840,7 @@ class CartView(Frame):
                 self.audn_idx = create_name_index(Audn)
                 self.audnCbx['values'] = sorted(self.audn_idx.values())
 
-                # funs
+                # funds
                 self.fund_idx = create_code_index(
                     Fund,
                     system_id=self.system.get())

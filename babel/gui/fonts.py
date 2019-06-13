@@ -2,5 +2,6 @@
 
 LFONT = ('device', 10)
 RFONT = ('system', 12)
-RBFONT = ('system', 12, 'bold')
+RBFONT = ('device', 12, 'bold')
+HBFONT = ('device', 13, 'bold')
 HFONT = ('systemfixed', 12)
