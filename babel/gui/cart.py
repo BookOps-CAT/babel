@@ -59,6 +59,7 @@ class CartView(Frame):
         self.discount = StringVar()
         self.audn = StringVar()
         self.poperline = StringVar()
+        self.note = StringVar()
 
         # icons
         copyImg = self.app_data['img']['copy']
@@ -236,32 +237,41 @@ class CartView(Frame):
         self.poperlineEnt.grid(
             row=10, column=1, sticky='snw', padx=5, pady=2)
 
-        Label(self.globdataFrm, text='def.price:').grid(
+        Label(self.globdataFrm, text='ord. note:').grid(
             row=11, column=0, sticky='snw', padx=5, pady=2)
+        self.noteEnt = Entry(
+            self.globdataFrm,
+            width=20,
+            textvariable=self.note)
+        self.noteEnt.grid(
+            row=11, column=1, sticky='snw', padx=5, pady=2)
+
+        Label(self.globdataFrm, text='def.price:').grid(
+            row=12, column=0, sticky='snw', padx=5, pady=2)
         self.priceEnt = Entry(
             self.globdataFrm,
             width=20,
             textvariable=self.price,
             validate="key", validatecommand=self.vlen)
         self.priceEnt.grid(
-            row=11, column=1, sticky='snw', padx=5, pady=2)
+            row=12, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='discount').grid(
-            row=12, column=0, sticky='snw', padx=5, pady=2)
+            row=13, column=0, sticky='snw', padx=5, pady=2)
         self.discEnt = Entry(
             self.globdataFrm,
             width=20,
             textvariable=self.discount,
             validate="key", validatecommand=self.vlen)
         self.discEnt.grid(
-            row=12, column=1, sticky='snw', padx=5, pady=2)
+            row=13, column=1, sticky='snw', padx=5, pady=2)
 
         self.applyBtn = Button(
             self.globdataFrm,
             text='apply',
             command=self.apply_globals)
         self.applyBtn.grid(
-            row=13, column=0, columnspan=2, sticky='snew', padx=70, pady=10)
+            row=14, column=0, columnspan=2, sticky='snew', padx=70, pady=10)
 
         self.navFrm = Label(self.globdataFrm)
         self.navFrm.grid(
@@ -329,6 +339,7 @@ class CartView(Frame):
             yscrollcommand=self.yscrollbar.set)
         self.preview_base.grid(
             row=1, column=1, rowspan=40, columnspan=7, sticky='nwe')
+        self.preview_base.bind_all("<MouseWheel>", self.on_mousewheel)
         self.preview()
 
     def rename_cart(self):
@@ -359,11 +370,14 @@ class CartView(Frame):
             'fundCbx': self.fundCbx,
             'audnCbx': self.audnCbx,
             'poperlineEnt': self.poperlineEnt,
+            'noteEnt': self.noteEnt,
             'priceEnt': self.priceEnt,
-            'discEnt': self.discEnt  
+            'discEnt': self.discEnt
         }
         apply_globals_to_cart(self.cart_id.get(), **widgets)
-
+        self.preview_frame.destroy()
+        self.preview()
+        self.display_selected_orders(self.selected_order_ids)
 
     def nav_start(self):
         pass
@@ -453,7 +467,7 @@ class CartView(Frame):
             row=0, column=0, sticky='snw', padx=2, pady=2)
         langCbx = Combobox(
             orderFrm,
-            values=self.lang_idx.values(),
+            values=sorted(self.lang_idx.values()),
             state='readonly')
         langCbx.grid(
             row=0, column=1, sticky='snew', padx=5, pady=2)
@@ -463,48 +477,60 @@ class CartView(Frame):
 
         Label(orderFrm, text='ven:').grid(
             row=1, column=0, sticky='snw', padx=2, pady=2)
-        venCbx = Combobox(
+        vendorCbx = Combobox(
             orderFrm,
-            values=self.vendor_idx.values(),
+            values=sorted(self.vendor_idx.values()),
             state='readonly')
-        venCbx.grid(
+        vendorCbx.grid(
             row=1, column=1, sticky='snew', padx=5, pady=2)
+        if order.vendor_id:
+            vendorCbx.set(self.vendor_idx[order.vendor_id])
 
         Label(orderFrm, text='audn:').grid(
             row=2, column=0, sticky='snw', padx=2, pady=2)
         audnCbx = Combobox(
             orderFrm,
-            values=self.audn_idx.values(),
+            values=sorted(self.audn_idx.values()),
             state='readonly')
         audnCbx.grid(
             row=2, column=1, sticky='snew', padx=5, pady=2)
+        if order.audn_id:
+            audnCbx.set(self.audn_idx[order.audn_id])
 
         Label(orderFrm, text='mat.:').grid(
             row=3, column=0, sticky='snw', padx=2, pady=2)
-        matCbx = Combobox(
+        mattypeCbx = Combobox(
             orderFrm,
-            values=self.mattype_idx.values(),
+            values=sorted(self.mattype_idx.values()),
             state='readonly')
-        matCbx.grid(
+        mattypeCbx.grid(
             row=3, column=1, sticky='snew', padx=5, pady=2)
+        if order.matType_id:
+            mattypeCbx.set(self.mattype_idx[order.matType_id])
 
         Label(orderFrm, text='PO').grid(
             row=4, column=0, sticky='snw', padx=2, pady=2)
         poEnt = Entry(orderFrm)
         poEnt.grid(
             row=4, column=1, sticky='snew', padx=5, pady=2)
+        if order.poPerLine:
+            poEnt.insert(END, order.poPerLine)
 
         Label(orderFrm, text='order note').grid(
             row=5, column=0, sticky='snw', padx=2, pady=2)
         noteEnt = Entry(orderFrm)
         noteEnt.grid(
             row=5, column=1, sticky='snew', padx=5, pady=2)
+        if order.note:
+            noteEnt.insert(END, order.note)
 
         Label(orderFrm, text='comment').grid(
             row=6, column=0, sticky='snw', padx=2, pady=2)
         commentEnt = Entry(orderFrm)
         commentEnt.grid(
             row=6, column=1, columnspan=3, sticky='snew', padx=5, pady=2)
+        if order.comment:
+            commentEnt.insert(END, order.comment)
 
         # ids
         Label(orderFrm, text='order #: ').grid(
@@ -514,6 +540,8 @@ class CartView(Frame):
             state='disable')
         oidEnt.grid(
             row=0, column=3, sticky='snew', padx=5, pady=2)
+        if order.oid:
+            oidEnt.insert(END, order.oid)
 
         Label(orderFrm, text='bib #: ').grid(
             row=1, column=2, sticky='snw', padx=2, pady=2)
@@ -522,6 +550,8 @@ class CartView(Frame):
             state='disable')
         bidEnt.grid(
             row=1, column=3, sticky='snew', padx=5, pady=2)
+        if order.bid:
+            bidEnt.insert(END, order.bid)
 
         Label(orderFrm, text='wlo #: ').grid(
             row=2, column=2, sticky='snw', padx=2, pady=2)
@@ -530,13 +560,15 @@ class CartView(Frame):
             state='disable')
         wloEnt.grid(
             row=2, column=3, sticky='snew', padx=5, pady=2)
+        if order.wlo:
+            wloEnt.insert(END, order.wlo)
 
         tracker = {
             'order_id': order.did,
             'langCbx': langCbx,
-            'venCbx': venCbx,
+            'vendorCbx': vendorCbx,
             'audnCbx': audnCbx,
-            'matCbx': matCbx,
+            'mattypeCbx': mattypeCbx,
             'poEnt': poEnt,
             'noteEnt': noteEnt,
             'commentEnt': commentEnt,
@@ -696,25 +728,25 @@ class CartView(Frame):
 
                 # langs
                 self.lang_idx = create_name_index(Lang)
-                self.langCbx['values'] = self.lang_idx.values()
+                self.langCbx['values'] = sorted(self.lang_idx.values())
 
                 # vendors
                 self.vendor_idx = create_name_index(Vendor)
-                self.vendorCbx['values'] = self.vendor_idx.values()
+                self.vendorCbx['values'] = sorted(self.vendor_idx.values())
 
                 # mattype
                 self.mattype_idx = create_name_index(MatType)
-                self.mattypeCbx['values'] = self.mattype_idx.values()
+                self.mattypeCbx['values'] = sorted(self.mattype_idx.values())
 
                 # audience
                 self.audn_idx = create_name_index(Audn)
-                self.audnCbx['values'] = self.audn_idx.values()
+                self.audnCbx['values'] = sorted(self.audn_idx.values())
 
                 # funs
                 self.fund_idx = create_code_index(
                     Fund,
                     system_id=self.system.get())
-                self.fundCbx['values'] = self.fund_idx.values()
+                self.fundCbx['values'] = sorted(self.fund_idx.values())
 
                 # branches
                 self.branch_idx = create_code_index(
@@ -727,7 +759,8 @@ class CartView(Frame):
                     system_id=self.system.get())
 
                 self.order_ids = get_order_ids(self.cart_id.get())
-                self.display_selected_orders(self.order_ids[:5])
+                self.selected_order_ids = self.order_ids[:5]
+                self.display_selected_orders(self.selected_order_ids)
 
     def preview(self):
         self.preview_frame = Frame(
@@ -741,6 +774,9 @@ class CartView(Frame):
 
     def onFrameConfigure(self, event):
         self.preview_base.config(scrollregion=self.preview_base.bbox('all'))
+
+    def on_mousewheel(self, event):
+        self.preview_base.yview_scroll(int(-1*(event.delta/120)), "units")
 
     def onValidateName(self, i, W):
         valid = True

@@ -12,6 +12,7 @@ from sqlalchemy.inspection import inspect
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
                             FundLibraryJoiner, FundMatTypeJoiner, Lang, Fund,
                             FundBranchJoiner, Library, MatType, DistGrid,
+                            Vendor,
                             GridLocation, Resource, Cart, Order)
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
@@ -470,36 +471,55 @@ def populate_orders_data(cart_id, orders_tracker):
 
 def apply_globals_to_cart(cart_id, **widgets):
     with session_scope() as session:
-        kwargs = {}
+        okwargs = {}
+        rkwargs = {}
+
+        # order data
         if widgets['langCbx'].get() != '':
-            lang = retrieve_record(
+            rec = retrieve_record(
                 session, Lang,
                 name=widgets['langCbx'].get())
-            kwargs['lang_id'] = lang.did
+            okwargs['lang_id'] = rec.did
         if widgets['vendorCbx'].get() != '':
-            vendor = retrieve_record(
+            rec = retrieve_record(
                 session, Vendor,
                 name=widgets['vendorCbx'].get())
+            okwargs['vendor_id'] = rec.did
         if widgets['mattypeCbx'].get() != '':
-            pass
+            rec = retrieve_record(
+                session, MatType,
+                name=widgets['mattypeCbx'].get())
+            okwargs['matType_id'] = rec.did
         if widgets['fundCbx'].get() != '':
-            pass
+            rec = retrieve_record(
+                session, Fund,
+                code=widgets['fundCbx'].get())
+            okwargs['fund_id'] = rec.did
         if widgets['audnCbx'].get() != '':
-            pass
-        if widgets['poperlineEnt'].get() != '':
-            pass
+            rec = retrieve_record(
+                session, Audn,
+                name=widgets['audnCbx'].get())
+            okwargs['audn_id'] = rec.did
+        if widgets['poperlineEnt'].get().strip() != '':
+            okwargs['poPerLine'] = widgets['poperlineEnt'].get().strip()
+        if widgets['noteEnt'].get().strip() != '':
+            okwargs['note'] = widgets['noteEnt'].get().strip()
+
+        # resource data
         if widgets['priceEnt'].get() != '':
-            pass
+            rkwargs['price_list'] = float(widgets['price'].get())
+            rkwargs['price_disc'] = float(widgets['price'].get())
         if widgets['discEnt'].get() != '':
+            # will be in play only when there is only
+            # list price and no discount price
+            # apply discount to all list prices
             pass
-
-
 
         ord_recs = retrieve_records(
             session, Order, cart_id=cart_id)
         for rec in ord_recs:
             update_record(
-                session, Order, rec.did, **kwargs)
+                session, Order, rec.did, **okwargs)
 
 
 
