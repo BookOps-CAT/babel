@@ -19,7 +19,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 update_orders, apply_globals_to_cart)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
-                       enable_widgets)
+                       enable_widgets, open_url)
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -73,6 +73,7 @@ class CartView(Frame):
         endImg = self.app_data['img']['end']
         sierraImg = self.app_data['img']['sierra']
         self.editImgS = self.app_data['img']['editS']
+        self.removeImgS = self.app_data['img']['removeS']
         self.deleteImgS = self.app_data['img']['deleteS']
         self.addImgS = self.app_data['img']['addS']
         self.foundImg = self.app_data['img']['found']
@@ -146,6 +147,8 @@ class CartView(Frame):
         # register cart name validation
         self.vlen = (self.register(self.onValidateName),
                      '%i', '%W')
+        self.vlqt = (self.register(self.onValidateQty),
+                     '%i', '%d', '%P')
 
         Label(self.globdataFrm, text='cart name:').grid(
             row=0, column=0, columnspan=2, sticky='nsw', padx=5, pady=2)
@@ -403,12 +406,12 @@ class CartView(Frame):
     def order_widget(self, parent, no, orec):
         # displays individual notebook for resource & order data
 
-        orderNtb = Notebook(
+        ntb = Notebook(
             parent,
             width=830)
 
         # main tab
-        mainTab = Frame(orderNtb)
+        mainTab = Frame(ntb)
 
         res_tracker = self.create_resource_frame(mainTab, orec.resource)
         ord_tracker = self.create_order_frame(mainTab, orec)
@@ -442,9 +445,19 @@ class CartView(Frame):
             row=0, column=6, sticky='snw', padx=5, pady=2)
         copyBtn.image = self.copyImgS
 
+        # grid labels
+        Label(gridFrm, text=' branch', font=LFONT).grid(
+            row=1, column=0, sticky='se', padx=7)
+        Label(gridFrm, text='shelf', font=LFONT).grid(
+            row=1, column=1, sticky='sew', padx=10)
+        Label(gridFrm, text='qty', font=LFONT).grid(
+            row=1, column=2, sticky='sew', padx=2)
+        Label(gridFrm, text='fund', font=LFONT).grid(
+            row=1, column=3, sticky='sew', padx=2)
+
         locsFrm = Frame(gridFrm)
         locsFrm.grid(
-            row=1, column=0, columnspan=4, sticky='snew')
+            row=2, column=0, columnspan=4, sticky='snew')
         mlogger.debug('New locsFrm ({}, child of gridfrm {})'.format(
             locsFrm.winfo_id(), gridFrm.winfo_id()))
 
@@ -470,13 +483,19 @@ class CartView(Frame):
         self.create_add_locationBtn(gridFrm)
 
         # miscellaneous tab
-        otherTab = Frame(orderNtb)
+        moreTab = Frame(ntb)
+        more_tracker = self.populate_more_tab(
+            moreTab,
+            'summary here',
+            'misc info here',
+            'https://www.google.com/')
 
-        orderNtb.add(mainTab, text=f'title {no}')
-        orderNtb.add(otherTab, text='more')
+        ntb.add(mainTab, text=f'title {no}')
+        ntb.add(moreTab, text='more')
 
-        self.tracker[orderNtb.winfo_id()] = {
+        self.tracker[ntb.winfo_id()] = {
             'resource': res_tracker,
+            'more': more_tracker,
             'order': ord_tracker,
             'grid': {
                 'gridCbx': gridCbx,
@@ -486,7 +505,37 @@ class CartView(Frame):
             'delete': False
         }
 
-        return orderNtb
+        return ntb
+
+    def populate_more_tab(self, tab, summary, misc, url):
+        urlBtn = Button(
+            tab, text='link',
+            width=10,
+            command=lambda aurl=url: open_url(aurl))
+        urlBtn.grid(
+            row=0, column=0, sticky='snw', padx=20, pady=20)
+
+        scrollbar = Scrollbar(tab, orient=VERTICAL)
+        scrollbar.grid(row=1, column=1, rowspan=5, sticky='snw')
+
+        summaryTxt = Text(
+            tab,
+            font=RFONT,
+            wrap='word',
+            # width=100,
+            yscrollcommand=scrollbar.set)
+        # self.txt.config(font=("consolas", 12), undo=True, wrap='word')
+        summaryTxt.grid(
+            row=1, column=0, rowspan=5, sticky="snew", padx=10)
+        scrollbar['command'] = summaryTxt.yview
+
+        summaryTxt.insert(END, f'Misc:\n{misc}\n\n')
+        summaryTxt.insert(END, f'Summary:\n{summary}\n')
+        summaryTxt['state'] = 'disable'
+
+        tracker = {}
+
+        return tracker
 
     def create_resource_frame(self, parent, resource):
         resourceFrm = Frame(parent)
@@ -538,7 +587,7 @@ class CartView(Frame):
             resourceFrm,
             image=self.deleteImgS,
             command=lambda: self.delete_resource(parent))
-        deleteBtn.imgage = self.deleteImgS
+        # deleteBtn.imgage = self.deleteImgS
         deleteBtn.grid(
             row=0, column=5, sticky='se', padx=2, pady=2)
 
@@ -680,11 +729,11 @@ class CartView(Frame):
             row=row, column=0, sticky='snew')
         mlogger.debug(
             'New grid unitFrm ({}): row: {}, parent locsFrm: {}'.format(
-            unitFrm.winfo_id(), row, parent.winfo_id()))
+                unitFrm.winfo_id(), row, parent.winfo_id()))
         removeBtn = Button(
             unitFrm,
-            image=self.deleteImgS,)
-        removeBtn.image = self.deleteImgS
+            image=self.removeImgS,)
+        removeBtn.image = self.removeImgS
         removeBtn.grid(row=0, column=0, sticky='ne', padx=5, pady=2)
         removeBtn['command'] = lambda: self.remove_location(removeBtn)
 
@@ -704,15 +753,17 @@ class CartView(Frame):
             row=0, column=2, sticky='snew', padx=2, pady=4)
         shelfCbx.set(loc[2])
 
-        qtySbx = Spinbox(
-            unitFrm, font=RBFONT, from_=1, to=250, width=3)
-        qtySbx.grid(
-            row=0, column=3, sticky='snew', padx=2)
-        qtySbx.set(loc[3])
+        qtyEnt = Entry(
+            unitFrm, font=RFONT, width=3,
+            validate="key", validatecommand=self.vlqt)
+        qtyEnt.grid(
+            row=0, column=3, sticky='snew', padx=2, pady=4)
+        qtyEnt.insert(END, loc[3])
 
         fundCbx = Combobox(
             unitFrm, font=RFONT, width=5,
-            values=sorted(self.fund_idx.values()))
+            values=sorted(self.fund_idx.values()),
+            state='readonly')
         fundCbx.grid(
             row=0, column=4, sticky='snew', padx=2, pady=4)
         fundCbx.set(loc[4])
@@ -723,7 +774,7 @@ class CartView(Frame):
             'removeBtn': removeBtn,
             'branchCbx': branchCbx,
             'shelfCbx': shelfCbx,
-            'qtySbx': qtySbx,
+            'qtyEnt': qtyEnt,
             'fundCbx': fundCbx,
             'delete': False
         }
@@ -738,7 +789,7 @@ class CartView(Frame):
             command=lambda: self.add_location(parent))
         add_locationBtn.image = self.addImgS
         add_locationBtn.grid(
-            row=2, column=0, sticky='nw', padx=5, pady=2)
+            row=3, column=0, sticky='nw', padx=5, pady=2)
         mlogger.debug('Created addlocBtn ({}, child of gridFrm {})'.format(
             add_locationBtn.winfo_id(), parent.winfo_id()))
 
@@ -923,6 +974,16 @@ class CartView(Frame):
             pass
         if W == str(self.discEnt):
             pass
+        return valid
+
+    def onValidateQty(self, i, d, P):
+        valid = True
+        if d == '1' and not P.isdigit():
+            valid = False
+        if int(i) > 2:
+            valid = False
+        if i == '0' and P == '0':
+            valid = False
         return valid
 
     def createToolTip(self, widget, text):

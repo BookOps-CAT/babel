@@ -1,9 +1,7 @@
-import logging
 from tkinter import *
 from tkinter.ttk import *
+import webbrowser
 
-
-mlogger = logging.getLogger('babel_logger')
 
 
 input_widgets = (
@@ -41,6 +39,10 @@ def get_id_from_index(value, idx):
     for k, v in idx.items():
         if v == value:
             return k
+
+
+def open_url(url):
+    webbrowser.open_new(url)
 
 
 class BusyManager:

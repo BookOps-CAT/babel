@@ -181,6 +181,8 @@ class Base(Tk):
         foundImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-edit-add-iconS.png')
         addImgS = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-remove-iconS.png')
+        removeImgS = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -190,8 +192,11 @@ class Base(Tk):
             'active_id': self.active_id,
             'img': {
                 'add': addImg,
+                'addS': addImgS,
                 'edit': editImg,
+                'editS': editImgS,
                 'delete': deleteImg,
+                'deleteS': deleteImgS,
                 'save': saveImg,
                 'saveS': saveImgS,
                 'help': helpImg,
@@ -206,11 +211,9 @@ class Base(Tk):
                 'start': startImg,
                 'end': endImg,
                 'sierra': sierraImg,
-                'deleteS': deleteImgS,
-                'editS': editImgS,
                 'notfound': notFoundImg,
                 'found': foundImg,
-                'addS': addImgS}}
+                'removeS': removeImgS}}
 
         # spawn Babel frames
         self.frames = {}

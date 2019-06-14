@@ -45,6 +45,7 @@ class FundView(Frame):
         self.fund_code = StringVar()
         self.fund_desc = StringVar()
 
+        # pull icons from main img dictionary instead to preserve memory
         # setup small add/remove icons
         img = Image.open('./icons/Action-edit-add-iconS.png')
         addSImg = ImageTk.PhotoImage(img)
