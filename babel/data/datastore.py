@@ -332,6 +332,10 @@ class Cart(Base):
     library_id = Column(Integer, ForeignKey('library.did'))
     blanketPO = Column(String(25))
 
+    orders = relationship(
+        'Order',
+        cascade='all, delete-orphan')
+
     def __repr__(self):
         state = inspect(self)
         attrs = ', '.join([
@@ -358,6 +362,7 @@ class Order(Base):
     resource = relationship(
         'Resource',
         uselist=False,
+        cascade='all, delete-orphan',
         back_populates='order',
         lazy='joined')
 
@@ -612,5 +617,4 @@ def create_datastore(
 
     session.close()
 
-    session.close()
     print('DB set-up complete.')
