@@ -8,7 +8,7 @@ from tkinter import messagebox
 from errors import BabelError
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
-                            Branch)
+                            Branch, Status)
 from gui.data_retriever import (get_names, save_data, get_record,
                                 get_records,
                                 convert4display, delete_data,
@@ -51,6 +51,8 @@ class CartView(Frame):
         self.dist_set = StringVar()
         self.dist_set.trace('w', self.distribution_observer)
         self.library = StringVar()
+        self.status = StringVar()
+        self.status.trace('w', self.status_observer)
         self.lang = StringVar()
         self.vendor = StringVar()
         self.fund = StringVar()
@@ -72,6 +74,7 @@ class CartView(Frame):
         startImg = self.app_data['img']['start']
         endImg = self.app_data['img']['end']
         sierraImg = self.app_data['img']['sierra']
+        validationImg = self.app_data['img']['valid']
         self.editImgS = self.app_data['img']['editS']
         self.removeImgS = self.app_data['img']['removeS']
         self.deleteImgS = self.app_data['img']['deleteS']
@@ -104,13 +107,22 @@ class CartView(Frame):
             row=1, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.saveBtn, 'save cart')
 
+        self.validBtn = Button(
+            self.actionFrm,
+            image=validationImg,
+            command=self.validate_cart)
+        # self.validBtn.image = saveImg
+        self.validBtn.grid(
+            row=2, column=0, sticky='sw', padx=10, pady=5)
+        self.createToolTip(self.validBtn, 'validate cart')
+
         self.copyBtn = Button(
             self.actionFrm,
             image=copyImg,
             command=self.copy_cart)
         self.copyBtn.image = copyImg
         self.copyBtn.grid(
-            row=2, column=0, sticky='sw', padx=10, pady=5)
+            row=3, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.copyBtn, 'copy entire cart')
 
         self.deleteBtn = Button(
@@ -119,7 +131,7 @@ class CartView(Frame):
             command=self.delete_cart)
         self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
-            row=3, column=0, sticky='sw', padx=10, pady=5)
+            row=4, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.deleteBtn, 'delete cart')
 
         self.sierraBtn = Button(
@@ -128,7 +140,7 @@ class CartView(Frame):
             command=self.search_sierra)
         self.sierraBtn.image = sierraImg
         self.sierraBtn.grid(
-            row=4, column=0, sticky='sw', padx=10, pady=5)
+            row=5, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.sierraBtn, 'search Sierra')
 
         self.helpBtn = Button(
@@ -137,7 +149,7 @@ class CartView(Frame):
             command=self.help)
         self.helpBtn.image = helpImg
         self.helpBtn.grid(
-            row=5, column=0, sticky='sw', padx=10, pady=5)
+            row=6, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
 
         self.globdataFrm = Frame(self, relief='groove')
@@ -159,128 +171,143 @@ class CartView(Frame):
             width=27,
             validate="key", validatecommand=self.vlen)
         self.cartEnt.grid(
-            row=1, column=0, columnspan=2, sticky='snw', padx=5, pady=2)
-
-        Label(self.globdataFrm, text='use distribution:').grid(
-            row=2, column=0, columnspan=2, sticky='nsw', padx=5, pady=2)
-        self.distCbx = Combobox(
-            self.globdataFrm,
-            font=RFONT,
-            width=26,
-            textvariable=self.dist_set,
-            state='readonly')
-        self.distCbx.grid(
-            row=3, column=0, columnspan=2, sticky='snw', padx=5, pady=2)
+            row=1, column=0, columnspan=2, sticky='snw', padx=6, pady=2)
 
         Label(self.globdataFrm, text='library:').grid(
-            row=4, column=0, sticky='snw', padx=5, pady=2)
+            row=2, column=0, sticky='snw', padx=5, pady=2)
         self.libCbx = Combobox(
             self.globdataFrm,
-            width=20,
+            width=16,
             textvariable=self.library,
+            font=RFONT,
             state='readonly',
             values=['branches', 'research'])
         self.libCbx.grid(
-            row=4, column=1, sticky='snw', padx=5, pady=2)
+            row=2, column=1, sticky='snw', padx=5, pady=2)
+
+        Label(self.globdataFrm, text='status:').grid(
+            row=3, column=0, sticky='snw', padx=5, pady=2)
+        self.statusCbx = Combobox(
+            self.globdataFrm,
+            width=16,
+            font=RFONT,
+            textvariable=self.status,
+            state='readonly')
+        self.statusCbx.grid(
+            row=3, column=1, sticky='snw', padx=5, pady=2)
+
+        Separator(self.globdataFrm, orient=HORIZONTAL).grid(
+            row=4, columnspan=2, sticky='snew', padx=5, pady=4)
+
+        Label(self.globdataFrm, text='use distribution:').grid(
+            row=5, column=0, columnspan=2, sticky='nsw', padx=5, pady=2)
+        self.distCbx = Combobox(
+            self.globdataFrm,
+            font=RFONT,
+            width=25,
+            textvariable=self.dist_set,
+            state='readonly')
+        self.distCbx.grid(
+            row=6, column=0, columnspan=2, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='language:').grid(
-            row=5, column=0, sticky='snw', padx=5, pady=2)
+            row=7, column=0, sticky='snw', padx=5, pady=2)
         self.langCbx = Combobox(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.lang)
         self.langCbx.grid(
-            row=5, column=1, sticky='snw', padx=5, pady=2)
+            row=7, column=1, sticky='snw', padx=5, pady=2)
         self.langCbx['state'] = 'readonly'
 
         Label(self.globdataFrm, text='vendor:').grid(
-            row=6, column=0, sticky='snw', padx=5, pady=2)
+            row=8, column=0, sticky='snw', padx=5, pady=2)
         self.vendorCbx = Combobox(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.vendor)
         self.vendorCbx.grid(
-            row=6, column=1, sticky='snw', padx=5, pady=2)
+            row=8, column=1, sticky='snw', padx=5, pady=2)
         self.vendorCbx['state'] = 'readonly'
 
         Label(self.globdataFrm, text='mat.type').grid(
-            row=7, column=0, sticky='nsw', padx=5, pady=2)
+            row=9, column=0, sticky='nsw', padx=5, pady=2)
         self.mattypeCbx = Combobox(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.mattype)
         self.mattypeCbx.grid(
-            row=7, column=1, sticky='snw', padx=5, pady=2)
+            row=9, column=1, sticky='snw', padx=5, pady=2)
         self.mattypeCbx['state'] = 'readonly'
 
         Label(self.globdataFrm, text='fund:').grid(
-            row=8, column=0, sticky='snw', padx=5, pady=2)
+            row=10, column=0, sticky='snw', padx=5, pady=2)
         self.fundCbx = Combobox(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.fund)
         self.fundCbx.grid(
-            row=8, column=1, sticky='snw', padx=5, pady=2)
+            row=10, column=1, sticky='snw', padx=5, pady=2)
         self.fundCbx['state'] = 'readonly'
 
         Label(self.globdataFrm, text='audience:').grid(
-            row=9, column=0, sticky='snw', padx=5, pady=2)
+            row=11, column=0, sticky='snw', padx=5, pady=2)
         self.audnCbx = Combobox(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.audn)
         self.audnCbx.grid(
-            row=9, column=1, sticky='snw', padx=5, pady=2)
+            row=11, column=1, sticky='snw', padx=5, pady=2)
         self.audnCbx['state'] = 'readonly'
 
         Label(self.globdataFrm, text='PO:').grid(
-            row=10, column=0, sticky='snw', padx=5, pady=2)
+            row=12, column=0, sticky='snw', padx=5, pady=2)
         self.poperlineEnt = Entry(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.poperline)
         self.poperlineEnt.grid(
-            row=10, column=1, sticky='snw', padx=5, pady=2)
+            row=12, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='ord. note:').grid(
-            row=11, column=0, sticky='snw', padx=5, pady=2)
+            row=13, column=0, sticky='snw', padx=5, pady=2)
         self.noteEnt = Entry(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.note)
         self.noteEnt.grid(
-            row=11, column=1, sticky='snw', padx=5, pady=2)
+            row=13, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='def.price:').grid(
-            row=12, column=0, sticky='snw', padx=5, pady=2)
+            row=14, column=0, sticky='snw', padx=5, pady=2)
         self.priceEnt = Entry(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.price,
             validate="key", validatecommand=self.vlen)
         self.priceEnt.grid(
-            row=12, column=1, sticky='snw', padx=5, pady=2)
+            row=14, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='discount').grid(
-            row=13, column=0, sticky='snw', padx=5, pady=2)
+            row=15, column=0, sticky='snw', padx=5, pady=2)
         self.discEnt = Entry(
             self.globdataFrm,
-            width=20,
+            width=24,
             textvariable=self.discount,
             validate="key", validatecommand=self.vlen)
         self.discEnt.grid(
-            row=13, column=1, sticky='snw', padx=5, pady=2)
+            row=15, column=1, sticky='snw', padx=5, pady=2)
 
         self.applyBtn = Button(
             self.globdataFrm,
             text='apply',
             command=self.apply_globals)
         self.applyBtn.grid(
-            row=14, column=0, columnspan=2, sticky='snew', padx=70, pady=10)
+            row=16, column=0, columnspan=2, sticky='snew', padx=70, pady=10)
 
         self.navFrm = Label(self.globdataFrm)
         self.navFrm.grid(
-            row=15, column=0, columnspan=2, sticky='snew', padx=10, pady=10)
+            row=17, column=0, columnspan=2, sticky='snew', padx=10, pady=10)
 
         self.dispLbl = Label(self.navFrm, text='1 ouf 100 displayed')
         self.dispLbl.grid(
@@ -348,8 +375,14 @@ class CartView(Frame):
     def rename_cart(self):
         if self.cart_name.get():
             self.cartEnt['state'] = '!disable'
+            self.statusCbx['state'] = '!disable'
+            if self.system.get() == 2:
+                self.libCbx['state'] = '!disable'
 
     def save_cart(self):
+        pass
+
+    def validate_cart(self):
         pass
 
     def copy_cart(self):
@@ -377,6 +410,7 @@ class CartView(Frame):
             'priceEnt': self.priceEnt,
             'discEnt': self.discEnt
         }
+        
         apply_globals_to_cart(self.cart_id.get(), **widgets)
         self.preview_frame.destroy()
         self.preview()
@@ -485,10 +519,7 @@ class CartView(Frame):
         # miscellaneous tab
         moreTab = Frame(ntb)
         more_tracker = self.populate_more_tab(
-            moreTab,
-            'summary here',
-            'misc info here',
-            'https://www.google.com/')
+            moreTab, orec)
 
         ntb.add(mainTab, text=f'title {no}')
         ntb.add(moreTab, text='more')
@@ -507,13 +538,16 @@ class CartView(Frame):
 
         return ntb
 
-    def populate_more_tab(self, tab, summary, misc, url):
+    def populate_more_tab(self, tab, orec):
+        title = f'{orec.resource.title} / {orec.resource.author}.'
+        Label(tab, text=title, font=RBFONT).grid(
+            row=0, column=0, sticky='snw', padx=5, pady=5)
         urlBtn = Button(
             tab, text='link',
             width=10,
-            command=lambda aurl=url: open_url(aurl))
+            command=lambda aurl=orec.resource.desc_url: open_url(aurl))
         urlBtn.grid(
-            row=0, column=0, sticky='snw', padx=20, pady=20)
+            row=0, column=0, sticky='sne', padx=20, pady=20)
 
         scrollbar = Scrollbar(tab, orient=VERTICAL)
         scrollbar.grid(row=1, column=1, rowspan=5, sticky='snw')
@@ -522,15 +556,15 @@ class CartView(Frame):
             tab,
             font=RFONT,
             wrap='word',
-            # width=100,
+            height=12,
             yscrollcommand=scrollbar.set)
-        # self.txt.config(font=("consolas", 12), undo=True, wrap='word')
         summaryTxt.grid(
             row=1, column=0, rowspan=5, sticky="snew", padx=10)
         scrollbar['command'] = summaryTxt.yview
 
-        summaryTxt.insert(END, f'Misc:\n{misc}\n\n')
-        summaryTxt.insert(END, f'Summary:\n{summary}\n')
+
+        summaryTxt.insert(END, f'Misc:\n{orec.resource.misc}\n\n')
+        summaryTxt.insert(END, f'Summary:\n{orec.resource.summary}\n')
         summaryTxt['state'] = 'disable'
 
         tracker = {}
@@ -848,6 +882,11 @@ class CartView(Frame):
     def delete_resource(self, ntb):
         pass
 
+    def status_observer(self, *args):
+        if self.status.get() == 'finalized':
+            # run validation
+            pass
+
     def profile_observer(self, *args):
         if self.activeW.get() == 'CartView':
             if self.profile.get() != 'All users':
@@ -903,6 +942,10 @@ class CartView(Frame):
                 cart = get_record(Cart, did=self.cart_id.get())
                 self.cart_name.set(cart.name)
                 self.cartEnt['state'] = 'disable'
+                self.status_idx = create_name_index(Status)
+                self.statusCbx['values'] = sorted(self.status_idx.values())
+                self.statusCbx.set(self.status_idx[cart.status_id])
+                self.statusCbx['state'] = 'disable'
 
                 # populate values in global checkboxes
 
@@ -914,25 +957,35 @@ class CartView(Frame):
 
                 # langs
                 self.lang_idx = create_name_index(Lang)
-                self.langCbx['values'] = sorted(self.lang_idx.values())
+                values = (sorted(self.lang_idx.values()))
+                values.insert(0, 'keep current')
+                self.langCbx['values'] = values
 
                 # vendors
                 self.vendor_idx = create_name_index(Vendor)
-                self.vendorCbx['values'] = sorted(self.vendor_idx.values())
+                values = sorted(self.vendor_idx.values())
+                values.insert(0, 'keep current')
+                self.vendorCbx['values'] = values
 
                 # mattype
                 self.mattype_idx = create_name_index(MatType)
-                self.mattypeCbx['values'] = sorted(self.mattype_idx.values())
+                values = sorted(self.mattype_idx.values())
+                values.insert(0, 'keep current')
+                self.mattypeCbx['values'] = values
 
                 # audience
                 self.audn_idx = create_name_index(Audn)
-                self.audnCbx['values'] = sorted(self.audn_idx.values())
+                values = sorted(self.audn_idx.values())
+                values.insert(0, 'keep current')
+                self.audnCbx['values'] = values
 
                 # funds
                 self.fund_idx = create_code_index(
                     Fund,
                     system_id=self.system.get())
-                self.fundCbx['values'] = sorted(self.fund_idx.values())
+                values = sorted(self.fund_idx.values())
+                values.insert(0, 'keep current')
+                self.fundCbx['values'] = values
 
                 # branches
                 self.branch_idx = create_code_index(

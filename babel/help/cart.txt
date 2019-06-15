@@ -1,0 +1,5 @@
+Funds:
+======
+General rules for applying a fund to a cart:
+- The process will be applied only to orders that have defined library (only NYPL), audience, material type and branch.
+- It's possible to apply globally 2 or more funds to one cart as long as each fund's application rules exclude other funds. For example: fund A is applicable only to juvenile materials, fund B can be used only for adult, and fund C only your young adult. Babel will add the fund to grid when fund's criteria are satisfied, leaving the fund box empty when they are not. 

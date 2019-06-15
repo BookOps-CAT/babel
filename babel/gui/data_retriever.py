@@ -475,27 +475,27 @@ def apply_globals_to_cart(cart_id, **widgets):
         rkwargs = {}
 
         # order data
-        if widgets['langCbx'].get() != '':
+        if widgets['langCbx'].get() not in ('', 'keep current'):
             rec = retrieve_record(
                 session, Lang,
                 name=widgets['langCbx'].get())
             okwargs['lang_id'] = rec.did
-        if widgets['vendorCbx'].get() != '':
+        if widgets['vendorCbx'].get() not in ('', 'keep current'):
             rec = retrieve_record(
                 session, Vendor,
                 name=widgets['vendorCbx'].get())
             okwargs['vendor_id'] = rec.did
-        if widgets['mattypeCbx'].get() != '':
+        if widgets['mattypeCbx'].get() not in ('', 'keep current'):
             rec = retrieve_record(
                 session, MatType,
                 name=widgets['mattypeCbx'].get())
             okwargs['matType_id'] = rec.did
-        if widgets['fundCbx'].get() != '':
+        if widgets['fundCbx'].get() not in ('', 'keep current'):
             rec = retrieve_record(
                 session, Fund,
                 code=widgets['fundCbx'].get())
             okwargs['fund_id'] = rec.did
-        if widgets['audnCbx'].get() != '':
+        if widgets['audnCbx'].get() not in ('', 'keep current'):
             rec = retrieve_record(
                 session, Audn,
                 name=widgets['audnCbx'].get())

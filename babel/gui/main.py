@@ -183,6 +183,8 @@ class Base(Tk):
         addImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-remove-iconS.png')
         removeImgS = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-web-iconM.png')
+        validationImg = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -213,7 +215,8 @@ class Base(Tk):
                 'sierra': sierraImg,
                 'notfound': notFoundImg,
                 'found': foundImg,
-                'removeS': removeImgS}}
+                'removeS': removeImgS,
+                'valid': validationImg}}
 
         # spawn Babel frames
         self.frames = {}
