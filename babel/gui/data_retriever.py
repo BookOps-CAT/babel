@@ -514,6 +514,8 @@ def save_displayed_order_data(tracker_values):
             locations = []
             for l in locs:
                 lkwargs = {}
+                if l['loc_id'] is not None:
+                    lkwargs['did'] = l['loc_id']
                 if l['branchCbx'].get() != '':
                     rec = retrieve_record(
                         session, Branch,
@@ -531,6 +533,7 @@ def save_displayed_order_data(tracker_values):
                         session, Fund,
                         code=l['fundCbx'].get())
                     lkwargs['fund_id'] = rec.did
+                    # validate here
                 if lkwargs:
                     locations.append(OrderLocation(**lkwargs))
 
@@ -544,10 +547,54 @@ def save_displayed_order_data(tracker_values):
                 **okwargs)
 
 
+def apply_fund_to_cart(system_id, cart_id, fund_codes):
 
+    ord_recs = get_records(
+        Order, cart_id=cart_id)
 
-def apply_fund_to_cart(cart_id):
-    pass
+    with session_scope() as session:
+        for code in fund_codes:
+            fund_rec = get_record(
+                Fund,
+                code=code,
+                system_id=system_id)
+            fund_audn_ids = [a.audn_id for a in fund_rec.audns]
+            mlogger.debug('Fund {} permitted audns: {}'.format(
+                code, fund_audn_ids))
+            fund_mat_ids = [m.matType_id for m in fund_rec.matTypes]
+            mlogger.debug('Fund {} permitted mats: {}'.format(
+                code, fund_mat_ids))
+            fund_branch_ids = [b.branch_id for b in fund_rec.branches]
+            mlogger.debug('Fund {} permitted branches: {}'.format(
+                code, fund_branch_ids))
+
+            for orec in ord_recs:
+                audn_match = False
+                mat_match = False
+
+                if orec.audn_id in fund_audn_ids:
+                    audn_match = True
+                    mlogger.debug('OrdRec-Fund audn {} match'.format(
+                        orec.audn_id))
+
+                if orec.matType_id in fund_mat_ids:
+                    mat_match = True
+                    mlogger.debug('OrdRec-Fund mat {} match'.format(
+                        orec.matType_id))
+
+                for oloc in orec.locations:
+                    if oloc.branch_id in fund_branch_ids:
+                        mlogger.debug('OrdRec-Fund branch {} match'.format(
+                            oloc.branch_id))
+                        print(audn_match, mat_match)
+                        if audn_match and mat_match:
+                            # update
+                            mlogger.debug('Full match. Updating OrderLocation.')
+                            update_record(
+                                session,
+                                OrderLocation,
+                                oloc.did,
+                                fund_id=fund_rec.did)
 
 
 def apply_globals_to_cart(cart_id, widgets):
@@ -573,3 +620,5 @@ def apply_globals_to_cart(cart_id, widgets):
         for rec in ord_recs:
             update_record(
                 session, Order, rec.did, **okwargs)
+
+

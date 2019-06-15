@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import datetime
 import logging
 from tkinter import *
 from tkinter.ttk import *
@@ -10,13 +11,14 @@ from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status)
 from gui.data_retriever import (get_names, save_data, get_record,
-                                get_records,
-                                convert4display, delete_data, delete_data_by_did,
+                                get_records, convert4display,
+                                delete_data, delete_data_by_did,
                                 create_resource_reader, create_cart,
                                 get_carts_data, get_codes, get_orders_by_id,
                                 get_order_ids, create_code_index,
                                 create_name_index, save_displayed_order_data,
-                                update_orders, apply_globals_to_cart)
+                                update_orders, apply_globals_to_cart,
+                                apply_fund_to_cart)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets, open_url)
@@ -55,7 +57,6 @@ class CartView(Frame):
         self.status.trace('w', self.status_observer)
         self.lang = StringVar()
         self.vendor = StringVar()
-        self.fund = StringVar()
         self.mattype = StringVar()
         self.price = StringVar()
         self.discount = StringVar()
@@ -75,6 +76,7 @@ class CartView(Frame):
         endImg = self.app_data['img']['end']
         sierraImg = self.app_data['img']['sierra']
         validationImg = self.app_data['img']['valid']
+        fundImgM = self.app_data['img']['fundM']
         self.editImgS = self.app_data['img']['editS']
         self.removeImgS = self.app_data['img']['removeS']
         self.deleteImgS = self.app_data['img']['deleteS']
@@ -107,13 +109,22 @@ class CartView(Frame):
             row=1, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.saveBtn, 'save cart')
 
+        self.fundBtn = Button(
+            self.actionFrm,
+            image=fundImgM,
+            command=self.show_fund_widget)
+        self.fundBtn.image = fundImgM
+        self.fundBtn.grid(
+            row=2, column=0, sticky='sw', padx=10, pady=5)
+        self.createToolTip(self.fundBtn, 'apply funds')
+
         self.validBtn = Button(
             self.actionFrm,
             image=validationImg,
             command=self.validate_cart)
         # self.validBtn.image = saveImg
         self.validBtn.grid(
-            row=2, column=0, sticky='sw', padx=10, pady=5)
+            row=3, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.validBtn, 'validate cart')
 
         self.copyBtn = Button(
@@ -122,7 +133,7 @@ class CartView(Frame):
             command=self.copy_cart)
         self.copyBtn.image = copyImg
         self.copyBtn.grid(
-            row=3, column=0, sticky='sw', padx=10, pady=5)
+            row=4, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.copyBtn, 'copy entire cart')
 
         self.deleteBtn = Button(
@@ -131,7 +142,7 @@ class CartView(Frame):
             command=self.delete_cart)
         self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
-            row=4, column=0, sticky='sw', padx=10, pady=5)
+            row=5, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.deleteBtn, 'delete cart')
 
         self.sierraBtn = Button(
@@ -140,7 +151,7 @@ class CartView(Frame):
             command=self.search_sierra)
         self.sierraBtn.image = sierraImg
         self.sierraBtn.grid(
-            row=5, column=0, sticky='sw', padx=10, pady=5)
+            row=6, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.sierraBtn, 'search Sierra')
 
         self.helpBtn = Button(
@@ -149,7 +160,7 @@ class CartView(Frame):
             command=self.help)
         self.helpBtn.image = helpImg
         self.helpBtn.grid(
-            row=6, column=0, sticky='sw', padx=10, pady=5)
+            row=7, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
 
         self.globdataFrm = Frame(self, relief='groove')
@@ -240,74 +251,64 @@ class CartView(Frame):
             row=9, column=1, sticky='snw', padx=5, pady=2)
         self.mattypeCbx['state'] = 'readonly'
 
-        Label(self.globdataFrm, text='fund:').grid(
-            row=10, column=0, sticky='snw', padx=5, pady=2)
-        self.fundCbx = Combobox(
-            self.globdataFrm,
-            width=24,
-            textvariable=self.fund)
-        self.fundCbx.grid(
-            row=10, column=1, sticky='snw', padx=5, pady=2)
-        self.fundCbx['state'] = 'readonly'
-
         Label(self.globdataFrm, text='audience:').grid(
-            row=11, column=0, sticky='snw', padx=5, pady=2)
+            row=10, column=0, sticky='snw', padx=5, pady=2)
         self.audnCbx = Combobox(
             self.globdataFrm,
             width=24,
             textvariable=self.audn)
         self.audnCbx.grid(
-            row=11, column=1, sticky='snw', padx=5, pady=2)
+            row=10, column=1, sticky='snw', padx=5, pady=2)
         self.audnCbx['state'] = 'readonly'
 
         Label(self.globdataFrm, text='PO:').grid(
-            row=12, column=0, sticky='snw', padx=5, pady=2)
+            row=11, column=0, sticky='snw', padx=5, pady=2)
         self.poEnt = Entry(
             self.globdataFrm,
             width=24,
             textvariable=self.poperline)
         self.poEnt.grid(
-            row=12, column=1, sticky='snw', padx=5, pady=2)
+            row=11, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='ord. note:').grid(
-            row=13, column=0, sticky='snw', padx=5, pady=2)
+            row=12, column=0, sticky='snw', padx=5, pady=2)
         self.noteEnt = Entry(
             self.globdataFrm,
             width=24,
             textvariable=self.note)
         self.noteEnt.grid(
-            row=13, column=1, sticky='snw', padx=5, pady=2)
+            row=12, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='def.price:').grid(
-            row=14, column=0, sticky='snw', padx=5, pady=2)
+            row=13, column=0, sticky='snw', padx=5, pady=2)
         self.priceEnt = Entry(
             self.globdataFrm,
             width=24,
             textvariable=self.price,
             validate="key", validatecommand=self.vlen)
         self.priceEnt.grid(
-            row=14, column=1, sticky='snw', padx=5, pady=2)
+            row=13, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='discount').grid(
-            row=15, column=0, sticky='snw', padx=5, pady=2)
+            row=14, column=0, sticky='snw', padx=5, pady=2)
         self.discEnt = Entry(
             self.globdataFrm,
             width=24,
             textvariable=self.discount,
             validate="key", validatecommand=self.vlen)
         self.discEnt.grid(
-            row=15, column=1, sticky='snw', padx=5, pady=2)
+            row=14, column=1, sticky='snw', padx=5, pady=2)
 
         self.applyBtn = Button(
             self.globdataFrm,
             text='apply',
             command=self.apply_globals)
         self.applyBtn.grid(
-            row=16, column=0, columnspan=2, sticky='snew', padx=70, pady=10)
+            row=15, column=0, columnspan=2, sticky='snew', padx=70, pady=10)
 
         self.navFrm = Label(self.globdataFrm)
         self.navFrm.grid(
-            row=17, column=0, columnspan=2, sticky='snew', padx=10, pady=10)
+            row=16, column=0, columnspan=2, sticky='snew', padx=10, pady=10)
 
         self.dispLbl = Label(self.navFrm, text='1 ouf 100 displayed')
         self.dispLbl.grid(
@@ -375,21 +376,89 @@ class CartView(Frame):
     def rename_cart(self):
         if self.cart_name.get():
             self.cartEnt['state'] = '!disable'
-            self.statusCbx['state'] = '!disable'
+            self.statusCbx['state'] = 'readonly'
+            print(self.statusCbx['state'])
             if self.system.get() == 2:
-                self.libCbx['state'] = '!disable'
+                self.libCbx['state'] = 'readonly'
 
     def save_cart(self):
         try:
             save_displayed_order_data(self.tracker.values())
+
             # save cart data
-            save_data(
-                Cart, self.cart_id,
-                name=self.cartEnt.get().strip(),
-                library_id=)
+            if self.cartEnt['state'] != 'disable':
+                kwargs = {}
+                kwargs['name'] = self.cartEnt.get().strip()
+                if self.system.get() == 2 and self.library.get() != '':
+                    if self.library.get() == 'branches':
+                        library_id = 1
+                    elif self.library.get() == 'research':
+                        library_id = 2
+                    kwargs['library_id'] = library_id
+                rec = get_record(Status, name=self.status.get())
+                kwargs['status_id'] = rec.did
+                kwargs['updated'] = datetime.now()
+
+                save_data(
+                    Cart, self.cart_id.get(), **kwargs)
+
+                # disable cart widgets
+                self.cartEnt['state'] = 'disable'
+                self.libCbx['state'] = 'disable'
+                self.statusCbx['state'] = 'disable'
+
             messagebox.showinfo('Saving', 'Data has been saved.')
         except BabelError:
             messagebox.showerror('Database error', e)
+
+    def show_fund_widget(self):
+        self.fundTop = Toplevel(self)
+        self.fundTop.title('Funds')
+        # add funds icon here
+
+        frm = Frame(self.fundTop)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=10, pady=10)
+        frm.columnconfigure(0, minsize=40)
+
+        Label(frm, text='select funds:').grid(
+            row=0, column=0, sticky='snw', pady=5)
+        applyBtn = Button(
+            frm,
+            image=self.saveImgS,
+            command=lambda: self.apply_funds(listbox, listbox.curselection()))
+        applyBtn.grid(
+            row=0, column=1, sticky='se', padx=5, pady=10)
+        self.createToolTip(applyBtn, 'apply selected funds')
+
+        scrollbar = Scrollbar(frm, orient=VERTICAL)
+        scrollbar.grid(
+            row=1, column=2, sticky='sne', pady=5)
+        listbox = Listbox(
+            frm,
+            font=RFONT,
+            selectmode=EXTENDED,
+            yscrollcommand=scrollbar.set)
+        listbox.grid(
+            row=1, column=0, columnspan=2, sticky='snew', pady=5)
+        scrollbar.config(command=listbox.yview)
+
+        for code in sorted(self.fund_idx.values()):
+            listbox.insert(END, code)
+
+    def apply_funds(self, listbox, selected):
+        values = listbox.get(0, END)
+        selected_funds = [values[s] for s in selected]
+        apply_fund_to_cart(self.system.get(), self.cart_id.get(), selected_funds)
+
+        # update display
+        # maybe it would be better to simply insert
+        # new values into appropriate fundCbxes?
+        self.preview_frame.destroy()
+        self.preview()
+        self.display_selected_orders(self.selected_order_ids)
+
+        self.fundTop.destroy()
 
     def validate_cart(self):
         pass
@@ -415,7 +484,6 @@ class CartView(Frame):
             'langCbx': self.langCbx,
             'vendorCbx': self.vendorCbx,
             'mattypeCbx': self.mattypeCbx,
-            'fundCbx': self.fundCbx,
             'audnCbx': self.audnCbx,
             'poEnt': self.poEnt,
             'noteEnt': self.noteEnt,
@@ -424,7 +492,6 @@ class CartView(Frame):
         }
 
         apply_globals_to_cart(self.cart_id.get(), widgets)
-        # appply_fund_to_cart(self.cart_id.get(), self.fundCbx)
 
         self.preview_frame.destroy()
         self.preview()
@@ -535,7 +602,7 @@ class CartView(Frame):
                 grid_tracker = self.create_grid(
                     locsFrm,
                     r,
-                    (branch, shelf, qty, fund))
+                    (loc.did, branch, shelf, qty, fund))
                 grids.append(grid_tracker)
 
         else:
@@ -784,7 +851,7 @@ class CartView(Frame):
 
         return tracker
 
-    def create_grid(self, parent, row, loc=('', '', '', '')):
+    def create_grid(self, parent, row, loc=(None, '', '', '', '')):
         unitFrm = Frame(parent)
         unitFrm.grid(
             row=row, column=0, sticky='snew')
@@ -804,7 +871,7 @@ class CartView(Frame):
             values=sorted(self.branch_idx.values()))
         branchCbx.grid(
             row=0, column=1, sticky='snew', padx=2, pady=4)
-        branchCbx.set(loc[0])
+        branchCbx.set(loc[1])
 
         shelfCbx = Combobox(
             unitFrm, font=RFONT, width=3,
@@ -812,14 +879,14 @@ class CartView(Frame):
             values=sorted(self.shelf_idx.values()))
         shelfCbx.grid(
             row=0, column=2, sticky='snew', padx=2, pady=4)
-        shelfCbx.set(loc[1])
+        shelfCbx.set(loc[2])
 
         qtyEnt = Entry(
             unitFrm, font=RFONT, width=3,
             validate="key", validatecommand=self.vlqt)
         qtyEnt.grid(
             row=0, column=3, sticky='snew', padx=2, pady=4)
-        qtyEnt.insert(END, loc[2])
+        qtyEnt.insert(END, loc[3])
 
         fundCbx = Combobox(
             unitFrm, font=RFONT, width=10,
@@ -827,10 +894,12 @@ class CartView(Frame):
             state='readonly')
         fundCbx.grid(
             row=0, column=4, columnspan=2, sticky='snew', padx=2, pady=4)
-        fundCbx.set(loc[3])
+        fundCbx.set(loc[4])
 
         tracker = {
+            'loc_id': loc[0],
             'unitFrm': unitFrm,
+            'unitFrm_row': row,
             'removeBtn': removeBtn,
             'branchCbx': branchCbx,
             'shelfCbx': shelfCbx,
@@ -855,10 +924,20 @@ class CartView(Frame):
     def add_location(self, parent):
         ntb_id = parent.master.master.winfo_id()
         locs = self.tracker[ntb_id]['grid']['locs']
+
+        try:
+            row = locs[-1]['unitFrm_row'] + 1
+        except IndexError:
+            row = 0
+        mlogger.debug('adding new loc in row {}'.format(
+            row))
+
         loc = self.create_grid(
-            self.tracker[ntb_id]['grid']['locsFrm'], len(locs) + 1)
+            self.tracker[ntb_id]['grid']['locsFrm'], row)
         locs.append(loc)
         self.tracker[ntb_id]['grid']['locs'] = locs
+        mlogger.debug('tracker after new loc appended: {}'.format(
+            [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
 
     def apply_grid_template(self, parent):
         ntb_id = parent.master.master.winfo_id()
@@ -877,7 +956,7 @@ class CartView(Frame):
             shelf = self.shelf_idx[l.shelfcode_id]
             qty = l.qty
             loc = self.create_grid(
-                locsFrm, r, (branch, shelf, qty, ''))
+                locsFrm, r, (l.did, branch, shelf, qty, ''))
             locs.append(loc)
             r += 1
         self.tracker[ntb_id]['grid']['locs'] = locs
@@ -885,7 +964,8 @@ class CartView(Frame):
     def remove_location(self, removeBtn):
         ntb_id = removeBtn.master.master.master.master.master.winfo_id()
         locs = self.tracker[ntb_id]['grid']['locs']
-        mlogger.debug('Locs before removal: {}'.format(locs))
+        mlogger.debug('Locs before removal: {}'.format(
+            [l['loc_id'] for l in locs]))
         n = 0
         for l in locs:
             if l['removeBtn'] == removeBtn:
@@ -896,7 +976,7 @@ class CartView(Frame):
         self.tracker[ntb_id]['grid']['locs'] = locs
         parent.destroy()
         mlogger.debug('locs after removal: {}'.format(
-            self.tracker[ntb_id]['grid']['locs']))
+            [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
 
     def sierra_check(self, ntb):
         pass
@@ -918,7 +998,6 @@ class CartView(Frame):
         self.dist_set.set('')
         self.lang.set('')
         self.vendor.set('')
-        self.fund.set('')
         self.mattype.set('')
         self.price.set('')
         self.discount.set('')
@@ -1029,9 +1108,6 @@ class CartView(Frame):
                 self.fund_idx = create_code_index(
                     Fund,
                     system_id=self.system.get())
-                values = sorted(self.fund_idx.values())
-                values.insert(0, 'keep current')
-                self.fundCbx['values'] = values
 
                 # branches
                 self.branch_idx = create_code_index(

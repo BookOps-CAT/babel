@@ -185,6 +185,8 @@ class Base(Tk):
         removeImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-web-iconM.png')
         validationImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-kgoldrunner-gold-iconM.png')
+        fundImgM = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -216,7 +218,8 @@ class Base(Tk):
                 'notfound': notFoundImg,
                 'found': foundImg,
                 'removeS': removeImgS,
-                'valid': validationImg}}
+                'valid': validationImg,
+                'fundM': fundImgM}}
 
         # spawn Babel frames
         self.frames = {}
