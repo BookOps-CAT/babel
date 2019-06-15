@@ -379,10 +379,10 @@ class OrderLocation(Base):
 
     did = Column(Integer, primary_key=True)
     order_id = Column(Integer, ForeignKey('order.did'), nullable=False)
-    branch_id = Column(Integer, ForeignKey('branch.did'), nullable=False)
-    shelfcode_id = Column(Integer, ForeignKey('shelfcode.did'), nullable=False)
-    qty = Column(Integer, nullable=False)
-    fund_id = Column(Integer, ForeignKey('fund.did'), nullable=False)
+    branch_id = Column(Integer, ForeignKey('branch.did'))
+    shelfcode_id = Column(Integer, ForeignKey('shelfcode.did'))
+    qty = Column(Integer)
+    fund_id = Column(Integer, ForeignKey('fund.did'))
 
     def __repr__(self):
         state = inspect(self)
