@@ -52,6 +52,12 @@ class CartView(Frame):
         self.order_ids = []
         self.dist_set = StringVar()
         self.dist_set.trace('w', self.distribution_observer)
+        self.dist_template = StringVar()
+        self.dist_template.trace('w', self.template_observer)
+        self.new_dist = StringVar()
+        self.grid_template = StringVar()
+        self.grid_template.trace('w', self.template_observer)
+        self.new_grid = StringVar()
         self.library = StringVar()
         self.status = StringVar()
         self.status.trace('w', self.status_observer)
@@ -547,7 +553,7 @@ class CartView(Frame):
         applyBtn = Button(
             gridFrm,
             image=self.saveImgS,
-            command=lambda: self.apply_grid_template(gridFrm))
+            command=lambda: self.apply_grid_template(ntb.winfo_id()))
         applyBtn.grid(
             row=0, column=5, sticky='snw', padx=5, pady=2)
         applyBtn.image = self.saveImgS
@@ -555,7 +561,7 @@ class CartView(Frame):
         copyBtn = Button(
             gridFrm,
             image=self.copyImgS,
-            command=lambda: self.copy_grid(gridFrm))
+            command=lambda: self.copy_grid_to_template(ntb.winfo_id()))
         copyBtn.grid(
             row=0, column=6, sticky='snw', padx=5, pady=2)
         copyBtn.image = self.copyImgS
@@ -939,8 +945,7 @@ class CartView(Frame):
         mlogger.debug('tracker after new loc appended: {}'.format(
             [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
 
-    def apply_grid_template(self, parent):
-        ntb_id = parent.master.master.winfo_id()
+    def apply_grid_template(self, ntb_id):
         locsFrm = self.tracker[ntb_id]['grid']['locsFrm']
         for w in locsFrm.winfo_children():
             w.destroy()
@@ -960,6 +965,91 @@ class CartView(Frame):
             locs.append(loc)
             r += 1
         self.tracker[ntb_id]['grid']['locs'] = locs
+
+    def copy_grid_to_template(self, ntb_id):
+
+        grids = self.tracker[ntb_id]['grid']
+
+        self.gridTop = Toplevel(self)
+        self.gridTop.title('Copying grid to template')
+
+        frm = Frame(self.gridTop)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=10, pady=10)
+
+        Label(frm, text='new name:').grid(
+            row=0, column=2, sticky='snew', padx=5)
+
+        Label(frm, text='distribution:').grid(
+            row=1, column=0, sticky='snw', padx=5, pady=5)
+        distCbx = Combobox(
+            frm,
+            font=RFONT,
+            textvariable=self.dist_template,
+            state='readonly')
+        distCbx.grid(
+            row=1, column=1, sticky='snew', padx=5, pady=5)
+        values = ['new distribution']
+        if self.dist_set.get() != '':
+            values.append(self.dist_set.get())
+        distCbx['values'] = values
+
+        self.newdistEnt = Entry(
+            frm,
+            font=RFONT,
+            textvariable=self.new_dist,
+            state='disabled')
+        self.newdistEnt.grid(
+            row=1, column=2, sticky='snew', padx=5, pady=5)
+
+        Label(frm, text='grid:').grid(
+            row=2, column=0, sticky='snw', padx=5, pady=5)
+        gridCbx = Combobox(
+            frm,
+            font=RFONT,
+            textvariable=self.grid_template,
+            state='readonly')
+        gridCbx.grid(
+            row=2, column=1, sticky='snew', padx=5, pady=5)
+        values = sorted(self.grid_idx.values())
+        values.insert(0, 'new grid')
+        gridCbx['values'] = values
+        self.newgridEnt = Entry(
+            frm,
+            font=RFONT,
+            textvariable=self.new_grid,
+            state='disabled')
+        self.newgridEnt.grid(
+            row=2, column=2, sticky='snew', padx=5, pady=5)
+
+        btnFrm = Frame(frm)
+        btnFrm.grid(
+            row=3, column=0, columnspan=2, sticky='snew', padx=10, pady=10)
+        btnFrm.columnconfigure(0, minsize=200)
+
+        okBtn = Button(
+            btnFrm,
+            image=self.saveImgS,
+            command=lambda: self.save_new_template)
+        okBtn.grid(
+            row=0, column=1, sticky='snw', padx=5, pady=10)
+        cancelBtn = Button(
+            btnFrm,
+            image=self.deleteImgS,
+            command=self.gridTop.destroy)
+        cancelBtn.grid(
+            row=0, column=2, sticky='snw', padx=5, pady=10)
+
+    def save_new_template(self):
+        if self.new_dist.get() != '':
+            # save under new distribution
+            pass
+        else:
+            if self.dist_template == 'new distribution':
+                messagebox.showerror('Input error', )
+        if self.new_grid.get() != '':
+            # add new grid to existing distribution
+            pass
 
     def remove_location(self, removeBtn):
         ntb_id = removeBtn.master.master.master.master.master.winfo_id()
@@ -1004,6 +1094,20 @@ class CartView(Frame):
         self.audn.set('')
         self.poperline.set('')
         self.note.set('')
+        self.dist_template.set('')
+        self.new_dist.set('')
+        self.grid_template.set('')
+        self.new_grid.set('')
+
+    def template_observer(self, *args):
+        if self.dist_template.get() == 'new distribution':
+            self.newdistEnt['state'] = '!disabled'
+        else:
+            self.newdistEnt['state'] = 'disabled'
+        if self.grid_template.get() == 'new grid':
+            self.newgridEnt['state'] = '!disabled'
+        else:
+            self.newgridEnt['state'] = 'disabled'
 
     def status_observer(self, *args):
         if self.status.get() == 'finalized':
