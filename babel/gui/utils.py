@@ -42,7 +42,13 @@ def get_id_from_index(value, idx):
 
 
 def open_url(url):
-    webbrowser.open_new(url)
+    """
+    Opens default web browser and goes to given URL
+    """
+    try:
+        webbrowser.open_new(url)
+    except TypeError:
+        pass
 
 
 class BusyManager:

@@ -11,11 +11,11 @@ from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             Branch, Status)
 from gui.data_retriever import (get_names, save_data, get_record,
                                 get_records,
-                                convert4display, delete_data,
+                                convert4display, delete_data, delete_data_by_did,
                                 create_resource_reader, create_cart,
                                 get_carts_data, get_codes, get_orders_by_id,
                                 get_order_ids, create_code_index,
-                                create_name_index,
+                                create_name_index, save_displayed_order_data,
                                 update_orders, apply_globals_to_cart)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
@@ -262,11 +262,11 @@ class CartView(Frame):
 
         Label(self.globdataFrm, text='PO:').grid(
             row=12, column=0, sticky='snw', padx=5, pady=2)
-        self.poperlineEnt = Entry(
+        self.poEnt = Entry(
             self.globdataFrm,
             width=24,
             textvariable=self.poperline)
-        self.poperlineEnt.grid(
+        self.poEnt.grid(
             row=12, column=1, sticky='snw', padx=5, pady=2)
 
         Label(self.globdataFrm, text='ord. note:').grid(
@@ -380,7 +380,16 @@ class CartView(Frame):
                 self.libCbx['state'] = '!disable'
 
     def save_cart(self):
-        pass
+        try:
+            save_displayed_order_data(self.tracker.values())
+            # save cart data
+            save_data(
+                Cart, self.cart_id,
+                name=self.cartEnt.get().strip(),
+                library_id=)
+            messagebox.showinfo('Saving', 'Data has been saved.')
+        except BabelError:
+            messagebox.showerror('Database error', e)
 
     def validate_cart(self):
         pass
@@ -389,7 +398,10 @@ class CartView(Frame):
         pass
 
     def delete_cart(self):
-        pass
+        msg = 'Are you sure you want to delete entire cart?'
+        if messagebox.askokcancel('Deletion', msg):
+            delete_data_by_did(Cart, self.cart_id.get())
+            self.controller.show_frame('CartsView')
 
     def search_sierra(self):
         pass
@@ -405,13 +417,15 @@ class CartView(Frame):
             'mattypeCbx': self.mattypeCbx,
             'fundCbx': self.fundCbx,
             'audnCbx': self.audnCbx,
-            'poperlineEnt': self.poperlineEnt,
+            'poEnt': self.poEnt,
             'noteEnt': self.noteEnt,
             'priceEnt': self.priceEnt,
             'discEnt': self.discEnt
         }
-        
-        apply_globals_to_cart(self.cart_id.get(), **widgets)
+
+        apply_globals_to_cart(self.cart_id.get(), widgets)
+        # appply_fund_to_cart(self.cart_id.get(), self.fundCbx)
+
         self.preview_frame.destroy()
         self.preview()
         self.display_selected_orders(self.selected_order_ids)
@@ -485,7 +499,7 @@ class CartView(Frame):
         Label(gridFrm, text='shelf', font=LFONT).grid(
             row=1, column=1, sticky='sew', padx=10)
         Label(gridFrm, text='qty', font=LFONT).grid(
-            row=1, column=2, sticky='sew', padx=2)
+            row=1, column=2, sticky='sw')
         Label(gridFrm, text='fund', font=LFONT).grid(
             row=1, column=3, sticky='sew', padx=2)
 
@@ -500,14 +514,28 @@ class CartView(Frame):
             r = 0
             for loc in orec.locations:
                 r += 1
+
+                try:
+                    branch = self.branch_idx[loc.branch_id]
+                except KeyError:
+                    branch = ''
+                try:
+                    shelf = self.shelf_idx[loc.shelfcode_id]
+                except KeyError:
+                    shelf = ''
+                if loc.qty is None:
+                    qty = ''
+                else:
+                    qty = str(loc.qty)
+                try:
+                    fund = self.fund_idx[loc.fund_id]
+                except KeyError:
+                    fund = ''
+
                 grid_tracker = self.create_grid(
                     locsFrm,
                     r,
-                    (loc.did,
-                        self.branch_idx[loc.branch_id],
-                        self.shelf_idx[loc.shelf_id],
-                        loc.qty,
-                        loc.fund_idx[loc.fund_id]))
+                    (branch, shelf, qty, fund))
                 grids.append(grid_tracker)
 
         else:
@@ -533,7 +561,6 @@ class CartView(Frame):
                 'locsFrm': locsFrm,
                 'locs': grids
             },
-            'delete': False
         }
 
         return ntb
@@ -612,7 +639,7 @@ class CartView(Frame):
         editBtn = Button(
             resourceFrm,
             image=self.editImgS,
-            command=lambda: self.edit_resource(parent))
+            command=lambda: self.edit_resource(parent.master))
         editBtn.image = self.editImgS
         editBtn.grid(
             row=0, column=4, sticky='se', padx=2, pady=2)
@@ -620,7 +647,7 @@ class CartView(Frame):
         deleteBtn = Button(
             resourceFrm,
             image=self.deleteImgS,
-            command=lambda: self.delete_resource(parent))
+            command=lambda: self.delete_resource(parent.master))
         # deleteBtn.imgage = self.deleteImgS
         deleteBtn.grid(
             row=0, column=5, sticky='se', padx=2, pady=2)
@@ -757,7 +784,7 @@ class CartView(Frame):
 
         return tracker
 
-    def create_grid(self, parent, row, loc=(None, '', '', '', '')):
+    def create_grid(self, parent, row, loc=('', '', '', '')):
         unitFrm = Frame(parent)
         unitFrm.grid(
             row=row, column=0, sticky='snew')
@@ -777,7 +804,7 @@ class CartView(Frame):
             values=sorted(self.branch_idx.values()))
         branchCbx.grid(
             row=0, column=1, sticky='snew', padx=2, pady=4)
-        branchCbx.set(loc[1])
+        branchCbx.set(loc[0])
 
         shelfCbx = Combobox(
             unitFrm, font=RFONT, width=3,
@@ -785,32 +812,30 @@ class CartView(Frame):
             values=sorted(self.shelf_idx.values()))
         shelfCbx.grid(
             row=0, column=2, sticky='snew', padx=2, pady=4)
-        shelfCbx.set(loc[2])
+        shelfCbx.set(loc[1])
 
         qtyEnt = Entry(
             unitFrm, font=RFONT, width=3,
             validate="key", validatecommand=self.vlqt)
         qtyEnt.grid(
             row=0, column=3, sticky='snew', padx=2, pady=4)
-        qtyEnt.insert(END, loc[3])
+        qtyEnt.insert(END, loc[2])
 
         fundCbx = Combobox(
-            unitFrm, font=RFONT, width=5,
+            unitFrm, font=RFONT, width=10,
             values=sorted(self.fund_idx.values()),
             state='readonly')
         fundCbx.grid(
-            row=0, column=4, sticky='snew', padx=2, pady=4)
-        fundCbx.set(loc[4])
+            row=0, column=4, columnspan=2, sticky='snew', padx=2, pady=4)
+        fundCbx.set(loc[3])
 
         tracker = {
-            'did': loc[0],
             'unitFrm': unitFrm,
             'removeBtn': removeBtn,
             'branchCbx': branchCbx,
             'shelfCbx': shelfCbx,
             'qtyEnt': qtyEnt,
             'fundCbx': fundCbx,
-            'delete': False
         }
 
         return tracker
@@ -852,7 +877,7 @@ class CartView(Frame):
             shelf = self.shelf_idx[l.shelfcode_id]
             qty = l.qty
             loc = self.create_grid(
-                locsFrm, r, (l.did, branch, shelf, qty, ''))
+                locsFrm, r, (branch, shelf, qty, ''))
             locs.append(loc)
             r += 1
         self.tracker[ntb_id]['grid']['locs'] = locs
@@ -880,7 +905,26 @@ class CartView(Frame):
         pass
 
     def delete_resource(self, ntb):
-        pass
+        msg = 'Are you sure you want to delete order?'
+        if messagebox.askokcancel('Deletion', msg):
+            order_id = self.tracker[ntb.winfo_id()]['order']['order_id']
+
+            delete_data_by_did(Order, order_id)
+            self.tracker.pop(ntb.winfo_id(), None)
+            ntb.destroy()
+
+    def reset(self):
+        self.order_ids = []
+        self.dist_set.set('')
+        self.lang.set('')
+        self.vendor.set('')
+        self.fund.set('')
+        self.mattype.set('')
+        self.price.set('')
+        self.discount.set('')
+        self.audn.set('')
+        self.poperline.set('')
+        self.note.set('')
 
     def status_observer(self, *args):
         if self.status.get() == 'finalized':
@@ -931,6 +975,8 @@ class CartView(Frame):
     def observer(self, *args):
         if self.activeW.get() == 'CartView':
             if self.profile.get() != 'All users':
+
+                self.reset()
 
                 # trigger profile observer when Window active
                 self.profile_observer()

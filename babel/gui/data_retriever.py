@@ -12,8 +12,8 @@ from sqlalchemy.inspection import inspect
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
                             FundLibraryJoiner, FundMatTypeJoiner, Lang, Fund,
                             FundBranchJoiner, Library, MatType, DistGrid,
-                            Vendor,
-                            GridLocation, Resource, Cart, Order)
+                            Vendor, ShelfCode,
+                            GridLocation, Resource, Cart, Order, OrderLocation)
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
                                    insert_or_ignore, delete_record,
@@ -465,50 +465,102 @@ def update_orders(orders_tracker):
             pass
 
 
-def populate_orders_data(cart_id, orders_tracker):
+def get_ids_for_order_boxes_values(values_dict):
+    kwargs = {}
+    with session_scope() as session:
+        if values_dict['langCbx'].get() not in ('', 'keep current'):
+            rec = retrieve_record(
+                session, Lang,
+                name=values_dict['langCbx'].get())
+            kwargs['lang_id'] = rec.did
+
+        if values_dict['vendorCbx'].get() not in ('', 'keep current'):
+            rec = retrieve_record(
+                session, Vendor,
+                name=values_dict['vendorCbx'].get())
+            kwargs['vendor_id'] = rec.did
+
+        if values_dict['mattypeCbx'].get() not in ('', 'keep current'):
+            rec = retrieve_record(
+                session, MatType,
+                name=values_dict['mattypeCbx'].get())
+            kwargs['matType_id'] = rec.did
+
+        if values_dict['audnCbx'].get() not in ('', 'keep current'):
+            rec = retrieve_record(
+                session, Audn,
+                name=values_dict['audnCbx'].get())
+            kwargs['audn_id'] = rec.did
+
+        if values_dict['poEnt'].get().strip() != '':
+            kwargs['poPerLine'] = values_dict['poEnt'].get().strip()
+
+        if values_dict['noteEnt'].get().strip() != '':
+            kwargs['note'] = values_dict['noteEnt'].get().strip()
+
+        if 'commentEnt' in values_dict:
+            if values_dict['commentEnt'].get().strip() != '':
+                kwargs['comment'] = values_dict['commentEnt'].get().strip()
+
+        return kwargs
+
+
+def save_displayed_order_data(tracker_values):
+    with session_scope() as session:
+        for v in tracker_values:
+            order = v['order']
+            locs = v['grid']['locs']
+
+            locations = []
+            for l in locs:
+                lkwargs = {}
+                if l['branchCbx'].get() != '':
+                    rec = retrieve_record(
+                        session, Branch,
+                        code=l['branchCbx'].get())
+                    lkwargs['branch_id'] = rec.did
+                if l['shelfCbx'].get() != '':
+                    rec = retrieve_record(
+                        session, ShelfCode,
+                        code=l['shelfCbx'].get())
+                    lkwargs['shelfcode_id'] = rec.did
+                if l['qtyEnt'].get() != '':
+                    lkwargs['qty'] = int(l['qtyEnt'].get())
+                if l['fundCbx'].get() != '':
+                    rec = retrieve_record(
+                        session, Fund,
+                        code=l['fundCbx'].get())
+                    lkwargs['fund_id'] = rec.did
+                if lkwargs:
+                    locations.append(OrderLocation(**lkwargs))
+
+            okwargs = get_ids_for_order_boxes_values(order)
+            okwargs['locations'] = locations
+
+            update_record(
+                session,
+                Order,
+                order['order_id'],
+                **okwargs)
+
+
+
+
+def apply_fund_to_cart(cart_id):
     pass
 
 
-def apply_globals_to_cart(cart_id, **widgets):
+def apply_globals_to_cart(cart_id, widgets):
     with session_scope() as session:
-        okwargs = {}
         rkwargs = {}
-
         # order data
-        if widgets['langCbx'].get() not in ('', 'keep current'):
-            rec = retrieve_record(
-                session, Lang,
-                name=widgets['langCbx'].get())
-            okwargs['lang_id'] = rec.did
-        if widgets['vendorCbx'].get() not in ('', 'keep current'):
-            rec = retrieve_record(
-                session, Vendor,
-                name=widgets['vendorCbx'].get())
-            okwargs['vendor_id'] = rec.did
-        if widgets['mattypeCbx'].get() not in ('', 'keep current'):
-            rec = retrieve_record(
-                session, MatType,
-                name=widgets['mattypeCbx'].get())
-            okwargs['matType_id'] = rec.did
-        if widgets['fundCbx'].get() not in ('', 'keep current'):
-            rec = retrieve_record(
-                session, Fund,
-                code=widgets['fundCbx'].get())
-            okwargs['fund_id'] = rec.did
-        if widgets['audnCbx'].get() not in ('', 'keep current'):
-            rec = retrieve_record(
-                session, Audn,
-                name=widgets['audnCbx'].get())
-            okwargs['audn_id'] = rec.did
-        if widgets['poperlineEnt'].get().strip() != '':
-            okwargs['poPerLine'] = widgets['poperlineEnt'].get().strip()
-        if widgets['noteEnt'].get().strip() != '':
-            okwargs['note'] = widgets['noteEnt'].get().strip()
+        okwargs = get_ids_for_order_boxes_values(widgets)
 
         # resource data
         if widgets['priceEnt'].get() != '':
             rkwargs['price_list'] = float(widgets['price'].get())
             rkwargs['price_disc'] = float(widgets['price'].get())
+
         if widgets['discEnt'].get() != '':
             # will be in play only when there is only
             # list price and no discount price
@@ -517,6 +569,7 @@ def apply_globals_to_cart(cart_id, **widgets):
 
         ord_recs = retrieve_records(
             session, Order, cart_id=cart_id)
+
         for rec in ord_recs:
             update_record(
                 session, Order, rec.did, **okwargs)
