@@ -18,7 +18,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 get_order_ids, create_code_index,
                                 create_name_index, save_displayed_order_data,
                                 update_orders, apply_globals_to_cart,
-                                apply_fund_to_cart)
+                                apply_fund_to_cart, save_new_dist_and_grid)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets, open_url)
@@ -52,6 +52,7 @@ class CartView(Frame):
         self.order_ids = []
         self.dist_set = StringVar()
         self.dist_set.trace('w', self.distribution_observer)
+        self.dist_id = IntVar()
         self.dist_template = StringVar()
         self.dist_template.trace('w', self.template_observer)
         self.new_dist = StringVar()
@@ -946,29 +947,39 @@ class CartView(Frame):
             [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
 
     def apply_grid_template(self, ntb_id):
-        locsFrm = self.tracker[ntb_id]['grid']['locsFrm']
-        for w in locsFrm.winfo_children():
-            w.destroy()
+        grid_template_name = self.tracker[ntb_id]['grid']['gridCbx'].get()
 
-        # get grid record
-        grid_record = get_record(
-            DistGrid,
-            name=self.tracker[ntb_id]['grid']['gridCbx'].get())
-        r = 0
-        locs = []
-        for l in grid_record.gridlocations:
-            branch = self.branch_idx[l.branch_id]
-            shelf = self.shelf_idx[l.shelfcode_id]
-            qty = l.qty
-            loc = self.create_grid(
-                locsFrm, r, (l.did, branch, shelf, qty, ''))
-            locs.append(loc)
-            r += 1
-        self.tracker[ntb_id]['grid']['locs'] = locs
+        if grid_template_name != '':
+
+            # destroy current grid widgets
+            locsFrm = self.tracker[ntb_id]['grid']['locsFrm']
+            for w in locsFrm.winfo_children():
+                w.destroy()
+
+            # get grid record
+            grid_record = get_record(
+                DistGrid,
+                distset_id=self.dist_id.get(),
+                name=grid_template_name)
+            r = 0
+            locs = []
+            for l in grid_record.gridlocations:
+                branch = self.branch_idx[l.branch_id]
+                shelf = self.shelf_idx[l.shelfcode_id]
+                qty = l.qty
+                loc = self.create_grid(
+                    locsFrm, r, (l.did, branch, shelf, qty, ''))
+                locs.append(loc)
+                r += 1
+            self.tracker[ntb_id]['grid']['locs'] = locs
 
     def copy_grid_to_template(self, ntb_id):
 
-        grids = self.tracker[ntb_id]['grid']
+        # reset any previous variables
+        self.new_dist.set('')
+        self.new_grid.set('')
+        self.dist_template.set('')
+        self.grid_template.set('')
 
         self.gridTop = Toplevel(self)
         self.gridTop.title('Copying grid to template')
@@ -1004,16 +1015,16 @@ class CartView(Frame):
 
         Label(frm, text='grid:').grid(
             row=2, column=0, sticky='snw', padx=5, pady=5)
-        gridCbx = Combobox(
+        self.gridCbx = Combobox(
             frm,
             font=RFONT,
             textvariable=self.grid_template,
             state='readonly')
-        gridCbx.grid(
+        self.gridCbx.grid(
             row=2, column=1, sticky='snew', padx=5, pady=5)
         values = sorted(self.grid_idx.values())
         values.insert(0, 'new grid')
-        gridCbx['values'] = values
+        self.gridCbx['values'] = values
         self.newgridEnt = Entry(
             frm,
             font=RFONT,
@@ -1030,7 +1041,7 @@ class CartView(Frame):
         okBtn = Button(
             btnFrm,
             image=self.saveImgS,
-            command=lambda: self.save_new_template)
+            command=lambda: self.save_new_template(ntb_id))
         okBtn.grid(
             row=0, column=1, sticky='snw', padx=5, pady=10)
         cancelBtn = Button(
@@ -1040,16 +1051,63 @@ class CartView(Frame):
         cancelBtn.grid(
             row=0, column=2, sticky='snw', padx=5, pady=10)
 
-    def save_new_template(self):
-        if self.new_dist.get() != '':
-            # save under new distribution
-            pass
-        else:
-            if self.dist_template == 'new distribution':
-                messagebox.showerror('Input error', )
-        if self.new_grid.get() != '':
-            # add new grid to existing distribution
-            pass
+    def save_new_template(self, ntb_id):
+        try:
+            grids = self.tracker[ntb_id]['grid']
+            profile_id = get_id_from_index(
+                self.profile.get(), self.profile_idx)
+            if self.new_dist.get() != '':
+                # save under new distribution
+                if self.new_grid.get() != '':
+                    # as new grid
+                    save_new_dist_and_grid(
+                        self.system.get(),
+                        profile_id,
+                        grids,
+                        self.branch_idx,
+                        self.shelf_idx,
+                        self.new_dist.get(),
+                        self.new_grid.get())
+                else:
+                    messagebox.showerror(
+                        'Input error',
+                        'Please provide name for the new grid.')
+            else:
+                if self.dist_template == 'new distribution':
+                    messagebox.showerror(
+                        'Input error',
+                        'Please provide name for the new distribution.')
+                else:
+                    # existing distribution
+                    if self.new_grid.get() != '':
+                        save_new_dist_and_grid(
+                            self.system.get(),
+                            profile_id,
+                            grids,
+                            self.branch_idx,
+                            self.shelf_idx,
+                            self.dist_template.get(),
+                            self.new_grid.get())
+                    else:
+                        # existing grid
+                        save_new_dist_and_grid(
+                            self.system.get(),
+                            profile_id,
+                            grids,
+                            self.branch_idx,
+                            self.shelf_idx,
+                            self.dist_template.get(),
+                            self.grid_template.get())
+
+            # update dist/grid indexes
+            self.profile_observer()
+            self.distribution_observer()
+            self.gridTop.destroy()
+
+        except BabelError as e:
+            self.gridTop.destroy()
+            messagebox.showerror('Input Error', e)
+
 
     def remove_location(self, removeBtn):
         ntb_id = removeBtn.master.master.master.master.master.winfo_id()
@@ -1100,14 +1158,24 @@ class CartView(Frame):
         self.new_grid.set('')
 
     def template_observer(self, *args):
-        if self.dist_template.get() == 'new distribution':
-            self.newdistEnt['state'] = '!disabled'
-        else:
-            self.newdistEnt['state'] = 'disabled'
-        if self.grid_template.get() == 'new grid':
-            self.newgridEnt['state'] = '!disabled'
-        else:
-            self.newgridEnt['state'] = 'disabled'
+        try:
+            if self.dist_template.get() == 'new distribution':
+                self.newdistEnt['state'] = '!disabled'
+                self.gridCbx['values'] = ['new grid']
+            else:
+                self.newdistEnt['state'] = 'disabled'
+                if self.dist_template.get() != '':
+                    values = sorted(self.grid_idx.values())
+                    values.insert(0, 'new grid')
+                    self.gridCbx['values'] = values
+            if self.grid_template.get() == 'new grid':
+                self.newgridEnt['state'] = '!disabled'
+            else:
+                self.newgridEnt['state'] = 'disabled'
+        except AttributeError:
+            pass
+        except TclError:
+            pass
 
     def status_observer(self, *args):
         if self.status.get() == 'finalized':
@@ -1145,6 +1213,7 @@ class CartView(Frame):
                         name=self.dist_set.get(),
                         system_id=self.system.get(),
                         user_id=profile_id)
+                    self.dist_id.set(dist_rec.did)
 
                     self.grid_idx = create_name_index(
                         DistGrid,

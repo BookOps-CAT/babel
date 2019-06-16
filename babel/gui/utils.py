@@ -71,7 +71,7 @@ class BusyManager:
                 if cursor != "watch":
                     self.widgets[str(w)] = (w, cursor)
                     w.config(cursor="watch")
-            except tk.TclError:
+            except TclError:
                 pass
 
         for w in w.children.values():
@@ -82,7 +82,7 @@ class BusyManager:
         for w, cursor in self.widgets.values():
             try:
                 w.config(cursor=cursor)
-            except tk.TclError:
+            except TclError:
                 pass
         self.widgets = {}
 
