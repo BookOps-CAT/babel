@@ -1,4 +1,5 @@
 from collections import namedtuple
+from decimal import Decimal
 
 
 VenData = namedtuple(
@@ -24,4 +25,4 @@ VenData = namedtuple(
         None, None, None, None,
         None, None, None, None,
         None, None, None, None,
-        0.0, None, None])
+        Decimal('0.00'), None, None])

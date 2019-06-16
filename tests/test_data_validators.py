@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from decimal import Decimal
 import unittest
 
 
@@ -98,43 +99,47 @@ class TestNormalizePrice(unittest.TestCase):
 
     def test_none_returns_none(self):
         price = validators.normalize_price(None)
-        self.assertEqual(price, 0.0)
+        self.assertEqual(price, Decimal(0.00))
 
     def test_empty_string_returns_none(self):
         price = validators.normalize_price('')
-        self.assertEqual(price, 0.0)
+        self.assertEqual(price, Decimal(0.00))
 
     def test_zero_returns_zero(self):
         price = validators.normalize_price(0)
-        self.assertEqual(price, 0.0)
+        self.assertEqual(price, Decimal(0))
 
     def test_int_converted_to_float(self):
         price = validators.normalize_price(25)
-        self.assertEqual(price, 25.00)
+        self.assertEqual(price, Decimal(25))
 
     def test_float_stays_as_float(self):
         price = validators.normalize_price(9.99)
-        self.assertEqual(price, 9.99)
+        self.assertEqual(price, Decimal(9.99))
 
-    def test_price_as_str_converted_to_float(self):
+    def test_price_as_str_converted_to_decimal(self):
         price = validators.normalize_price('9.99')
-        self.assertEqual(price, 9.99)
+        self.assertEqual(price, Decimal('9.99'))
 
-    def test_price_as_str_with_dollars_converted_to_float(self):
+    def test_price_as_str_with_dollars_converted_to_decimal(self):
         price = validators.normalize_price('$123.99')
-        self.assertEqual(price, 123.99)
+        self.assertEqual(price, Decimal('123.99'))
 
     def test_price_as_str_without_decimals(self):
         price = validators.normalize_price('$9')
-        self.assertEqual(price, 9.0)
+        self.assertEqual(price, Decimal('9.0'))
 
     def test_price_with_long_decimal(self):
         price = validators.normalize_price(5.9234)
-        self.assertEqual(price, 5.9234)
+        self.assertEqual(price, Decimal(5.9234))
 
     def test_price_with_long_decimal_as_string(self):
         price = validators.normalize_price('$15.9234')
-        self.assertEqual(price, 15.9234)
+        self.assertEqual(price, Decimal('15.9234'))
+
+    def test_price_with_extra_spaces(self):
+        price = validators.normalize_price(' $12.99\n')
+        self.assertEqual(price, Decimal('12.99'))
 
 
 if __name__ == '__main__':

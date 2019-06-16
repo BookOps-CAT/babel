@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from decimal import Decimal
 import unittest
 
 
@@ -13,10 +14,10 @@ class TestVenData(unittest.TestCase):
         data = data_objs.VenData()
         self.assertEqual(
             data._fields,
-            ('title', 'author', 'series', 'publisher',
-             'pub_date', 'summary', 'isbn', 'upc',
+            ('title', 'add_title', 'author', 'series', 'publisher',
+             'pub_date', 'pub_place', 'summary', 'isbn', 'upc',
              'other_no', 'price_list', 'price_disc',
-             'desc_url'))
+             'desc_url', 'misc'))
 
     def test_data_defaults(self):
         # afer upgrade to python 3.7.3 use somenamedtuple._field_defaults
@@ -30,8 +31,8 @@ class TestVenData(unittest.TestCase):
         self.assertIsNone(data.isbn)
         self.assertIsNone(data.upc)
         self.assertIsNone(data.other_no)
-        self.assertEqual(data.price_list, 0.0)
-        self.assertEqual(data.price_disc, 0.0)
+        self.assertIsNone(data.price_list)
+        self.assertEqual(data.price_disc, Decimal('0.00'))
         self.assertIsNone(data.desc_url)
 
     def test_data_population(self):
@@ -41,8 +42,8 @@ class TestVenData(unittest.TestCase):
             publisher='TestPub',
             pub_date='2019',
             isbn='978178349005x',
-            price_list=12.00,
-            price_disc=9.99)
+            price_list=Decimal('12'),
+            price_disc=Decimal('9.9'))
         self.assertEqual(data.title, 'Test title')
         self.assertEqual(data.author, 'Smith, John')
         self.assertIsNone(data.series)
@@ -52,8 +53,8 @@ class TestVenData(unittest.TestCase):
         self.assertEqual(data.isbn, '978178349005x')
         self.assertIsNone(data.upc)
         self.assertIsNone(data.other_no)
-        self.assertEqual(data.price_list, 12.00)
-        self.assertEqual(data.price_disc, 9.99)
+        self.assertEqual(data.price_list, Decimal('12.00'))
+        self.assertEqual(data.price_disc, Decimal('9.90'))
         self.assertIsNone(data.desc_url)
 
 

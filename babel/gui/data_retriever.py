@@ -2,6 +2,7 @@
 Methods to retrieve data from Babel datastore
 """
 from datetime import datetime
+from decimal import Decimal
 import logging
 
 from sqlalchemy.exc import IntegrityError, InternalError
@@ -329,12 +330,9 @@ def save_new_dist_and_grid(
 
 
 def save_grid_data(**kwargs):
-    # first update existing gridlocations
-    # probably it would be better to use
-    # update_record method that includes relationships
-    # may be faster
-    # try to use the same method for updating grids in
-    # Grids module and directly in the cart
+    """
+    used in GridView
+    """
     locs = []
     for loc in kwargs['gridlocs']:
         branch_id = get_id_from_index(loc['branch'], kwargs['branch_idx'])
@@ -580,15 +578,18 @@ def get_ids_for_order_boxes_values(values_dict):
                 name=values_dict['audnCbx'].get())
             kwargs['audn_id'] = rec.did
 
-        if values_dict['poEnt'].get().strip() != '':
-            kwargs['poPerLine'] = values_dict['poEnt'].get().strip()
+        if 'poEnt' in values_dict:
+            if values_dict['poEnt'].get().strip() != '':
+                kwargs['poPerLine'] = values_dict['poEnt'].get().strip()
 
-        if values_dict['noteEnt'].get().strip() != '':
-            kwargs['note'] = values_dict['noteEnt'].get().strip()
+        if 'noteEnt' in values_dict:
+            if values_dict['noteEnt'].get().strip() != '':
+                kwargs['note'] = values_dict['noteEnt'].get().strip()
 
         if 'commentEnt' in values_dict:
-            if values_dict['commentEnt'].get().strip() != '':
-                kwargs['comment'] = values_dict['commentEnt'].get().strip()
+            if 'commentEnt' in values_dict:
+                if values_dict['commentEnt'].get().strip() != '':
+                    kwargs['comment'] = values_dict['commentEnt'].get().strip()
 
         return kwargs
 
@@ -687,20 +688,28 @@ def apply_fund_to_cart(system_id, cart_id, fund_codes):
 
 def apply_globals_to_cart(cart_id, widgets):
     with session_scope() as session:
-        rkwargs = {}
         # order data
         okwargs = get_ids_for_order_boxes_values(widgets)
 
         # resource data
-        if widgets['priceEnt'].get() != '':
-            rkwargs['price_list'] = float(widgets['price'].get())
-            rkwargs['price_disc'] = float(widgets['price'].get())
+        rkwargs = {}
 
-        if widgets['discEnt'].get() != '':
-            # will be in play only when there is only
-            # list price and no discount price
-            # apply discount to all list prices
-            pass
+        discount = None
+        if 'discEnt' in widgets:
+            if widgets['discEnt'].get() != '':
+                discount = Decimal(widgets['discEnt'].get())
+
+        if 'priceEnt' in widgets:
+            if widgets['priceEnt'].get() != '':
+                list_price = Decimal(widgets['priceEnt'].get())
+                rkwargs['price_list'] = list_price
+                if discount:
+                    rkwargs['price_disc'] = list_price - ((
+                        list_price * discount) / Decimal(100))
+                else:
+                    rkwargs['price_disc'] = list_price
+        mlogger.debug('Global update to prices: {}, discount: {}'.format(
+            rkwargs, discount))
 
         ord_recs = retrieve_records(
             session, Order, cart_id=cart_id)
@@ -709,4 +718,17 @@ def apply_globals_to_cart(cart_id, widgets):
             update_record(
                 session, Order, rec.did, **okwargs)
 
+            if rkwargs:
+                update_record(
+                    session, Resource,
+                    rec.resource.did,
+                    **rkwargs)
 
+            elif discount:
+                rkwargs['price_disc'] = rec.resource.price_list - ((
+                    rec.resource.price_list * discount) / Decimal(100))
+                update_record(
+                    session, Resource,
+                    rec.resource.did,
+                    **rkwargs)
+                rkwargs = {}

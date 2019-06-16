@@ -1,4 +1,5 @@
 # validates data passed from spreadsheets
+from decimal import Decimal
 import re
 
 p1 = re.compile(r'[12]\d{3}')
@@ -35,17 +36,17 @@ def normalize_isbn(value):
 
 def normalize_price(value):
     if type(value) is int:
-        return float(value)
+        return Decimal(value)
     elif type(value) is float:
-        return value
+        return Decimal(value)
     elif type(value) is str:
         m = re.search(p3, value)
         if m:
-            return float(m.group(0))
+            return Decimal(m.group(0))
         else:
-            return 0.0
+            return Decimal('0.00')
     else:
-        return 0.0
+        return Decimal('0.00')
 
 
 def normalize_whitespaces(value):
