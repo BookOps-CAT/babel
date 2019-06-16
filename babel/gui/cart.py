@@ -49,7 +49,6 @@ class CartView(Frame):
 
         # local variables
         self.cart_name = StringVar()
-        self.order_ids = []
         self.dist_set = StringVar()
         self.dist_set.trace('w', self.distribution_observer)
         self.dist_id = IntVar()
@@ -74,6 +73,13 @@ class CartView(Frame):
         self.noteChb_var = IntVar()
         self.priceChb_var = IntVar()
         self.discountChb_var = IntVar()
+
+        # navigation variables
+        self.order_ids = []
+        self.disp_start = 0
+        self.disp_end = 0
+        self.disp_number = 5
+        self.orders_displayed = StringVar()
 
         # icons
         copyImg = self.app_data['img']['copy']
@@ -333,7 +339,8 @@ class CartView(Frame):
         self.applyBtn.grid(
             row=15, column=1, sticky='snw', pady=10)
 
-        self.dispLbl = Label(self.globdataFrm, text='1 ouf 100 displayed')
+        self.dispLbl = Label(
+            self.globdataFrm, textvariable=self.orders_displayed)
         self.dispLbl.grid(
             row=16, column=0, columnspan=3, sticky='snw', padx=5, pady=5)
 
@@ -531,7 +538,8 @@ class CartView(Frame):
         self.display_selected_orders(self.selected_order_ids)
 
     def nav_start(self):
-        pass
+
+        self.display_selected_orders(self.selected_order_ids)
 
     def nav_end(self):
         pass
@@ -540,18 +548,33 @@ class CartView(Frame):
         pass
 
     def nav_next(self):
-        pass
+        if self.disp_end <= len(self.order_ids):
+            self.disp_start = self.disp_end
+            self.disp_end = self.disp_end + self.disp_number
+            self.selected_order_ids = self.order_ids[
+                self.disp_start:self.disp_end]
+            mlogger.debug(f'Nav next: {self.disp_start}:{self.disp_end}')
+            mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
+            self.display_selected_orders(self.selected_order_ids)
+            self.orders_displayed.set(
+                'records {}-{} out of {}'.format(
+                    self.disp_start,
+                    self.disp_end,
+                    len(self.order_ids)))
 
     def display_selected_orders(self, order_ids):
         recs = get_orders_by_id(order_ids)
         row = 0
+        cart_no = self.disp_start
         for orec in recs:
-            ntb = self.order_widget(self.preview_frame, row + 1, orec)
+            ntb = self.order_widget(
+                self.preview_frame, row + 1, orec, cart_no)
             ntb.grid(
                 row=row, column=0, sticky='snew', padx=2, pady=2)
             row += 1
+            cart_no += 1
 
-    def order_widget(self, parent, no, orec):
+    def order_widget(self, parent, no, orec, cart_no):
         # displays individual notebook for resource & order data
 
         ntb = Notebook(
@@ -649,7 +672,7 @@ class CartView(Frame):
         more_tracker = self.populate_more_tab(
             moreTab, orec)
 
-        ntb.add(mainTab, text=f'title {no}')
+        ntb.add(mainTab, text=f'title {cart_no}')
         ntb.add(moreTab, text='more')
 
         self.tracker[ntb.winfo_id()] = {
@@ -1165,6 +1188,7 @@ class CartView(Frame):
 
             delete_data_by_did(Order, order_id)
             self.tracker.pop(ntb.winfo_id(), None)
+            self.order_ids.remove(order_id)
             ntb.destroy()
 
     def reset(self):
@@ -1323,7 +1347,15 @@ class CartView(Frame):
                     system_id=self.system.get())
 
                 self.order_ids = get_order_ids(self.cart_id.get())
-                self.selected_order_ids = self.order_ids[:5]
+                self.disp_start = 0
+                self.disp_end = self.disp_start + self.disp_number
+                self.selected_order_ids = self.order_ids[
+                    self.disp_start:self.disp_end]
+                self.orders_displayed.set(
+                    'records {}-{} out of {}'.format(
+                        self.disp_start,
+                        self.disp_end,
+                        len(self.order_ids)))
                 self.display_selected_orders(self.selected_order_ids)
 
     def preview(self):
