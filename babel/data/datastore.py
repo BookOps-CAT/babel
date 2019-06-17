@@ -615,6 +615,27 @@ def create_datastore(
     """
     session.execute(stmn)
 
+    print('creating cart_fund view...')
+    stmn = """
+    CREATE VIEW cart_details AS
+        SELECT cart.did AS cart_id, cart.blanketPO as blanketPO,
+               `order`.did AS order_id, `order`.oid as order_oid, `order`.wlo as wlo,
+               resource.price_disc as price,
+               orderlocation.qty as qty, fund.code as fund,
+               lang.name as lang, audn.name as audn,
+               vendor.name as vendor, matType.name as mattype
+        FROM cart
+            JOIN `order` ON cart.did = `order`.cart_id
+            JOIN resource ON `order`.did = resource.order_id
+            JOIN vendor ON `order`.vendor_id = vendor.did
+            JOIN lang ON `order`.lang_id = lang.did
+            JOIN audn ON `order`.audn_id = audn.did
+            JOIN orderlocation ON `order`.did = orderlocation.order_id
+            JOIN mattype ON `order`.matType_Id = mattype.did
+            JOIN fund ON orderlocation.fund_id = fund.did
+        """
+    session.execute(stmn)
+
     session.close()
 
     print('DB set-up complete.')
