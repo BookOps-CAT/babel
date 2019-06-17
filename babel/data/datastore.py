@@ -605,7 +605,7 @@ def create_datastore(
 
     print('creating carts data view...')
     stmn = """
-    CREATE VIEW carts_data AS
+    CREATE VIEW carts_meta AS
         SELECT cart.did AS cart_id, cart.name AS cart_name,
                cart.updated AS cart_date, cart.system_id AS system_id,
                status.name AS cart_status, user.name AS cart_owner
