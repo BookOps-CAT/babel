@@ -1,3 +1,4 @@
+import logging
 from tkinter import *
 from tkinter.ttk import *
 import shelve
@@ -16,6 +17,9 @@ from gui.ingest import ImportView
 from gui.carts import CartsView
 from gui.cart import CartView
 from paths import USER_DATA
+
+
+mlogger = logging.getLogger('babel_logger')
 
 
 class Base(Tk):
@@ -240,9 +244,10 @@ class Base(Tk):
     def show_frame(self, page_name):
         """show frame for the given page name"""
 
-        frame = self.frames[page_name]
-        # set tier for behavioral control
         self.activeW.set(page_name)
+        mlogger.debug('show_frame activewW: {}'.format(self.activeW.get()))
+
+        frame = self.frames[page_name]
         frame.tkraise()
 
     def profile_observer(self, *args):

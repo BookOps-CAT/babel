@@ -608,7 +608,6 @@ class FundView(Frame):
 
     def observer(self, *args):
         if self.activeW.get() == 'FundView':
-            self.profile.set('All users')
             self.all_branches.set(0)
 
             # pull data from data store only

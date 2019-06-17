@@ -634,4 +634,4 @@ class TableView(Frame):
 
     def observer(self, *args):
         if self.activeW.get() == 'TableView':
-            self.profile.set('All users')
+            pass

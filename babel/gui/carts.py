@@ -44,6 +44,7 @@ class CartsView(Frame):
         # local variables
         self.status_filter = StringVar()
         self.selected_cart = StringVar()
+        self.cart_owner = StringVar()
 
         # images
         # addImg = self.app_data['img']['add']
@@ -188,11 +189,12 @@ class CartsView(Frame):
         self.cartdataFrm.grid(
             row=0, column=1, sticky='snew', padx=10, pady=5)
 
-
     def view_data(self):
         pass
 
     def edit_data(self):
+        # figure out profile cart belongs to first
+        self.profile.set(self.cart_owner.get())
         self.active_id.set(self.cart_idx[self.selected_cart.get()])
         self.controller.show_frame('CartView')
 
@@ -218,6 +220,7 @@ class CartsView(Frame):
         curItem = self.cartTrv.focus()
         try:
             self.selected_cart.set(self.cartTrv.item(curItem)['values'][0])
+            self.cart_owner.set(self.cartTrv.item(curItem)['values'][3])
         except IndexError:
             pass
 

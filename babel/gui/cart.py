@@ -479,6 +479,9 @@ class CartView(Frame):
             row=1, column=0, columnspan=2, sticky='snew', pady=5)
         scrollbar.config(command=listbox.yview)
 
+        mlogger.debug(
+            'Fund listbox in fundTop widget values: {}'.format(
+                sorted(self.fund_idx.values())))
         for code in sorted(self.fund_idx.values()):
             listbox.insert(END, code)
 
@@ -514,6 +517,7 @@ class CartView(Frame):
         pass
 
     def help(self):
+        # link to Github wiki with documentation here
         pass
 
     def apply_globals(self):
@@ -549,8 +553,8 @@ class CartView(Frame):
         self.disp_end = 5
         self.selected_order_ids = self.order_ids[
             self.disp_start:self.disp_end]
-        mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
-        mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
+        # mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
+        # mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
         self.display_selected_orders(self.selected_order_ids)
         self.orders_displayed.set(
             'records {}-{} out of {}'.format(
@@ -565,8 +569,8 @@ class CartView(Frame):
         self.disp_start = len(self.order_ids) - self.disp_number
         self.disp_end = len(self.order_ids)
         self.selected_order_ids = self.order_ids[-self.disp_number:]
-        mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
-        mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
+        # mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
+        # mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
         self.display_selected_orders(self.selected_order_ids)
         self.orders_displayed.set(
             'records {}-{} out of {}'.format(
@@ -583,8 +587,8 @@ class CartView(Frame):
             self.disp_start = self.disp_end - self.disp_number
             self.selected_order_ids = self.order_ids[
                 self.disp_start:self.disp_end]
-            mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
-            mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
+            # mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
+            # mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
             self.display_selected_orders(self.selected_order_ids)
             self.orders_displayed.set(
                 'records {}-{} out of {}'.format(
@@ -601,8 +605,8 @@ class CartView(Frame):
             self.disp_end = self.disp_end + self.disp_number
             self.selected_order_ids = self.order_ids[
                 self.disp_start:self.disp_end]
-            mlogger.debug(f'Nav next: {self.disp_start}:{self.disp_end}')
-            mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
+            # mlogger.debug(f'Nav next: {self.disp_start}:{self.disp_end}')
+            # mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
             self.display_selected_orders(self.selected_order_ids)
             self.orders_displayed.set(
                 'records {}-{} out of {}'.format(
@@ -615,7 +619,7 @@ class CartView(Frame):
         self.cur_manager.busy()
         self.preview_frame.destroy()
         self.preview()
-        self.tracker = {}
+        self.tracker = OrderedDict()
         recs = get_orders_by_id(order_ids)
         row = 0
         cart_no = self.disp_start + 1
@@ -644,8 +648,8 @@ class CartView(Frame):
         gridFrm = LabelFrame(mainTab, text='grid')
         gridFrm.grid(
             row=1, column=1, sticky='snew', padx=10)
-        mlogger.debug('New gridFrm ({}, child of mainTab {})'.format(
-            gridFrm.winfo_id(), mainTab.winfo_id()))
+        # mlogger.debug('New gridFrm ({}, child of mainTab {})'.format(
+            # gridFrm.winfo_id(), mainTab.winfo_id()))
 
         gridCbx = Combobox(
             gridFrm,
@@ -683,8 +687,8 @@ class CartView(Frame):
         locsFrm = Frame(gridFrm)
         locsFrm.grid(
             row=2, column=0, columnspan=4, sticky='snew')
-        mlogger.debug('New locsFrm ({}, child of gridfrm {})'.format(
-            locsFrm.winfo_id(), gridFrm.winfo_id()))
+        # mlogger.debug('New locsFrm ({}, child of gridfrm {})'.format(
+            # locsFrm.winfo_id(), gridFrm.winfo_id()))
 
         grids = []
         if orec.locations:
@@ -731,7 +735,6 @@ class CartView(Frame):
 
         self.tracker[ntb.winfo_id()] = {
             'resource': res_tracker,
-            'more': more_tracker,
             'order': ord_tracker,
             'grid': {
                 'gridCbx': gridCbx,
@@ -766,22 +769,17 @@ class CartView(Frame):
             row=1, column=0, rowspan=5, sticky="snew", padx=10)
         scrollbar['command'] = summaryTxt.yview
 
-
         summaryTxt.insert(END, f'Misc:\n{orec.resource.misc}\n\n')
         summaryTxt.insert(END, f'Summary:\n{orec.resource.summary}\n')
         summaryTxt['state'] = 'disable'
-
-        tracker = {}
-
-        return tracker
 
     def create_resource_frame(self, parent, resource):
         resourceFrm = Frame(parent)
         resourceFrm.grid(
             row=0, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
-        resourceFrm.columnconfigure(3, minsize=340)
-        mlogger.debug('New resourceFrm ({}, child of mainTab {})'.format(
-            resourceFrm.winfo_id(), parent.winfo_id()))
+        resourceFrm.columnconfigure(3, minsize=330)
+        # mlogger.debug('New resourceFrm ({}, child of mainTab {})'.format(
+            # resourceFrm.winfo_id(), parent.winfo_id()))
 
         # provide description data
         sierraBtn = Button(
@@ -794,12 +792,12 @@ class CartView(Frame):
 
         line1 = f'{resource.title} / {resource.author}.'
         Label(resourceFrm, text=line1, font=RBFONT).grid(
-            row=0, column=1, sticky='snw', padx=5, pady=5)
+            row=0, column=1, columnspa=3, sticky='snw', padx=5, pady=5)
 
         if resource.add_title:
             line2 = f'{resource.add_title}'
             Label(resourceFrm, text=line2, font=RBFONT).grid(
-                row=1, column=1, sticky='snw', padx=5, pady=5)
+                row=1, column=1, columnspa=3, sticky='snw', padx=5, pady=5)
 
         line3 = f'\t{resource.pub_place} : {resource.publisher}, {resource.pub_date}. -- ({resource.series}).'
         Label(resourceFrm, text=line3, font=LFONT).grid(
@@ -844,8 +842,8 @@ class CartView(Frame):
         orderFrm = Frame(parent)
         orderFrm.grid(
             row=1, column=0, sticky='snew', padx=5, pady=5)
-        mlogger.debug('New orderFrm ({}, child of mainTab {})'.format(
-            orderFrm.winfo_id(), parent.winfo_id()))
+        # mlogger.debug('New orderFrm ({}, child of mainTab {})'.format(
+            # orderFrm.winfo_id(), parent.winfo_id()))
 
         Label(orderFrm, text='lang:').grid(
             row=0, column=0, sticky='snw', padx=2, pady=2)
@@ -966,9 +964,9 @@ class CartView(Frame):
         unitFrm = Frame(parent)
         unitFrm.grid(
             row=row, column=0, sticky='snew')
-        mlogger.debug(
-            'New grid unitFrm ({}): row: {}, parent locsFrm: {}'.format(
-                unitFrm.winfo_id(), row, parent.winfo_id()))
+        # mlogger.debug(
+        #     'New grid unitFrm ({}): row: {}, parent locsFrm: {}'.format(
+        #         unitFrm.winfo_id(), row, parent.winfo_id()))
         removeBtn = Button(
             unitFrm,
             image=self.removeImgS,)
@@ -1029,8 +1027,8 @@ class CartView(Frame):
         add_locationBtn.image = self.addImgS
         add_locationBtn.grid(
             row=3, column=0, sticky='nw', padx=5, pady=2)
-        mlogger.debug('Created addlocBtn ({}, child of gridFrm {})'.format(
-            add_locationBtn.winfo_id(), parent.winfo_id()))
+        # mlogger.debug('Created addlocBtn ({}, child of gridFrm {})'.format(
+        #     add_locationBtn.winfo_id(), parent.winfo_id()))
 
     def add_location(self, parent):
         ntb_id = parent.master.master.winfo_id()
@@ -1040,15 +1038,15 @@ class CartView(Frame):
             row = locs[-1]['unitFrm_row'] + 1
         except IndexError:
             row = 0
-        mlogger.debug('adding new loc in row {}'.format(
-            row))
+        # mlogger.debug('adding new loc in row {}'.format(
+        #     row))
 
         loc = self.create_grid(
             self.tracker[ntb_id]['grid']['locsFrm'], row)
         locs.append(loc)
         self.tracker[ntb_id]['grid']['locs'] = locs
-        mlogger.debug('tracker after new loc appended: {}'.format(
-            [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
+        # mlogger.debug('tracker after new loc appended: {}'.format(
+        #     [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
 
     def apply_grid_template(self, ntb_id):
         grid_template_name = self.tracker[ntb_id]['grid']['gridCbx'].get()
@@ -1215,8 +1213,8 @@ class CartView(Frame):
     def remove_location(self, removeBtn):
         ntb_id = removeBtn.master.master.master.master.master.winfo_id()
         locs = self.tracker[ntb_id]['grid']['locs']
-        mlogger.debug('Locs before removal: {}'.format(
-            [l['loc_id'] for l in locs]))
+        # mlogger.debug('Locs before removal: {}'.format(
+        #     [l['loc_id'] for l in locs]))
         n = 0
         for l in locs:
             if l['removeBtn'] == removeBtn:
@@ -1226,8 +1224,8 @@ class CartView(Frame):
         locs.pop(n)
         self.tracker[ntb_id]['grid']['locs'] = locs
         parent.destroy()
-        mlogger.debug('locs after removal: {}'.format(
-            [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
+        # mlogger.debug('locs after removal: {}'.format(
+        #     [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
 
     def sierra_check(self, ntb):
         pass
@@ -1246,6 +1244,7 @@ class CartView(Frame):
             ntb.destroy()
 
     def reset(self):
+        mlogger.debug('Reseting CartView variables.')
         self.order_ids = []
         self.dist_set.set('')
         self.lang.set('')
@@ -1288,6 +1287,7 @@ class CartView(Frame):
     def status_observer(self, *args):
         if self.status.get() == 'finalized':
             # run validation
+            # assign blanketPO and wlo numbers
             pass
 
     def profile_observer(self, *args):
@@ -1335,6 +1335,8 @@ class CartView(Frame):
     def observer(self, *args):
         if self.activeW.get() == 'CartView':
             if self.profile.get() != 'All users':
+
+                # mlogger.debug('CartView raised.')
 
                 self.reset()
 
@@ -1389,6 +1391,8 @@ class CartView(Frame):
                 self.fund_idx = create_code_index(
                     Fund,
                     system_id=self.system.get())
+                mlogger.debug('CartView activation funds refresh: {}'.format(
+                    sorted(self.fund_idx.values())))
 
                 # branches
                 self.branch_idx = create_code_index(
