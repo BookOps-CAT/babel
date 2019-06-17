@@ -20,7 +20,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 update_orders, apply_globals_to_cart,
                                 apply_fund_to_cart, save_new_dist_and_grid)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
-from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
+from gui.utils import (ToolTip, BusyManager, get_id_from_index, disable_widgets,
                        enable_widgets, open_url)
 
 
@@ -46,6 +46,7 @@ class CartView(Frame):
         self.profile_idx = app_data['profile_idx']
         self.profile.trace('w', self.profile_observer)
         max_height = int((self.winfo_screenheight() - 200))
+        self.cur_manager = BusyManager(self)
 
         # local variables
         self.cart_name = StringVar()
@@ -340,11 +341,12 @@ class CartView(Frame):
             row=15, column=1, sticky='snw', pady=10)
 
         self.dispLbl = Label(
-            self.globdataFrm, textvariable=self.orders_displayed)
+            self.globdataFrm, textvariable=self.orders_displayed,
+            anchor=CENTER)
         self.dispLbl.grid(
-            row=16, column=0, columnspan=3, sticky='snw', padx=5, pady=5)
+            row=16, column=0, columnspan=3, sticky='snew', padx=5, pady=5)
 
-        self.navFrm = Label(self.globdataFrm)
+        self.navFrm = Frame(self.globdataFrm)
         self.navFrm.grid(
             row=17, column=1, sticky='snew', padx=10, pady=10)
 
@@ -442,7 +444,6 @@ class CartView(Frame):
                 self.libCbx['state'] = 'disable'
                 self.statusCbx['state'] = 'disable'
 
-            messagebox.showinfo('Saving', 'Data has been saved.')
         except BabelError:
             messagebox.showerror('Database error', e)
 
@@ -482,9 +483,11 @@ class CartView(Frame):
             listbox.insert(END, code)
 
     def apply_funds(self, listbox, selected):
+        self.cur_manager.busy()
         values = listbox.get(0, END)
         selected_funds = [values[s] for s in selected]
         apply_fund_to_cart(self.system.get(), self.cart_id.get(), selected_funds)
+        self.cur_manager.notbusy()
 
         # update display
         # maybe it would be better to simply insert
@@ -531,24 +534,69 @@ class CartView(Frame):
         if self.discountChb_var.get():
             widgets['discEnt'] = self.discEnt
 
+        self.cur_manager.busy()
         apply_globals_to_cart(self.cart_id.get(), widgets)
+        self.cur_manager.notbusy()
 
         self.preview_frame.destroy()
         self.preview()
         self.display_selected_orders(self.selected_order_ids)
 
     def nav_start(self):
-
+        self.cur_manager.busy()
+        self.save_cart()
+        self.disp_start = 0
+        self.disp_end = 5
+        self.selected_order_ids = self.order_ids[
+            self.disp_start:self.disp_end]
+        mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
+        mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
         self.display_selected_orders(self.selected_order_ids)
+        self.orders_displayed.set(
+            'records {}-{} out of {}'.format(
+                self.disp_start + 1,
+                self.disp_end,
+                len(self.order_ids)))
+        self.cur_manager.notbusy()
 
     def nav_end(self):
-        pass
+        self.cur_manager.busy()
+        self.save_cart()
+        self.disp_start = len(self.order_ids) - self.disp_number
+        self.disp_end = len(self.order_ids)
+        self.selected_order_ids = self.order_ids[-self.disp_number:]
+        mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
+        mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
+        self.display_selected_orders(self.selected_order_ids)
+        self.orders_displayed.set(
+            'records {}-{} out of {}'.format(
+                self.disp_start + 1,
+                self.disp_end,
+                len(self.order_ids)))
+        self.cur_manager.notbusy()
 
     def nav_previous(self):
-        pass
+        self.cur_manager.busy()
+        if self.disp_start > 0:
+            self.save_cart()
+            self.disp_end = self.disp_start
+            self.disp_start = self.disp_end - self.disp_number
+            self.selected_order_ids = self.order_ids[
+                self.disp_start:self.disp_end]
+            mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
+            mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
+            self.display_selected_orders(self.selected_order_ids)
+            self.orders_displayed.set(
+                'records {}-{} out of {}'.format(
+                    self.disp_start + 1,
+                    self.disp_end,
+                    len(self.order_ids)))
+        self.cur_manager.notbusy()
 
     def nav_next(self):
+        self.cur_manager.busy()
         if self.disp_end <= len(self.order_ids):
+            self.save_cart()
             self.disp_start = self.disp_end
             self.disp_end = self.disp_end + self.disp_number
             self.selected_order_ids = self.order_ids[
@@ -558,14 +606,19 @@ class CartView(Frame):
             self.display_selected_orders(self.selected_order_ids)
             self.orders_displayed.set(
                 'records {}-{} out of {}'.format(
-                    self.disp_start,
+                    self.disp_start + 1,
                     self.disp_end,
                     len(self.order_ids)))
+        self.cur_manager.notbusy()
 
     def display_selected_orders(self, order_ids):
+        self.cur_manager.busy()
+        self.preview_frame.destroy()
+        self.preview()
+        self.tracker = {}
         recs = get_orders_by_id(order_ids)
         row = 0
-        cart_no = self.disp_start
+        cart_no = self.disp_start + 1
         for orec in recs:
             ntb = self.order_widget(
                 self.preview_frame, row + 1, orec, cart_no)
@@ -573,6 +626,7 @@ class CartView(Frame):
                 row=row, column=0, sticky='snew', padx=2, pady=2)
             row += 1
             cart_no += 1
+        self.cur_manager.notbusy()
 
     def order_widget(self, parent, no, orec, cart_no):
         # displays individual notebook for resource & order data
@@ -1018,7 +1072,7 @@ class CartView(Frame):
                 shelf = self.shelf_idx[l.shelfcode_id]
                 qty = l.qty
                 loc = self.create_grid(
-                    locsFrm, r, (l.did, branch, shelf, qty, ''))
+                    locsFrm, r, (None, branch, shelf, qty, ''))
                 locs.append(loc)
                 r += 1
             self.tracker[ntb_id]['grid']['locs'] = locs
@@ -1353,7 +1407,7 @@ class CartView(Frame):
                     self.disp_start:self.disp_end]
                 self.orders_displayed.set(
                     'records {}-{} out of {}'.format(
-                        self.disp_start,
+                        self.disp_start + 1,
                         self.disp_end,
                         len(self.order_ids)))
                 self.display_selected_orders(self.selected_order_ids)

@@ -600,8 +600,11 @@ def save_displayed_order_data(tracker_values):
             order = v['order']
             locs = v['grid']['locs']
 
+            okwargs = {}
             locations = []
             for l in locs:
+                mlogger.debug('Saving orderLoc data: order_id:{}, loc_id:{}, frm_id:{}'.format(
+                    order['order_id'], l['loc_id'], l['unitFrm'].winfo_id()))
                 lkwargs = {}
                 if l['loc_id'] is not None:
                     lkwargs['did'] = l['loc_id']
@@ -625,15 +628,21 @@ def save_displayed_order_data(tracker_values):
                     # validate here
                 if lkwargs:
                     locations.append(OrderLocation(**lkwargs))
+                    mlogger.debug(
+                        'Saving orderLoc data, params: {}'.format(
+                            lkwargs))
 
             okwargs = get_ids_for_order_boxes_values(order)
             okwargs['locations'] = locations
+            mlogger.debug('Saving order data (id:{}), params: {}'.format(
+                order['order_id'], okwargs))
 
             update_record(
                 session,
                 Order,
                 order['order_id'],
                 **okwargs)
+            # session.flush()
 
 
 def apply_fund_to_cart(system_id, cart_id, fund_codes):
