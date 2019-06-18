@@ -9,12 +9,12 @@ from PIL import Image, ImageTk
 
 from errors import BabelError
 from data.datastore import Cart, Library, Status
-from gui.data_retriever import (get_record, get_carts_data,
-                                get_cart_details)
+from gui.data_retriever import (get_record, get_carts_data)
 from gui.fonts import RFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets)
 from paths import USER_DATA, MY_DOCS
+from reports.carts import summarize_cart
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -204,14 +204,13 @@ class CartsView(Frame):
         self.cartdataTxt.delete(1.0, END)
 
         # display basic info
-        cart_id = self.cart_idx[self.selected_cart.get()]
-        summary = self.generate_cart_summary(cart_id)
+        summary = self.generate_cart_summary(self.active_id.get())
         self.cartdataTxt.insert(END, summary)
 
         self.cartdataTxt['state'] = 'disable'
 
     def generate_cart_summary(self, cart_id):
-        cart_rec = get_record(Cart, did=cart_id)
+        cart_rec = get_record(Cart, did=self.active_id.get())
         owner = self.profile_idx[cart_rec.user_id]
         try:
             library = get_record(Library, did=cart_rec.library_id).name
@@ -229,9 +228,7 @@ class CartsView(Frame):
         lines.append(f'blanketPO: {cart_rec.blanketPO}')
 
         # cart_details data
-        recs = get_cart_details(cart_id)
-
-
+        details = summarize_cart(cart_id)
 
 
         return '\n'.join(lines)

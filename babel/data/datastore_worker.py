@@ -97,11 +97,10 @@ def get_cart_data_view_records(
     return instances
 
 
-def retrieve_cart_details_view_records(session, cart_id):
+def retrieve_cart_details_view_stmn(cart_id):
     stmn = text("""
         SELECT * FROM cart_details
         WHERE cart_id=:cart_id
         """)
-    stmn.bindparams(cart_id=cart_id)
-    instances = session.execute(stmn)
-    return instances
+    stmn = stmn.bindparams(cart_id=cart_id)
+    return stmn

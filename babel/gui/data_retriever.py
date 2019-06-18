@@ -5,6 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 import logging
 
+from pandas import read_sql
 from sqlalchemy.exc import IntegrityError, InternalError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from sqlalchemy.inspection import inspect
@@ -20,7 +21,7 @@ from data.datastore_worker import (get_column_values, retrieve_record,
                                    insert_or_ignore, delete_record,
                                    update_record, get_cart_data_view_records,
                                    retrieve_cart_order_ids,
-                                   retrieve_cart_details_view_records)
+                                   retrieve_cart_details_view_stmn)
 from errors import BabelError
 from gui.utils import get_id_from_index
 from ingest.xlsx import ResourceDataReader
@@ -744,8 +745,8 @@ def apply_globals_to_cart(cart_id, widgets):
                 rkwargs = {}
 
 
-def get_cart_details(cart_id):
+def get_cart_details_as_dataframe(cart_id):
     with session_scope() as session:
-        recs = retrieve_cart_details_view_records(session, cart_id)
-        recs.expunge_all()
-        return recs
+        stmn = retrieve_cart_details_view_stmn(cart_id)
+        df = read_sql(stmn, session.bind)
+        return df
