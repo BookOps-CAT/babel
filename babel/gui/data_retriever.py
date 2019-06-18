@@ -19,7 +19,8 @@ from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
                                    insert_or_ignore, delete_record,
                                    update_record, get_cart_data_view_records,
-                                   retrieve_cart_order_ids)
+                                   retrieve_cart_order_ids,
+                                   retrieve_cart_details_view_records)
 from errors import BabelError
 from gui.utils import get_id_from_index
 from ingest.xlsx import ResourceDataReader
@@ -741,3 +742,10 @@ def apply_globals_to_cart(cart_id, widgets):
                     rec.resource.did,
                     **rkwargs)
                 rkwargs = {}
+
+
+def get_cart_details(cart_id):
+    with session_scope() as session:
+        recs = retrieve_cart_details_view_records(session, cart_id)
+        recs.expunge_all()
+        return recs

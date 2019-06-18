@@ -8,11 +8,9 @@ from PIL import Image, ImageTk
 
 
 from errors import BabelError
-from data.datastore import Cart
-from gui.data_retriever import (get_names, save_data, get_record,
-                                convert4display, delete_data,
-                                create_resource_reader, create_cart,
-                                get_carts_data)
+from data.datastore import Cart, Library, Status
+from gui.data_retriever import (get_record, get_carts_data,
+                                get_cart_details)
 from gui.fonts import RFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets)
@@ -215,13 +213,26 @@ class CartsView(Frame):
     def generate_cart_summary(self, cart_id):
         cart_rec = get_record(Cart, did=cart_id)
         owner = self.profile_idx[cart_rec.user_id]
+        try:
+            library = get_record(Library, did=cart_rec.library_id).name
+        except AttributeError:
+            library = ''
+
+        stat_rec = get_record(Status, did=cart_rec.status_id)
 
         lines = []
         lines.append(f'cart: {cart_rec.name}')
-        lines.append(f'owner: {owner}')
-        lines.append(f'created: {cart_rec.created} | updated: {cart_rec.updated}')
-        lines.append(f'library: {cart_rec.library_id}')
+        lines.append(f'owner: {owner} | status: {stat_rec.name}')
+        lines.append(
+            f'created: {cart_rec.created} | updated: {cart_rec.updated}')
+        lines.append(f'library: {library}')
         lines.append(f'blanketPO: {cart_rec.blanketPO}')
+
+        # cart_details data
+        recs = get_cart_details(cart_id)
+
+
+
 
         return '\n'.join(lines)
 
