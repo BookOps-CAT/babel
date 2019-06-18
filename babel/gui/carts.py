@@ -187,10 +187,44 @@ class CartsView(Frame):
         # cart data frame
         self.cartdataFrm = Frame(self.detailsFrm)
         self.cartdataFrm.grid(
-            row=0, column=1, sticky='snew', padx=10, pady=5)
+            row=0, column=1, rowspan=20, sticky='snew', padx=10, pady=5)
+
+        self.cartdataTxt = Text(
+            self.cartdataFrm,
+            width=65,
+            state=('disabled'),
+            background='SystemButtonFace',
+            borderwidth=0)
+        self.cartdataTxt.grid(
+            row=0, column=0, sticky='nsw')
 
     def view_data(self):
-        pass
+        self.active_id.set(self.cart_idx[self.selected_cart.get()])
+
+        # reset cartdataTxt
+        self.cartdataTxt['state'] = 'normal'
+        self.cartdataTxt.delete(1.0, END)
+
+        # display basic info
+        cart_id = self.cart_idx[self.selected_cart.get()]
+        summary = self.generate_cart_summary(cart_id)
+        self.cartdataTxt.insert(END, summary)
+
+        self.cartdataTxt['state'] = 'disable'
+
+    def generate_cart_summary(self, cart_id):
+        cart_rec = get_record(Cart, did=cart_id)
+        owner = self.profile_idx[cart_rec.user_id]
+
+        lines = []
+        lines.append(f'cart: {cart_rec.name}')
+        lines.append(f'owner: {owner}')
+        lines.append(f'created: {cart_rec.created} | updated: {cart_rec.updated}')
+        lines.append(f'library: {cart_rec.library_id}')
+        lines.append(f'blanketPO: {cart_rec.blanketPO}')
+
+        return '\n'.join(lines)
+
 
     def edit_data(self):
         # figure out profile cart belongs to first
