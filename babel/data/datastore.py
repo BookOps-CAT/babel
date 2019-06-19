@@ -12,6 +12,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
+from sqlalchemy.sql import text
 import shelve
 
 
@@ -371,7 +372,7 @@ class Cart(Base):
     user_id = Column(Integer, ForeignKey('user.did'), nullable=False)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
     library_id = Column(Integer, ForeignKey('library.did'))
-    blanketPO = Column(String(25))
+    blanketPO = Column(String(25), unique=True, nullable=True)
 
     orders = relationship(
         'Order',
@@ -675,6 +676,15 @@ def create_datastore(
             JOIN mattype ON `order`.matType_Id = mattype.did
             JOIN fund ON orderlocation.fund_id = fund.did
         """
+    session.execute(stmn)
+
+    # enter last wlo number
+    print('inserting first wlo number')
+    stmn = text("""
+    INSERT INTO wlo (did, `date`)
+        VALUES ('wlo0000000000', `date`=:date_today);
+        """)
+    stmn = stmn.bindparams(date_today=datetime.now())
     session.execute(stmn)
 
     session.close()

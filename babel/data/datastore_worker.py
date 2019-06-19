@@ -40,6 +40,11 @@ def retrieve_records(session, model, **kwargs):
     return instances
 
 
+def count_records(session, model, **kwargs):
+    row_count = session.query(model).filter_by(**kwargs).count()
+    return row_count
+
+
 def update_record(session, model, did, **kwargs):
     instance = session.query(model).filter_by(did=did).one()
     for key, value in kwargs.items():
@@ -49,6 +54,11 @@ def update_record(session, model, did, **kwargs):
 def delete_record(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).one()
     session.delete(instance)
+
+
+def retrieve_last_record(session, model):
+    instance = session.query(model).order_by(model.did.desc()).first()
+    return instance
 
 
 def retrieve_cart_order_ids(session, cart_id):
@@ -104,3 +114,16 @@ def retrieve_cart_details_view_stmn(cart_id):
         """)
     stmn = stmn.bindparams(cart_id=cart_id)
     return stmn
+
+
+def retrieve_unique_vendors_from_cart(session, cart_id):
+    stmn = text("""
+    SELECT DISTINCT name 
+        FROM vendor
+        JOIN `order` ON `order`.vendor_id = vendor.did
+        WHERE `order`.cart_id=:cart_id
+        ;
+    """)
+    stmn = stmn.bindparams(cart_id=cart_id)
+    instances = session.execute(stmn)
+    return instances

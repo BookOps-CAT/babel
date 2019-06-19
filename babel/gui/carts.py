@@ -221,7 +221,8 @@ class CartsView(Frame):
 
         lines = []
         lines.append(f'cart: {cart_rec.name}')
-        lines.append(f'owner: {owner} | status: {stat_rec.name}')
+        lines.append(f'status: {stat_rec.name}')
+        lines.append(f'owner: {owner}')
         lines.append(
             f'created: {cart_rec.created} | updated: {cart_rec.updated}')
         lines.append(f'library: {library}')
@@ -229,7 +230,14 @@ class CartsView(Frame):
 
         # cart_details data
         details = summarize_cart(cart_id)
+        lines.append(f'languages: {details["langs"]}')
+        lines.append(f'vendors: {details["vendors"]}')
+        lines.append(f'material types: {details["mattypes"]}')
+        lines.append(f'audiences: {details["audns"]}')
 
+        lines.append(f'funds:')
+        for fund, values in details["funds"].items():
+            lines.append(f'\t{fund}: ${values["damage"]:.2f}, copies: {values["copies"]}, titles: {values["titles"]}')
 
         return '\n'.join(lines)
 
@@ -253,7 +261,16 @@ class CartsView(Frame):
         pass
 
     def create_marc_file(self):
-        pass
+        self.active_id.set(self.cart_idx[self.selected_cart.get()])
+        cart_rec = get_record(Cart, did=self.active_id.get())
+        status = get_record(Status, did=cart_rec.status_id)
+        if status.name == 'finalized':
+            # create marc
+            pass
+        else:
+            msg = f'Cart {cart_rec.name} is not finalized.\n' \
+                  'Please change cart status to proceed.'
+            messagebox.showwarning('MARC file', msg)
 
     def create_order_sheet(self):
         pass

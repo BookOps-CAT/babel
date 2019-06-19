@@ -7,6 +7,7 @@ import logging
 
 from pandas import read_sql
 from sqlalchemy.exc import IntegrityError, InternalError
+
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from sqlalchemy.inspection import inspect
 
@@ -14,14 +15,18 @@ from sqlalchemy.inspection import inspect
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
                             FundLibraryJoiner, FundMatTypeJoiner, Lang, Fund,
                             FundBranchJoiner, Library, MatType, DistGrid,
-                            DistSet, Vendor, ShelfCode,
+                            DistSet, Vendor, ShelfCode, Wlos,
                             GridLocation, Resource, Cart, Order, OrderLocation)
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
                                    insert_or_ignore, delete_record,
                                    update_record, get_cart_data_view_records,
-                                   retrieve_cart_order_ids,
-                                   retrieve_cart_details_view_stmn)
+                                   retrieve_cart_order_ids, count_records,
+                                   retrieve_last_record,
+                                   retrieve_cart_details_view_stmn,
+                                   retrieve_unique_vendors_from_cart)
+from data.wlo_generator import wlo_pool
+from data.blanket_po_generator import create_blanketPO
 from errors import BabelError
 from gui.utils import get_id_from_index
 from ingest.xlsx import ResourceDataReader
@@ -543,16 +548,6 @@ def get_carts_data(
     return data
 
 
-def update_orders(orders_tracker):
-    for widget_id, values in orders_tracker.items():
-        if values['delete']:
-            print('delete ord/res records')
-        else:
-            # update prices by destroying lbl widget
-            # and recreating it
-            pass
-
-
 def get_ids_for_order_boxes_values(values_dict):
     kwargs = {}
     with session_scope() as session:
@@ -644,7 +639,6 @@ def save_displayed_order_data(tracker_values):
                 Order,
                 order['order_id'],
                 **okwargs)
-            # session.flush()
 
 
 def apply_fund_to_cart(system_id, cart_id, fund_codes):
@@ -750,3 +744,56 @@ def get_cart_details_as_dataframe(cart_id):
         stmn = retrieve_cart_details_view_stmn(cart_id)
         df = read_sql(stmn, session.bind)
         return df
+
+
+def get_last_wlo():
+    with session_scope() as session:
+        last_wlo_record = retrieve_last_record(session, Wlos)
+        session.expunge()
+        return last_wlo_record.did
+
+
+def assign_wlo_to_cart(cart_id):
+    with session_scope() as session:
+        # determne how many wlo are needed and reserve them
+        last_wlo_rec = retrieve_last_record(session, Wlos)
+        order_count = count_records(session, Order, cart_id=cart_id)
+        wlo_numbers = wlo_pool(last_wlo_rec.did, order_count)
+
+        orders = retrieve_records(session, Order, cart_id=cart_id)
+        for o in orders:
+            wlo = wlo_numbers.__next__()
+            if o.wlo is None:
+                update_record(
+                    session, Order, o.did, wlo=wlo)
+                insert(session, Wlos, did=wlo)
+
+def assign_blanketPO_to_cart(cart_id):
+    with session_scope() as session:
+        res = retrieve_unique_vendors_from_cart(
+            session, cart_id)
+        vendor_codes = [name[0] for name in res]
+        blanketPO = create_blanketPO(vendor_codes)
+        unique = True
+        n = 0
+        while unique:
+            try:
+                print(blanketPO)
+                update_record(
+                    session,
+                    Cart,
+                    cart_id,
+                    blanketPO=blanketPO)
+                session.flush()
+                unique = False
+            except IntegrityError:
+                session.rollback()
+                n += 1
+                blanketPO = create_blanketPO(vendor_codes, n)
+
+
+
+
+
+
+

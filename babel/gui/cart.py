@@ -17,7 +17,8 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 get_carts_data, get_codes, get_orders_by_id,
                                 get_order_ids, create_code_index,
                                 create_name_index, save_displayed_order_data,
-                                update_orders, apply_globals_to_cart,
+                                apply_globals_to_cart, assign_wlo_to_cart,
+                                assign_blanketPO_to_cart,
                                 apply_fund_to_cart, save_new_dist_and_grid)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, BusyManager, get_id_from_index, disable_widgets,
@@ -61,7 +62,6 @@ class CartView(Frame):
         self.new_grid = StringVar()
         self.library = StringVar()
         self.status = StringVar()
-        self.status.trace('w', self.status_observer)
         self.lang = StringVar()
         self.vendor = StringVar()
         self.mattype = StringVar()
@@ -439,6 +439,17 @@ class CartView(Frame):
                 save_data(
                     Cart, self.cart_id.get(), **kwargs)
 
+                if self.status.get() == 'finalized':
+                    # run validation
+
+                    # assign blanketPO and wlo numbers
+                    assign_wlo_to_cart(self.cart_id.get())
+                    assign_blanketPO_to_cart(self.cart_id.get())
+
+
+                    self.redo_preview_frame()
+                    self.display_selected_orders(self.selected_order_ids)
+
                 # disable cart widgets
                 self.cartEnt['state'] = 'disable'
                 self.libCbx['state'] = 'disable'
@@ -495,8 +506,7 @@ class CartView(Frame):
         # update display
         # maybe it would be better to simply insert
         # new values into appropriate fundCbxes?
-        self.preview_frame.destroy()
-        self.preview()
+        self.redo_preview_frame()
         self.display_selected_orders(self.selected_order_ids)
 
         self.fundTop.destroy()
@@ -542,8 +552,7 @@ class CartView(Frame):
         apply_globals_to_cart(self.cart_id.get(), widgets)
         self.cur_manager.notbusy()
 
-        self.preview_frame.destroy()
-        self.preview()
+        self.redo_preview_frame()
         self.display_selected_orders(self.selected_order_ids)
 
     def nav_start(self):
@@ -617,8 +626,7 @@ class CartView(Frame):
 
     def display_selected_orders(self, order_ids):
         self.cur_manager.busy()
-        self.preview_frame.destroy()
-        self.preview()
+        self.redo_preview_frame()
         self.tracker = OrderedDict()
         recs = get_orders_by_id(order_ids)
         row = 0
@@ -916,33 +924,30 @@ class CartView(Frame):
         # ids
         Label(orderFrm, text='order #: ').grid(
             row=0, column=2, sticky='snw', padx=2, pady=2)
-        oidEnt = Entry(
-            orderFrm,
-            state='disable')
+        oidEnt = Entry(orderFrm)
         oidEnt.grid(
             row=0, column=3, sticky='snew', padx=5, pady=2)
         if order.oid:
             oidEnt.insert(END, order.oid)
+        oidEnt['state'] = 'readonly'
 
         Label(orderFrm, text='bib #: ').grid(
             row=1, column=2, sticky='snw', padx=2, pady=2)
-        bidEnt = Entry(
-            orderFrm,
-            state='disable')
+        bidEnt = Entry(orderFrm,)
         bidEnt.grid(
             row=1, column=3, sticky='snew', padx=5, pady=2)
         if order.bid:
             bidEnt.insert(END, order.bid)
+        bidEnt['state'] = 'readonly'
 
         Label(orderFrm, text='wlo #: ').grid(
             row=2, column=2, sticky='snw', padx=2, pady=2)
-        wloEnt = Entry(
-            orderFrm,
-            state='disable')
+        wloEnt = Entry(orderFrm)
         wloEnt.grid(
             row=2, column=3, sticky='snew', padx=5, pady=2)
         if order.wlo:
             wloEnt.insert(END, order.wlo)
+        wloEnt['state'] = 'readonly'
 
         tracker = {
             'order_id': order.did,
@@ -1284,12 +1289,6 @@ class CartView(Frame):
         except TclError:
             pass
 
-    def status_observer(self, *args):
-        if self.status.get() == 'finalized':
-            # run validation
-            # assign blanketPO and wlo numbers
-            pass
-
     def profile_observer(self, *args):
         if self.activeW.get() == 'CartView':
             if self.profile.get() != 'All users':
@@ -1428,6 +1427,10 @@ class CartView(Frame):
 
     def onFrameConfigure(self, event):
         self.preview_base.config(scrollregion=self.preview_base.bbox('all'))
+
+    def redo_preview_frame(self):
+        self.preview_frame.destroy()
+        self.preview()
 
     def on_mousewheel(self, event):
         self.preview_base.yview_scroll(
