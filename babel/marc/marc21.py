@@ -208,19 +208,20 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     tags.append(Field(tag='960',
                       indicators=[' ', ' '],
                       subfields=subfields))
-    # # 961 field
-    # subfields = []
-    # subfield_I = ['i', order_data['wlo']]
-    # if order_data['po_per_line'] is not None:
-    #     subfield_H = ['h', order_data['po_per_line']]
-    #     subfields.extend(subfield_H)
-    # if order_data['blanketPO'] is not None:
-    #     subfield_M = ['m', order_data['blanketPO']]
-    #     subfields.extend(subfield_M)
-    # subfields.extend(subfield_I)
-    # tags.append(Field(tag='961',
-    #                   indicators=[' ', ' '],
-    #                   subfields=subfields))
+    # 961 field
+    subfields = []
+    subfield_I = ['i', order.wlo
+    if order.poPerLine is not None:
+        subfield_H = ['h', order.poPerLine]
+        subfields.extend(subfield_H)
+    if blanketPO is not None:
+        subfield_M = ['m', blanketPO]
+        subfields.extend(subfield_M)
+    subfields.extend(subfield_I)
+    tags.append(Field(
+        tag='961',
+        indicators=[' ', ' '],
+        subfields=subfields))
 
     # construct & send to file
     for tag in tags:
