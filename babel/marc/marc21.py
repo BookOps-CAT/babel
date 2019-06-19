@@ -210,13 +210,16 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
                       subfields=subfields))
     # 961 field
     subfields = []
-    subfield_I = ['i', order.wlo
+    subfield_I = ['i', order.wlo]
     if order.poPerLine is not None:
         subfield_H = ['h', order.poPerLine]
         subfields.extend(subfield_H)
     if blanketPO is not None:
         subfield_M = ['m', blanketPO]
         subfields.extend(subfield_M)
+    if order.note is not None:
+        subfield_D = ['d', order.note]
+        subfields.extend(subfield_D)
     subfields.extend(subfield_I)
     tags.append(Field(
         tag='961',
@@ -227,4 +230,3 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     for tag in tags:
         record.add_ordered_field(tag)
     save2marc(fh, record)
-

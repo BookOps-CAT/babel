@@ -794,7 +794,7 @@ def assign_blanketPO_to_cart(cart_id):
                 blanketPO = create_blanketPO(vendor_codes, n)
 
 
-def export_orders_to_marc_file(fh, cart_rec, progbar):
+def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
     # this has to be rewritten to make it more transparent
     # and easier to maintain
 
@@ -845,11 +845,19 @@ def export_orders_to_marc_file(fh, cart_rec, progbar):
             for loc in order.locations:
                 rec = retrieve_record(session, Branch, did=loc.branch_id)
                 branch = rec.code
-                rec = retrieve_record(session, ShelfCode, did=loc.shelfcode_id)
-                shelfcode = rec.code
-                shelf_with_audn = rec.includes_audn
-                rec = retrieve_record(session, Fund, did=loc.fund_id)
-                fund = rec.code
+                try:
+                    rec = retrieve_record(
+                        session, ShelfCode, did=loc.shelfcode_id)
+                    shelfcode = rec.code
+                    shelf_with_audn = rec.includes_audn
+                except AttributeError:
+                    shelfcode = ''
+                    shelf_with_audn = False
+                try:
+                    rec = retrieve_record(session, Fund, did=loc.fund_id)
+                    fund = rec.code
+                except AttributeError:
+                    fund = ''
                 copies += loc.qty
 
                 if shelf_with_audn:
@@ -870,7 +878,9 @@ def export_orders_to_marc_file(fh, cart_rec, progbar):
                 fh, oclc_code, library_code, blanketPO,
                 selector_code, order)
             progbar['value'] += 1
+            progbar.update()
 
+    saving_status.set('Complete!')
 
 
 
