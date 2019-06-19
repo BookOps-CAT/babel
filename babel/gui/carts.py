@@ -9,7 +9,8 @@ from PIL import Image, ImageTk
 
 from errors import BabelError
 from data.datastore import Cart, Library, Status
-from gui.data_retriever import (get_record, get_carts_data)
+from gui.data_retriever import (get_record, get_carts_data,
+                                export_orders_to_marc_file)
 from gui.fonts import RFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets)
@@ -50,7 +51,7 @@ class CartsView(Frame):
         deleteImg = self.app_data['img']['delete']
         # saveImg = self.app_data['img']['save']
         helpImg = self.app_data['img']['help']
-        viewImg = self.app_data['img']['view']
+        self.viewImg = self.app_data['img']['view']
         copyImg = self.app_data['img']['copy']
         marcImg = self.app_data['img']['marc']
         sheetImg = self.app_data['img']['sheet']
@@ -106,9 +107,9 @@ class CartsView(Frame):
 
         self.viewBtn = Button(
             self.actionFrm,
-            image=viewImg,
+            image=self.viewImg,
             command=self.view_data)
-        self.viewBtn.image = viewImg
+        self.viewBtn.image = self.viewImg
         self.viewBtn.grid(
             row=1, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.viewBtn, 'view cart')
@@ -241,7 +242,6 @@ class CartsView(Frame):
 
         return '\n'.join(lines)
 
-
     def edit_data(self):
         # figure out profile cart belongs to first
         self.profile.set(self.cart_owner.get())
@@ -260,13 +260,97 @@ class CartsView(Frame):
     def help(self):
         pass
 
+    def ask_for_destination(self, parent, title, cart_name):
+        # retrieve initial directory
+        if 'MARC' in title:
+            initialdir = 'marc_out'
+            extention = 'mrc'
+        elif 'sheet' in title:
+            initialdir = 'sheet_out'
+            extention = 'xlsx'
+        else:
+            initialdir = MY_DOCS
+            extention = 'out'
+
+        user_data = shelve.open(USER_DATA)
+        if initialdir in user_data:
+            initialdir = user_data[initialdir]
+        else:
+            marc_out = MY_DOCS
+
+        dst_fh = filedialog.asksaveasfilename(
+            parent=parent,
+            title='Save to MARC file',
+            filetypes=(('marc file', '*.mrc'),
+                       ('sheet file', '*xlsx')),
+            initialfile=f'{cart_name}.{extention}',
+            initialdir=initialdir)
+
+        if dst_fh:
+            user_data[initialdir] = initialdir
+            user_data.close()
+            self.dst_fh.set(dst_fh)
+
+            # validate if correct file type
+            print(dst_fh)
+
+    def create_to_marc_widget(self, cart_rec):
+
+        top = Toplevel()
+        top.title('Saving to MARC file')
+
+        self.dst_fh = StringVar()
+
+        frm = Frame(top)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=20, pady=20)
+        Label(frm, text='file path:').grid(
+            row=0, column=0, sticky='snew')
+        nameEnt = Entry(
+            frm,
+            justify='right',
+            textvariable=self.dst_fh)
+        nameEnt.grid(
+            row=1, column=0, columnspan=2, sticky='snew', pady=10)
+
+        dstBtn = Button(
+            frm,
+            image=self.viewImg,
+            command=lambda: self.ask_for_destination(
+                top, 'Save to MARC file', cart_rec.name))
+        dstBtn.grid(
+            row=1, column=2, sticky='snw', padx=5, pady=10)
+
+        progbar = Progressbar(
+            frm,
+            mode='determinate',
+            orient=HORIZONTAL,)
+        progbar.grid(
+            row=2, column=0, columnspan=3, sticky='snew', pady=10)
+
+        okBtn = Button(
+            frm,
+            text='create',
+            command=lambda: export_orders_to_marc_file(
+                self.dst_fh.get(), cart_rec,
+                progbar) if self.dst_fh.get() else None)
+        okBtn.grid(
+            row=3, column=0, sticky='snew', padx=25, pady=10)
+        cancelBtn = Button(
+            frm,
+            text='cancel',
+            command=top.destroy)
+        cancelBtn.grid(
+            row=3, column=1, sticky='snew', padx=25, pady=10)
+
+        top.wait_window()
+
     def create_marc_file(self):
         self.active_id.set(self.cart_idx[self.selected_cart.get()])
         cart_rec = get_record(Cart, did=self.active_id.get())
         status = get_record(Status, did=cart_rec.status_id)
         if status.name == 'finalized':
-            # create marc
-            pass
+            self.create_to_marc_widget(cart_rec)
         else:
             msg = f'Cart {cart_rec.name} is not finalized.\n' \
                   'Please change cart status to proceed.'

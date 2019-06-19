@@ -15,7 +15,7 @@ from sqlalchemy.inspection import inspect
 from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
                             FundLibraryJoiner, FundMatTypeJoiner, Lang, Fund,
                             FundBranchJoiner, Library, MatType, DistGrid,
-                            DistSet, Vendor, ShelfCode, Wlos,
+                            DistSet, Vendor, ShelfCode, Wlos, User,
                             GridLocation, Resource, Cart, Order, OrderLocation)
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
@@ -30,6 +30,7 @@ from data.blanket_po_generator import create_blanketPO
 from errors import BabelError
 from gui.utils import get_id_from_index
 from ingest.xlsx import ResourceDataReader
+from marc.marc21 import make_bib
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -768,6 +769,7 @@ def assign_wlo_to_cart(cart_id):
                     session, Order, o.did, wlo=wlo)
                 insert(session, Wlos, did=wlo)
 
+
 def assign_blanketPO_to_cart(cart_id):
     with session_scope() as session:
         res = retrieve_unique_vendors_from_cart(
@@ -791,6 +793,55 @@ def assign_blanketPO_to_cart(cart_id):
                 n += 1
                 blanketPO = create_blanketPO(vendor_codes, n)
 
+
+def export_orders_to_marc_file(fh, cart_rec, progbar):
+    # this has to be rewritten to make it more transparent
+    # and easier to maintain
+
+    with session_scope() as session:
+        rec_count = count_records(session, Order, cart_id=cart_rec.did)
+        progbar['maximum'] = rec_count
+
+        selector = retrieve_record(
+            session, User, did=cart_rec.user_id)
+        blanketPO = cart_rec.blanketPO
+        # determine some global values
+        if cart_rec.system_id == 1:
+            oclcLib_code = 'BKL'
+            selector_code = selector.bpl_code
+            library = None
+        elif cart_rec.system_id == 2:
+            oclcLib_code = 'NYP'
+            selector_code = selector.nyp_code
+            lib_rec = retrieve_record(
+                session, Library, did=cart_rec.library_id)
+            library = lib_rec.name
+
+        print(selector_code, blanketPO, oclcLib_code, library)
+
+        ord_recs = retrieve_records(session, Order, cart_id=cart_rec.did)
+        for order in ord_recs:
+            mat_rec = retrieve_record(
+                session, MatType, did=order.matType_id)
+            if cart_rec.system_id == 1:
+                matType_bib = mat_rec.bpl_bib_code
+                matType_ord = mat_rec.bpl_ord_code
+            elif cart_red.system_id == 2:
+                matType_bib = mat_rec.nyp_bib_code
+                matType_ord = mat_rec.nyp_ord_code
+
+            lang_rec = retrieve_record(session, Lang, did=order.lang_id)
+
+            make_bib(fh, order, oclcLib_code, lang_rec.code, matType_bib, matType_ord)
+            progbar['value'] += 1
+
+
+
+
+
+
+
+        
 
 
 
