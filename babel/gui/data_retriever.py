@@ -1,7 +1,7 @@
 """
 Methods to retrieve data from Babel datastore
 """
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 import logging
 
@@ -861,9 +861,10 @@ def export_orders_to_marc_file(fh, cart_rec, progbar):
                 fund_str = f'{fund}/{loc.qty}'
                 funds.append(fund_str)
 
-            order.copies = copies
+            order.copies = str(copies)
             order.locs = ','.join(locs)
             order.funds = ','.join(funds)
+            order.order_date = datetime.strftime(date.today(), '%m-%d-%Y')
 
             make_bib(
                 fh, oclc_code, library_code, blanketPO,
