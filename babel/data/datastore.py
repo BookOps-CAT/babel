@@ -682,7 +682,7 @@ def create_datastore(
     print('inserting first wlo number')
     stmn = text("""
     INSERT INTO wlo (did, `date`)
-        VALUES ('wlo0000000000', `date`=:date_today);
+        VALUES ('wlo0000000001', `date`=:date_today);
         """)
     stmn = stmn.bindparams(date_today=datetime.now())
     session.execute(stmn)

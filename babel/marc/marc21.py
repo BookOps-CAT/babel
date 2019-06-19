@@ -34,7 +34,7 @@ def save2marc(outfile, bib):
         writer.close()
 
 
-def make_bib(fh, order, oclcLib_code, lang, matType_bib, matType_ord):
+def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     """creates bib & order record in MARC21 format
        with UTF-8 encoded charset
     """
@@ -43,13 +43,13 @@ def make_bib(fh, order, oclcLib_code, lang, matType_bib, matType_ord):
     tags = []
 
     # MARC leader
-    if matType_bib in ('h', 'v'):
+    if order.mat_bib in ('h', 'v'):
         MARCmatType = 'g'
-    elif matType_bib in ('i', 'u'):
+    elif order.mat_bib in ('i', 'u'):
         MARCmatType = 'i'
-    elif matType_bib in ('j', 'y'):
+    elif order.mat_bib in ('j', 'y'):
         MARCmatType = 'j'
-    elif matType_bib == 'a':
+    elif order.mat_bib == 'a':
         MARCmatType = 'a'
     else:
         MARCmatType = 'a'
@@ -63,8 +63,7 @@ def make_bib(fh, order, oclcLib_code, lang, matType_bib, matType_ord):
     # needs to take into account differences between different
     # non-print formats
     dateCreated = date.strftime(date.today(), '%y%m%d')
-    tag008 = dateCreated + r's        xx            000 u ' + \
-        lang + r' d'
+    tag008 = f'{dateCreated}s        xx            000 u {order.lang} d'
     if order.resource.pub_date is not None:
         tag008 = tag008[:7] + order.resource.pub_date + tag008[11:]
     tags.append(Field(tag='008', data=tag008))
@@ -87,11 +86,13 @@ def make_bib(fh, order, oclcLib_code, lang, matType_bib, matType_ord):
                           subfields=['a', order.resource.other_no]))
 
     # 040 field
-    tags.append(Field(tag='040',
-                      indicators=[' ', ' '],
-                      subfields=['a', oclcLib_code,
-                                 'b', 'eng',
-                                 'c', oclcLib_code]))
+    tags.append(Field(
+        tag='040',
+        indicators=[' ', ' '],
+        subfields=[
+            'a', oclc_code,
+            'b', 'eng',
+            'c', oclc_code]))
 
     # # 100
     author_present = False
@@ -99,9 +100,10 @@ def make_bib(fh, order, oclcLib_code, lang, matType_bib, matType_ord):
         author_present = True
         subfields = ['a', order.resource.author]
 
-        tags.append(Field(tag='100',
-                    indicators=['1', ' '],
-                    subfields=subfields))
+        tags.append(Field(
+            tag='100',
+            indicators=['1', ' '],
+            subfields=subfields))
 
     # 245 field
     # add format to title for non-print mat
@@ -116,11 +118,12 @@ def make_bib(fh, order, oclcLib_code, lang, matType_bib, matType_ord):
         t245_ind1 = '1'
     else:
         t245_ind1 = '0'
-        subfields = ['a', order.resource.title]
+    subfields = ['a', order.resource.title]
 
-    tags.append(Field(tag='245',
-                      indicators=[t245_ind1, '0'],
-                      subfields=subfields))
+    tags.append(Field(
+        tag='245',
+        indicators=[t245_ind1, '0'],
+        subfields=subfields))
 
     # 264
     subfields = []
@@ -135,9 +138,10 @@ def make_bib(fh, order, oclcLib_code, lang, matType_bib, matType_ord):
     else:
         subfieldC = ['c', order.resource.pub_date]
     subfields.extend(subfieldC)
-    tags.append(Field(tag='264',
-                      indicators=[' ', '1'],
-                      subfields=subfields))
+    tags.append(Field(
+        tag='264',
+        indicators=[' ', '1'],
+        subfields=subfields))
 
     # 300 field
     if MARCmatType == 'g':
@@ -149,57 +153,61 @@ def make_bib(fh, order, oclcLib_code, lang, matType_bib, matType_ord):
     else:
         container = 'pages ; cm.'
 
-    tags.append(Field(tag='300',
-                      indicators=[' ', ' '],
-                      subfields=['a', container]))
+    tags.append(Field(
+        tag='300',
+        indicators=[' ', ' '],
+        subfields=['a', container]))
+
     # 940 field
-    tags.append(Field(tag='940',
+    tags.append(Field(
+        tag='940',
+        indicators=[' ', ' '],
+        subfields=['a', 'brief wlo record']))
+
+    # 960 field
+    subfields = []
+    if oclc_code == 'BKL':
+        # subfield_A = ['a', BPL_ORDERS['acqType']]  # set by load table
+        subfield_M = ['m', BPL_ORDERS['status']]
+        subfield_N = ['n', BPL_ORDERS['tloc']]
+        subfield_C = ['c', selector_code]
+        subfield_Z = ['z', BPL_ORDERS['currency']]
+        subfield_D = ['d', order.audn]
+        subfields.extend(subfield_C)
+        subfields.extend(subfield_D)
+    elif oclc_code == 'NYP':
+        # subfield_A = ['a', NYPL_ORDERS['acqType']]  # set by load table
+        subfield_M = ['m', NYPL_ORDERS['status']]
+        subfield_N = ['n', NYPL_ORDERS['tloc']]
+        subfield_Z = ['z', NYPL_ORDERS['currency']]
+        subfield_Y = ['y', NYPL_ORDERS['volumes']]
+        subfield_E = ['e', NYPL_ORDERS['orderCode3']]
+        subfields.extend(subfield_Y)
+        subfields.extend(subfield_E)
+    subfield_O = ['o', order.copies]
+    subfield_Q = ['q', order.order_date]
+    subfield_S = ['s', f'{order.resource.price_disc:.2f}']
+    subfield_T = ['t', order.locs]
+    subfield_U = ['u', order.funds]
+    subfield_V = ['v', order.vendor]
+    subfield_W = ['w', order.lang]
+    subfield_G = ['g', order.mat_ord]
+
+    subfields.extend(subfield_M)
+    subfields.extend(subfield_N)
+    subfields.extend(subfield_O)
+    subfields.extend(subfield_Q)
+    subfields.extend(subfield_S)
+    subfields.extend(subfield_T)
+    subfields.extend(subfield_U)
+    subfields.extend(subfield_V)
+    subfields.extend(subfield_W)
+    subfields.extend(subfield_G)
+    subfields.extend(subfield_Z)
+
+    tags.append(Field(tag='960',
                       indicators=[' ', ' '],
-                      subfields=['a', 'brief wlo record']))
-    # # 960 field
-    # subfields = []
-    # if order.resource.library'] == 'BKL':
-    #     # subfield_A = ['a', BPL_ORDERS['acqType']]  # set by load table
-    #     subfield_M = ['m', BPL_ORDERS['status']]
-    #     subfield_N = ['n', BPL_ORDERS['tloc']]
-    #     subfield_C = ['c', order_data['selector']]
-    #     subfield_Z = ['z', BPL_ORDERS['currency']]
-    #     subfield_D = ['d', order_data['audn']]
-    #     subfields.extend(subfield_C)
-    #     subfields.extend(subfield_D)
-    # elif order_data['library'] == 'NYP':
-    #     # subfield_A = ['a', NYPL_ORDERS['acqType']]  # set by load table
-    #     subfield_M = ['m', NYPL_ORDERS['status']]
-    #     subfield_N = ['n', NYPL_ORDERS['tloc']]
-    #     subfield_Z = ['z', NYPL_ORDERS['currency']]
-    #     subfield_Y = ['y', NYPL_ORDERS['volumes']]
-    #     subfield_E = ['e', NYPL_ORDERS['orderCode3']]
-    #     subfields.extend(subfield_Y)
-    #     subfields.extend(subfield_E)
-    # subfield_O = ['o', order_data['copies']]
-    # subfield_Q = ['q', order_data['orderDate']]
-    # subfield_S = ['s', order_data['priceDisc']]
-    # subfield_T = ['t', order_data['locQty']]
-    # subfield_U = ['u', order_data['funds']]
-    # subfield_V = ['v', order_data['vendor']]
-    # subfield_W = ['w', order_data['lang']]
-    # subfield_G = ['g', order_data['matType_ord']]
-
-    # subfields.extend(subfield_M)
-    # subfields.extend(subfield_N)
-    # subfields.extend(subfield_O)
-    # subfields.extend(subfield_Q)
-    # subfields.extend(subfield_S)
-    # subfields.extend(subfield_T)
-    # subfields.extend(subfield_U)
-    # subfields.extend(subfield_V)
-    # subfields.extend(subfield_W)
-    # subfields.extend(subfield_G)
-    # subfields.extend(subfield_Z)
-
-    # tags.append(Field(tag='960',
-    #                   indicators=[' ', ' '],
-    #                   subfields=subfields))
+                      subfields=subfields))
     # # 961 field
     # subfields = []
     # subfield_I = ['i', order_data['wlo']]
