@@ -32,4 +32,8 @@ create_datastore(
 ## Icon Credits
 Icons by [Everaldo / Yellowicon](http://www.everaldo.com) used under [GNU Lesser General Public License](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License).
 
+## Presentations
+
+[BookOps Babel : Filling Order Metadata Gaps in the ILS (ALA 2019, Washington, D.C.)](https://docs.google.com/presentation/d/1U4ZmFQBFp134S6qnglxZ32YuHRPz-UMrgCtwbG2KdMw/edit?usp=sharing)
+
 
