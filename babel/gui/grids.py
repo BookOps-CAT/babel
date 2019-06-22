@@ -5,16 +5,12 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
 
-from PIL import Image, ImageTk
-
 
 from errors import BabelError
-from data.datastore import (Audn, Branch, DistSet, DistGrid,
-                            GridLocation, Lang, Library, MatType,
-                            Vendor, ShelfCode)
+from data.datastore import (Branch, DistSet, DistGrid, GridLocation,
+                            ShelfCode)
 from gui.data_retriever import (get_names, get_record,
                                 delete_data, delete_data_by_did,
-                                create_name_index,
                                 create_code_index, save_data, save_grid_data)
 from gui.fonts import RFONT
 from gui.utils import (disable_widgets, enable_widgets, get_id_from_index,
@@ -42,7 +38,8 @@ class GridView(Frame):
         self.profile_idx = app_data['profile_idx']
         self.system = app_data['system']
         self.system.trace('w', self.system_observer)
-        list_height = int((self.winfo_screenheight() - 100) / 25)
+        list_height = int((self.winfo_screenheight() - 200) / 50)
+        print(list_height)
 
         # local variables
         self.distr_name = StringVar()
@@ -262,7 +259,7 @@ class GridView(Frame):
         self.locCnv = Canvas(
             self.locFrm,
             width=220,
-            height=450,  # find a way to adjust based on preview frm size
+            # height=450,  # find a way to adjust based on preview frm size
             yscrollcommand=self.scrollbarC.set)
         self.locCnv.grid(
             row=2, column=0, columnspan=3, rowspan=20, sticky='snew')
