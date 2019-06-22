@@ -1,10 +1,17 @@
-# babel2
-Enhanced BookOps crosswalk from a spreadsheet to MARC21 format
+# Babel 2
+Enhanced BookOps crosswalk from a spreadsheet to MARC21 format for Sierra ILS order records.
+Babel 2 is a complete rewrite of the previous Babel app. It's written in Python 3, and is being actively developed.
+Some of the features are missing even though the interface suggest their presence. In coming weeks we are planning to tackle them one by one.
+In particular we will be focusing on developing following functionality:
+* packaging and distribution of Babel (including a detail instruction how to, since these elements will not be part of Babel proper)
+* extensive help hosted on Github wikis and accessible via Babel interface
+* integration with ILS which includes holding reports and linking data between Sierra and Babel
+* reporting tools (analysis, charts, etc. of carts data)
+* creation of order sheets (which can be send to a vendor with order request, detailing the purchase)
 
-==============
-Warning!!!
-Work-in-progress
-==============
+Please note, Babel is a custom tool for BookOps which supposed to work with particular systems we use (Sierra ILS, etc.).
+At the moment we do not plan to create a universal application that coulb be used by other libraries. It would not be too difficult to adapt our source code for your needs though, especially if you are Sierra or Millennium library.
+
 
 ## Database Localhost Installation
 Babel is configured to work with MySQL database. 
