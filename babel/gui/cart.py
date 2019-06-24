@@ -801,7 +801,7 @@ class CartView(Frame):
         line1 = f'{resource.title} / {resource.author}.\n'
         if resource.add_title:
             line2 = f'{resource.add_title}\n'
-        line3 = f'\t{resource.pub_place} : {resource.publisher}, {resource.pub_date}.\n'
+        line3 = f'\tpublisher: {resource.pub_place} : {resource.publisher}, {resource.pub_date}.\n'
         line4 = f'\tseries: {resource.series}\n'
         line5 = f'\tISBN: {resource.isbn} | UPC: {resource.upc} | other no.: {resource.other_no}\n'
         line6 = f'\tlist price: ${resource.price_list:.2f} | discount price: ${resource.price_disc:.2f}'
