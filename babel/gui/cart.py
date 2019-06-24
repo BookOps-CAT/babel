@@ -407,7 +407,7 @@ class CartView(Frame):
             yscrollcommand=self.yscrollbar.set)
         self.preview_base.grid(
             row=1, column=1, rowspan=40, columnspan=7, sticky='nwe')
-        self.preview_base.bind_all("<MouseWheel>", self.on_mousewheel)
+        # self.preview_base.bind_all("<MouseWheel>", self.on_mousewheel)
         self.preview()
 
     def rename_cart(self):
@@ -445,7 +445,6 @@ class CartView(Frame):
                     # assign blanketPO and wlo numbers
                     assign_wlo_to_cart(self.cart_id.get())
                     assign_blanketPO_to_cart(self.cart_id.get())
-
 
                     self.redo_preview_frame()
                     self.display_selected_orders(self.selected_order_ids)
@@ -785,7 +784,7 @@ class CartView(Frame):
         resourceFrm = Frame(parent)
         resourceFrm.grid(
             row=0, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
-        resourceFrm.columnconfigure(3, minsize=330)
+        resourceFrm.columnconfigure(3, minsize=710)
         # mlogger.debug('New resourceFrm ({}, child of mainTab {})'.format(
             # resourceFrm.winfo_id(), parent.winfo_id()))
 
@@ -796,29 +795,45 @@ class CartView(Frame):
             command=lambda: self.sierra_check(parent))
         sierraBtn.image = self.notfoundImg
         sierraBtn.grid(
-            row=0, column=0, sticky='nw', padx=2, pady=2)
+            row=0, column=0, sticky='nw', padx=2, pady=5)
 
-        line1 = f'{resource.title} / {resource.author}.'
-        Label(resourceFrm, text=line1, font=RBFONT).grid(
-            row=0, column=1, columnspa=3, sticky='snw', padx=5, pady=5)
-
+        # prep data for display
+        line1 = f'{resource.title} / {resource.author}.\n'
         if resource.add_title:
-            line2 = f'{resource.add_title}'
-            Label(resourceFrm, text=line2, font=RBFONT).grid(
-                row=1, column=1, columnspa=3, sticky='snw', padx=5, pady=5)
+            line2 = f'{resource.add_title}\n'
+        line3 = f'\t{resource.pub_place} : {resource.publisher}, {resource.pub_date}.\n'
+        line4 = f'\tseries: {resource.series}\n'
+        line5 = f'\tISBN: {resource.isbn} | UPC: {resource.upc} | other no.: {resource.other_no}\n'
+        line6 = f'\tlist price: ${resource.price_list:.2f} | discount price: ${resource.price_disc:.2f}'
 
-        line3 = f'\t{resource.pub_place} : {resource.publisher}, {resource.pub_date}. -- ({resource.series}).'
-        Label(resourceFrm, text=line3, font=LFONT).grid(
-            row=2, column=1, sticky='snw', padx=5, pady=2)
+        # display Text widget
+        resdataTxt = Text(
+            resourceFrm,
+            # width=65,
+            height=7,
+            background='SystemButtonFace',
+            borderwidth=0)
+        resdataTxt.grid(
+            row=0, column=1, columnspan=3, sticky='snew', padx=5, pady=5)
 
-        line4 = f'\tISBN: {resource.isbn} | UPC: {resource.upc} | other no.: {resource.other_no}'
-        Label(resourceFrm, text=line4, font=LFONT).grid(
-            row=3, column=1, sticky='snw', padx=5, pady=2)
+        resdataTxt.insert(END, line1)
+        if resource.add_title:
+            resdataTxt.insert(END, line2)
+        else:
+            resdataTxt.insert(END, '\n')
+        resdataTxt.insert(END, line3)
+        resdataTxt.insert(END, line4)
+        resdataTxt.insert(END, line5)
+        resdataTxt.insert(END, line6)
 
-        line5 = f'\tlist price: ${resource.price_list:.2f} | discount price: ${resource.price_disc:.2f}'
-        pricesLbl = Label(resourceFrm, style='red.TLabel', text=line5, font=LFONT)
-        pricesLbl.grid(
-            row=4, column=1, sticky='snw', padx=5, pady=2)
+        resdataTxt.tag_add('header', '1.0', '2.end')
+        resdataTxt.tag_config('header', font=RBFONT)
+        resdataTxt.tag_add('normal', '3.0', '5.end')
+        resdataTxt.tag_config('normal', font=LFONT)
+        resdataTxt.tag_add('price', '6.0', '6.end')
+        resdataTxt.tag_config('price', font=LFONT, foreground='tomato2')
+
+        resdataTxt['state'] = 'disabled'
 
         editBtn = Button(
             resourceFrm,
@@ -826,7 +841,7 @@ class CartView(Frame):
             command=lambda: self.edit_resource(parent.master))
         editBtn.image = self.editImgS
         editBtn.grid(
-            row=0, column=4, sticky='se', padx=5, pady=2)
+            row=0, column=4, sticky='ne', padx=5, pady=5)
 
         deleteBtn = Button(
             resourceFrm,
@@ -834,13 +849,13 @@ class CartView(Frame):
             command=lambda: self.delete_resource(parent.master))
         # deleteBtn.imgage = self.deleteImgS
         deleteBtn.grid(
-            row=0, column=5, sticky='se', padx=2, pady=2)
+            row=0, column=5, sticky='ne', padx=2, pady=5)
 
         tracker = {
             'resource_id': resource.did,
             'resourcefrm': resourceFrm,
             'sierraBtn': sierraBtn,
-            'pricesLbl': pricesLbl
+            'resdataTxt': resdataTxt
         }
 
         return tracker
@@ -1432,9 +1447,9 @@ class CartView(Frame):
         self.preview_frame.destroy()
         self.preview()
 
-    def on_mousewheel(self, event):
-        self.preview_base.yview_scroll(
-            int(-1 * (event.delta / 120)), "units")
+    # def on_mousewheel(self, event):
+    #     self.preview_base.yview_scroll(
+    #         int(-1 * (event.delta / 120)), "units")
 
     def onValidateName(self, i, W):
         valid = True
