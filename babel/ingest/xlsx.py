@@ -9,7 +9,8 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 
 
 from data.data_objs import VenData
-from data import validators
+from data.validators import (shorten4datastore, value2string, normalize_date,
+                             normalize_isbn, normalize_price, normalize_whitespaces)
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -144,58 +145,73 @@ class ResourceDataReader:
 
     def _normalize(self, data):
         data = data._replace(
-            title=validators.normalize_whitespaces(data.title),
-            add_title=validators.normalize_whitespaces(data.add_title),
-            author=validators.normalize_whitespaces(data.author),
-            series=validators.normalize_whitespaces(data.series),
-            publisher=validators.normalize_whitespaces(data.publisher),
-            pub_date=validators.normalize_date(data.pub_date),
-            pub_place=validators.normalize_whitespaces(data.pub_place),
-            summary=validators.normalize_whitespaces(data.summary),
-            isbn=validators.normalize_isbn(data.isbn),
-            upc=validators.value2string(data.upc),
-            other_no=validators.value2string(data.other_no),
-            price_list=validators.normalize_price(data.price_list),
-            price_disc=validators.normalize_price(data.price_disc),
-            misc=validators.normalize_whitespaces(data.misc))
+            title=shorten4datastore(
+                normalize_whitespaces(data.title), 250),
+            add_title=shorten4datastore(
+                normalize_whitespaces(data.add_title), 250),
+            author=shorten4datastore(
+                normalize_whitespaces(data.author), 150),
+            series=shorten4datastore(
+                normalize_whitespaces(data.series), 250),
+            publisher=shorten4datastore(
+                normalize_whitespaces(data.publisher), 150),
+            pub_date=shorten4datastore(
+                normalize_date(data.pub_date), 25),
+            pub_place=shorten4datastore(
+                normalize_whitespaces(data.pub_place), 50),
+            summary=shorten4datastore(
+                normalize_whitespaces(data.summary), 500),
+            isbn=normalize_isbn(data.isbn),
+            upc=shorten4datastore(
+                value2string(data.upc), 20),
+            other_no=shorten4datastore(
+                value2string(data.other_no), 25),
+            price_list=normalize_price(data.price_list),
+            price_disc=normalize_price(data.price_disc),
+            desc_url=shorten4datastore(data.desc_url, 500),
+            misc=shorten4datastore(
+                normalize_whitespaces(data.misc), 250))
         return data
 
     def _map_content(self, row):
         """
         returns rows where title column has some value
         """
-        kwargs = dict()
-        if row[self.title_col] is not None:
-            title = row[self.title_col].strip()
-            if title != '':
-                kwargs['title'] = title
-                if self.add_title_col is not None:
-                    kwargs['add_title'] = row[self.add_title_col]
-                if self.author_col is not None:
-                    kwargs['author'] = row[self.author_col]
-                if self.series_col is not None:
-                    kwargs['series'] = row[self.series_col]
-                if self.publisher_col is not None:
-                    kwargs['publisher'] = row[self.publisher_col]
-                if self.pub_date_col is not None:
-                    kwargs['pub_date'] = row[self.pub_date_col]
-                if self.pub_place_col is not None:
-                    kwargs['pub_place'] = row[self.pub_place_col]
-                if self.summary_col is not None:
-                    kwargs['summary'] = row[self.summary_col]
-                if self.isbn_col is not None:
-                    kwargs['isbn'] = row[self.isbn_col]
-                if self.upc_col is not None:
-                    kwargs['upc'] = row[self.upc_col]
-                if self.other_no_col is not None:
-                    kwargs['other_no'] = row[self.other_no_col]
-                if self.price_list_col is not None:
-                    kwargs['price_list'] = row[self.price_list_col]
-                if self.price_disc_col is not None:
-                    kwargs['price_disc'] = row[self.price_disc_col]
-                if self.desc_url_col is not None:
-                    kwargs['desc_url'] = row[self.desc_url_col]
-                if self.misc_col is not None:
-                    kwargs['misc'] = row[self.misc_col]
+        try:
+            kwargs = dict()
+            if row[self.title_col] is not None:
+                title = row[self.title_col].strip()
+                if title != '':
+                    kwargs['title'] = title
+                    if self.add_title_col is not None:
+                        kwargs['add_title'] = row[self.add_title_col]
+                    if self.author_col is not None:
+                        kwargs['author'] = row[self.author_col]
+                    if self.series_col is not None:
+                        kwargs['series'] = row[self.series_col]
+                    if self.publisher_col is not None:
+                        kwargs['publisher'] = row[self.publisher_col]
+                    if self.pub_date_col is not None:
+                        kwargs['pub_date'] = row[self.pub_date_col]
+                    if self.pub_place_col is not None:
+                        kwargs['pub_place'] = row[self.pub_place_col]
+                    if self.summary_col is not None:
+                        kwargs['summary'] = row[self.summary_col]
+                    if self.isbn_col is not None:
+                        kwargs['isbn'] = row[self.isbn_col]
+                    if self.upc_col is not None:
+                        kwargs['upc'] = row[self.upc_col]
+                    if self.other_no_col is not None:
+                        kwargs['other_no'] = row[self.other_no_col]
+                    if self.price_list_col is not None:
+                        kwargs['price_list'] = row[self.price_list_col]
+                    if self.price_disc_col is not None:
+                        kwargs['price_disc'] = row[self.price_disc_col]
+                    if self.desc_url_col is not None:
+                        kwargs['desc_url'] = row[self.desc_url_col]
+                    if self.misc_col is not None:
+                        kwargs['misc'] = row[self.misc_col]
 
-                return VenData(**kwargs)
+                    return VenData(**kwargs)
+        except IndexError:
+            return None

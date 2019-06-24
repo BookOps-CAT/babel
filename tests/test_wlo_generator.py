@@ -39,7 +39,6 @@ class TestWlo(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             wlo_pool(last_wlo, 1).__next__()
 
-
     def test_illigal_lenght_last_wlo(self):
         last_wlo = 'wlo001'
         wlo_numbers = wlo_pool(last_wlo, 1)

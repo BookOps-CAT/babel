@@ -55,3 +55,25 @@ def normalize_whitespaces(value):
         return value
     else:
         return value
+
+
+def shorten4datastore(value, chr_allowed):
+    """
+    Shortens string to specified in chr_allowed paramater number
+    of characters
+    args:
+        value: str, string to be shorten
+        chr_allowed: int, number of permitted characters
+    returns:
+        value: str, shortened string
+    """
+
+    if type(chr_allowed) != int:
+        raise AttributeError('chr_allowed must be an integer')
+
+    try:
+        value = value[:chr_allowed]
+    except TypeError:
+        return None
+
+    return value

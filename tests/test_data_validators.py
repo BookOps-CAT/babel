@@ -93,6 +93,10 @@ class TestNormalizeISBN(unittest.TestCase):
         isbn = validators.normalize_isbn('978-8-37-672397-6  \n 8376723979')
         self.assertEqual(isbn, '9788376723976')
 
+    def test_isbn_with_extra_data(self):
+        isbn = validators.normalize_isbn('9788376723976 (pbk.)')
+        self.assertEqual(isbn, '9788376723976')
+
 
 class TestNormalizePrice(unittest.TestCase):
     """Tests parsing of prices from spreasheets"""
@@ -140,6 +144,42 @@ class TestNormalizePrice(unittest.TestCase):
     def test_price_with_extra_spaces(self):
         price = validators.normalize_price(' $12.99\n')
         self.assertEqual(price, Decimal('12.99'))
+
+
+class TestCharactersLimit4Datastore(unittest.TestCase):
+    """Test shortening of string for datastore storage"""
+
+    def test_None(self):
+        value = validators.shorten4datastore(None, 5)
+        self.assertIsNone(value)
+
+    def test_chr_allowed_not_integer(self):
+        with self.assertRaises(AttributeError):
+            validators.shorten4datastore('foo', 'bar')
+
+    def test_correct_shortening(self):
+        value = validators.shorten4datastore('foo', 1)
+        self.assertEqual(value, 'f')
+
+    def test_dots_trigger_not_firing(self):
+        value = validators.shorten4datastore(
+            'shrubbery', 5)
+        self.assertEqual(value, 'shrub')
+
+    def test_dots_trigger_activated(self):
+        value = validators.shorten4datastore(
+            'shrubbery', 9)
+        self.assertEqual(value, 'shrubbery')
+
+    def test_long_value(self):
+        value = validators.shorten4datastore('foo' * 200, 250)
+        self.assertEqual(len(value), 250)
+        self.assertEqual(value, ("foo" * 200)[:250])
+
+    def test_long_value_without_skip_dots(self):
+        value = validators.shorten4datastore('foo' * 50, 250)
+        self.assertEqual(len(value), 150)
+        self.assertNotEqual(value[-4:], ' ...')
 
 
 if __name__ == '__main__':
