@@ -41,6 +41,13 @@ class TableView(Frame):
         self.record = None
         list_height = int((self.winfo_screenheight() - 100) / 25)
 
+        # icons
+        addImg = self.app_data['img']['add']
+        editImg = self.app_data['img']['edit']
+        deleteImg = self.app_data['img']['delete']
+        saveImg = self.app_data['img']['save']
+        helpImg = self.app_data['img']['help']
+
         # layout
         self.columnconfigure(0, minsize=200)  # genLst col
         self.columnconfigure(2, minsize=5)
@@ -92,53 +99,38 @@ class TableView(Frame):
         scrollbarB['command'] = self.detLst.yview
 
         # action buttons
-        img = Image.open('./icons/Action-edit-add-iconM.png')
-        addImg = ImageTk.PhotoImage(img)
         self.addBtn = Button(
             self,
             image=addImg,
             command=self.add_data)
-        self.addBtn.image = addImg
         self.addBtn.grid(
             row=1, column=5, sticky='sw', padx=20, pady=10)
 
-        img = Image.open('./icons/Action-reload-iconM.png')
-        editImg = ImageTk.PhotoImage(img)
         self.editBtn = Button(
             self,
             image=editImg,
             command=self.edit_data)
-        self.editBtn.image = editImg
         self.editBtn.grid(
             row=2, column=5, sticky='sw', padx=20, pady=5)
 
-        img = Image.open('./icons/Action-cancel-iconM.png')
-        deleteImg = ImageTk.PhotoImage(img)
         self.deleteBtn = Button(
             self,
             image=deleteImg,
             command=self.delete_data)
-        self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
             row=3, column=5, sticky='sw', padx=20, pady=5)
 
-        img = Image.open('./icons/Action-ok-iconM.png')
-        saveImg = ImageTk.PhotoImage(img)
         self.saveBtn = Button(
             self,
             image=saveImg,
             command=self.insert_or_update_data)
-        self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=4, column=5, sticky='sw', padx=20, pady=5)
 
-        img = Image.open('./icons/Action-button-info-iconM.png')
-        helpImg = ImageTk.PhotoImage(img)
         self.helpBtn = Button(
             self,
             image=helpImg,
             command=self.help)
-        self.helpBtn.image = helpImg
         self.helpBtn.grid(
             row=5, column=5, sticky='sw', padx=20, pady=5)
 
@@ -374,7 +366,8 @@ class TableView(Frame):
         elif self.gen_list_select.get() == 'Shelf Codes':
             if self.det_list_select.get():
                 self.record = get_record(
-                    model, name=self.det_list_select.get())
+                    model, name=self.det_list_select.get(),
+                    system_id=self.system.get())
                 self.shelfcodeDetailFrame(
                     self.record.name, self.record.code,
                     self.record.includes_audn)
