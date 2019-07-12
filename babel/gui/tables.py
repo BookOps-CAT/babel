@@ -4,8 +4,6 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
 
-from PIL import Image, ImageTk
-
 
 from data.datastore import (Audn, Branch, Lang, MatType, ShelfCode,
                             User, Vendor)
@@ -22,7 +20,7 @@ mlogger = logging.getLogger('babel_logger')
 
 class TableView(Frame):
     """
-    Shared among settings widgets frame
+    Datastore selected tables and their values gui
     """
 
     def __init__(self, parent, controller, **app_data):
@@ -69,6 +67,7 @@ class TableView(Frame):
         self.genLst.grid(
             row=1, column=0, rowspan=40, sticky='snew')
         scrollbarA['command'] = self.genLst.yview
+
         # populate tables list
         tables = [
             'Audiences',
@@ -134,8 +133,6 @@ class TableView(Frame):
         self.helpBtn.grid(
             row=5, column=5, sticky='sw', padx=20, pady=5)
 
-        self.initiate_details_frame()
-
     def add_data(self):
         mlogger.debug('Add btn clicked.')
         self.record = None
@@ -176,6 +173,10 @@ class TableView(Frame):
                         'For changes to Users to take effect\n'
                         'Babel needs to be restarted.\n'
                         'Please close and reopen Babel.')
+                    user_data = shelve.open(USER_DATA)
+                    user_data['profile'] = 'All users'
+                    user_data.close()
+
                 self.populate_detail_list()
                 self.detFrm.destroy()
                 self.initiate_details_frame()
@@ -602,9 +603,6 @@ class TableView(Frame):
         # detelet current detail list
         self.detLst.delete(0, END)
 
-        # # retrieve data
-        # self.gen_list_select.set(self.genLst.get(ACTIVE))
-
         # repopulate
         model, kwargs = self.get_corresponding_model()
         if model is not None:
@@ -627,4 +625,4 @@ class TableView(Frame):
 
     def observer(self, *args):
         if self.activeW.get() == 'TableView':
-            pass
+            self.initiate_details_frame()
