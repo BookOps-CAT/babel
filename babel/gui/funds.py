@@ -121,7 +121,7 @@ class FundView(Frame):
             row=5, column=5, sticky='sw', padx=10, pady=5)
 
         # details/edit frame
-        self.detFrm = LabelFrame(self, text='Fund code and constrains')
+        self.detFrm = LabelFrame(self, text='Fund code and constraints')
         self.detFrm.grid(
             row=0, column=6, rowspan=40, columnspan=5, sticky='snew')
 

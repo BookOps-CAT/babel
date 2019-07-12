@@ -3,7 +3,6 @@ from tkinter.ttk import *
 import webbrowser
 
 
-
 input_widgets = (
     'TCombobox', 'Listbox', 'TButton', 'TEntry', 'TCheckbutton',
     'TSpinbox')
