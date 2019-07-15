@@ -533,6 +533,7 @@ class GridView(Frame):
     def copy_grid(self):
         if self.grid_record:
             copy_grid_data(self.grid_record)
+            self.update_gridLst()
 
     def remove_location(self, n):
         # add removed location to list for deletion
