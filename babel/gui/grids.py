@@ -14,7 +14,7 @@ from gui.data_retriever import (get_names, get_record,
                                 create_code_index, save_data, save_grid_data)
 from gui.fonts import RFONT
 from gui.utils import (disable_widgets, enable_widgets, get_id_from_index,
-                       ToolTip)
+                       ToolTip, open_url)
 from paths import USER_DATA
 
 
@@ -537,7 +537,8 @@ class GridView(Frame):
         self.create_add_locationBtn()
 
     def help(self):
-        messagebox.showwarning('Help', 'Under construction..')
+        open_url('https://github.com/BookOps-CAT/babel/wiki/Grids')
+
 
     def update_gridLst(self):
         self.gridLst.delete(0, END)

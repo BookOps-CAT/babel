@@ -5,7 +5,6 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
 
-
 from errors import BabelError
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
@@ -527,7 +526,7 @@ class CartView(Frame):
 
     def help(self):
         # link to Github wiki with documentation here
-        pass
+        open_url('https://github.com/BookOps-CAT/babel/wiki/Cart')
 
     def apply_globals(self):
         # updates all order records even ones not displayed

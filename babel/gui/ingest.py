@@ -15,7 +15,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 create_resource_reader, create_cart)
 from gui.fonts import RFONT, LFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
-                       enable_widgets)
+                       enable_widgets, open_url)
 from paths import USER_DATA, MY_DOCS
 from ingest.xlsx import SheetReader
 from logging_settings import format_traceback
@@ -578,7 +578,7 @@ class ImportView(Frame):
                 messagebox.showerror('Database Error', e)
 
     def help(self):
-        messagebox.showinfo('Help', 'Under construction...')
+        open_url('https://github.com/BookOps-CAT/babel/wiki/Import')
 
     def load_sheet(self):
         # retrieve last used directory
