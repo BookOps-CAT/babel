@@ -13,7 +13,7 @@ from gui.data_retriever import (get_record, get_carts_data,
                                 export_orders_to_marc_file)
 from gui.fonts import RFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
-                       enable_widgets)
+                       enable_widgets, open_url)
 from paths import USER_DATA, MY_DOCS
 from reports.carts import summarize_cart
 
@@ -252,7 +252,7 @@ class CartsView(Frame):
         pass
 
     def help(self):
-        pass
+        open_url('https://github.com/BookOps-CAT/babel/wiki/Carts')
 
     def ask_for_destination(self, parent, title, cart_name):
         # retrieve initial directory
