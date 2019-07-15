@@ -13,7 +13,7 @@ from gui.data_retriever import (get_codes, get_names, get_record,
                                 get_fund_data, update_fund,
                                 insert_fund, delete_data)
 from gui.fonts import RFONT
-from gui.utils import disable_widgets, enable_widgets
+from gui.utils import disable_widgets, enable_widgets, open_url
 from paths import USER_DATA
 
 
@@ -468,7 +468,7 @@ class FundView(Frame):
                 'Input Error', msg)
 
     def help(self):
-        pass
+        open_url('https://github.com/BookOps-CAT/babel/wiki/Funds')
 
     def get_listbox_indices(self, widgetLst, data):
         """
