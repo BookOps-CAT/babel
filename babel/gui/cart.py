@@ -19,7 +19,8 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 create_name_index, save_displayed_order_data,
                                 apply_globals_to_cart, assign_wlo_to_cart,
                                 assign_blanketPO_to_cart,
-                                apply_fund_to_cart, save_new_dist_and_grid)
+                                apply_fund_to_cart)
+from gui.cart_transactions import save_new_dist_and_grid
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, BusyManager, get_id_from_index, disable_widgets,
                        enable_widgets, open_url)

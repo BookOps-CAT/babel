@@ -11,7 +11,9 @@ from data.datastore import (Branch, DistSet, DistGrid, GridLocation,
                             ShelfCode)
 from gui.data_retriever import (get_names, get_record,
                                 delete_data, delete_data_by_did,
-                                create_code_index, save_data, save_grid_data)
+                                create_code_index, save_data)
+from gui.grid_transations import (copy_distribution_data, save_grid_data,
+                                  copy_grid_data)
 from gui.fonts import RFONT
 from gui.utils import (disable_widgets, enable_widgets, get_id_from_index,
                        ToolTip)
@@ -39,7 +41,6 @@ class GridView(Frame):
         self.system = app_data['system']
         self.system.trace('w', self.system_observer)
         list_height = int((self.winfo_screenheight() - 200) / 50)
-        print(list_height)
 
         # local variables
         self.distr_name = StringVar()
@@ -266,24 +267,24 @@ class GridView(Frame):
         self.display_frame()
 
     def display_frame(self):
-        self.lf = Frame(self.locCnv)
+        self.locFrm = Frame(self.locCnv)
         self.scrollbarC.config(command=self.locCnv.yview)
         self.locCnv.create_window(
-            (0, 0), window=self.lf, anchor="nw",
-            tags="self.lf")
-        self.lf.bind("<Configure>", self.onFrameConfigure)
+            (0, 0), window=self.locFrm, anchor="nw",
+            tags="self.locFrm")
+        self.locFrm.bind("<Configure>", self.onFrameConfigure)
 
     def onFrameConfigure(self, event):
         self.locCnv.config(scrollregion=self.locCnv.bbox('all'))
 
     def create_loc_unit(self, loc=(None, '', '', '')):
-        unitFrm = Frame(self.lf)
+        unitFrm = Frame(self.locFrm)
         unitFrm.grid(
             row=self.last_row, column=0, sticky='ne')
         removeBtn = Button(
             unitFrm,
             image=self.removeImg)
-        removeBtn.image = self.removeImg
+        # removeBtn.image = self.removeImg
         removeBtn.grid(
             row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
         removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
@@ -327,6 +328,9 @@ class GridView(Frame):
 
         self.create_add_locationBtn()
 
+        disable_widgets([self.gridEnt])
+        disable_widgets(self.locFrm.winfo_children())
+
     def create_add_locationBtn(self):
         # class wide accessible add button
         # first try to destroy it
@@ -337,7 +341,7 @@ class GridView(Frame):
 
         # rereate in new row
         self.add_locationBtn = Button(
-            self.lf,
+            self.locFrm,
             image=self.addImg,
             command=self.add_location)
         self.add_locationBtn.image = self.addImg
@@ -351,6 +355,7 @@ class GridView(Frame):
             DistSet, name=name, system_id=self.system.get())
 
         self.update_gridLst()
+        self.recreate_location_widgets()
 
         disable_widgets([self.distnameEnt])
 
@@ -358,12 +363,12 @@ class GridView(Frame):
         self.locations = OrderedDict()
         self.delete_locations = []
         self.last_row = 0
-        enable_widgets(self.gridFrm.winfo_children())
-        enable_widgets(self.lf.winfo_children())
         self.grid_name.set(self.gridLst.get(ACTIVE))
-        self.grid_record = get_record(DistGrid, name=self.grid_name.get())
+        self.grid_record = get_record(
+            DistGrid, name=self.grid_name.get(),
+            distset_id=self.distr_record.did)
 
-        self.lf.destroy()
+        self.locFrm.destroy()
         self.display_frame()
 
         locs = []
@@ -374,10 +379,8 @@ class GridView(Frame):
                 self.shelf_idx[loc.shelfcode_id],
                 loc.qty,
             ))
-        self.create_loc_widgets(locs)
 
-        disable_widgets(self.gridFrm.winfo_children())
-        disable_widgets(self.lf.winfo_children())
+        self.create_loc_widgets(locs)
 
     def add_distribution(self):
         # allow edits in distribution name box
@@ -389,6 +392,7 @@ class GridView(Frame):
             # remove any data from previous lookups
             self.grid_name.set('')
             self.grid_record = None
+            self.recreate_location_widgets()
             self.gridLst.delete(0, END)
 
     def edit_distribution(self):
@@ -398,8 +402,8 @@ class GridView(Frame):
 
     def delete_distribution(self):
         if self.distr_record and self.distr_name.get():
-            msg = 'Are you sure you want to delete\n{}?'.format(
-                str(self.distr_record))
+            msg = 'Are you sure you want to delete\n"{}" distribution?'.format(
+                self.distr_record.name)
             if messagebox.askokcancel('Deletion', msg):
                 mlogger.info('Data for deletion: {}'.format(
                     str(self.distr_record)))
@@ -448,21 +452,23 @@ class GridView(Frame):
 
     def add_grid(self):
         if self.distr_name.get():
-            enable_widgets(self.gridFrm.winfo_children())
-            enable_widgets(self.lf.winfo_children())
+            # enable_widgets(self.gridFrm.winfo_children())
+            # enable_widgets(self.locFrm.winfo_children())
             self.grid_name.set('')
             self.grid_record = None
             self.recreate_location_widgets()
+            enable_widgets(self.gridFrm.winfo_children())
+            enable_widgets(self.locFrm.winfo_children())
 
     def edit_grid(self):
         if self.grid_name.get():
             enable_widgets(self.gridFrm.winfo_children())
-            enable_widgets(self.lf.winfo_children())
+            enable_widgets(self.locFrm.winfo_children())
 
     def delete_grid(self):
         if self.grid_record:
-            msg = 'Are you sure you want to delete\n{}?'.format(
-                str(self.grid_record))
+            msg = 'Are you sure you want to delete\n"{}" grid?'.format(
+                self.grid_record.name)
             if messagebox.askokcancel('Deletion', msg):
                 mlogger.info('Data for deletion: {}'.format(
                     str(self.grid_record)))
@@ -502,26 +508,31 @@ class GridView(Frame):
                         qty=loc['qtySbx'].get()
                     )
                 )
-            try:
-                save_grid_data(
-                    grid_did=grid_id,
-                    name=self.gridEnt.get().strip(),
-                    distset_id=self.distr_record.did,
-                    gridlocs=gridlocs,
-                    branch_idx=self.branch_idx,
-                    shelf_idx=self.shelf_idx,
-                )
 
-                self.update_gridLst()
-                disable_widgets(self.gridFrm.winfo_children())
-                disable_widgets(self.lf.winfo_children())
-            except BabelError as e:
-                messagebox.showerror('Database Error', e)
+            # validate
+            valid, issues = self.validate_gridLocations(gridlocs)
+            if valid:
+                try:
+                    save_grid_data(
+                        grid_did=grid_id,
+                        name=self.gridEnt.get().strip(),
+                        distset_id=self.distr_record.did,
+                        gridlocs=gridlocs,
+                        branch_idx=self.branch_idx,
+                        shelf_idx=self.shelf_idx,
+                    )
+
+                    self.update_gridLst()
+                    disable_widgets(self.gridFrm.winfo_children())
+                    disable_widgets(self.locFrm.winfo_children())
+                except BabelError as e:
+                    messagebox.showerror('Database Error', e)
+            else:
+                messagebox.showerror('Validation', '\n*'.join(issues))
 
     def copy_grid(self):
-        messagebox.showwarning(
-            'Copy Grid',
-            'Please be patient.\nCopying grid feature is under construction.')
+        if self.grid_record:
+            copy_grid_data(self.grid_record)
 
     def remove_location(self, n):
         # add removed location to list for deletion
@@ -529,7 +540,6 @@ class GridView(Frame):
             self.delete_locations.append(self.locations[n]['did'])
         self.locations[n]['parent'].destroy()
         self.locations.pop(n, None)
-        self.last_row -= 1
 
     def add_location(self):
         self.add_locationBtn.destroy()
@@ -547,6 +557,29 @@ class GridView(Frame):
             for v in sorted(values):
                 self.gridLst.insert(END, v)
 
+    def validate_gridLocations(self, gridLocs):
+        valid = True
+        issues = []
+        n = 0
+        for loc in gridLocs:
+            loc_issues = []
+            n += 1
+            if loc['branch'] == '':
+                valid = False
+                loc_issues.append(
+                    'branch code')
+            if loc['qty'] == '' or \
+                    loc['qty'] == '0':
+                valid = False
+                loc_issues.append(
+                    'qty')
+            if loc_issues:
+                issues.append(
+                    'Location number {} is missing {}'.format(
+                        n,
+                        ','.join(loc_issues)))
+        return valid, issues
+
     def update_distributionLst(self):
         self.distLst.delete(0, END)
         user_id = get_id_from_index(self.profile.get(), self.profile_idx)
@@ -557,7 +590,8 @@ class GridView(Frame):
 
     def recreate_location_widgets(self):
         # re-create location widgets
-        self.lf.destroy()
+        self.grid_name.set('')
+        self.locFrm.destroy()
         self.display_frame()
         self.create_loc_widgets()
 
@@ -576,7 +610,7 @@ class GridView(Frame):
 
         disable_widgets([self.distnameEnt])
         disable_widgets(self.gridFrm.winfo_children())
-        disable_widgets(self.lf.winfo_children())
+        disable_widgets(self.locFrm.winfo_children())
 
     def profile_observer(self, *args):
         if self.activeW.get() == 'GridView':
@@ -611,11 +645,9 @@ class GridView(Frame):
                 self.update_distributionLst()
                 self.recreate_location_widgets()
 
-            elif self.system.get() == 2:
-                enable_widgets([self.libCbx])
         disable_widgets([self.distnameEnt])
         disable_widgets(self.gridFrm.winfo_children())
-        disable_widgets(self.lf.winfo_children())
+        disable_widgets(self.locFrm.winfo_children())
 
     def createToolTip(self, widget, text):
         toolTip = ToolTip(widget)

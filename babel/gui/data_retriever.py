@@ -6,7 +6,7 @@ from decimal import Decimal
 import logging
 
 from pandas import read_sql
-from sqlalchemy.exc import IntegrityError, InternalError
+from sqlalchemy.exc import IntegrityError
 
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from sqlalchemy.inspection import inspect
@@ -252,145 +252,6 @@ def create_cart(
 
             progbar['value'] += 1
             progbar.update()
-
-
-def save_new_dist_and_grid(
-        system_id, profile_id, grids,
-        branch_idx, shelf_idx,
-        dist=None, grid=None):
-    """
-    args:
-        system_id: int, did from System table
-        profile_id: int, did from User table
-        grids: dict, grids element of CartView tracker
-        dist: str, name of the new DistSet record
-        grid: str, name of the new DistGrid record
-    """
-    try:
-        mlogger.debug(
-            'Creating new dist/grid from CartView. '
-            f'system: {system_id}, profile: {profile_id}, '
-            f'dist: {dist}, grid: {grid}')
-
-        if profile_id is not None:
-            with session_scope() as session:
-                dist_rec = insert_or_ignore(
-                    session,
-                    DistSet,
-                    system_id=system_id,
-                    user_id=profile_id,
-                    name=dist)
-                mlogger.debug(f'dist_rec: {dist_rec}')
-
-                # check if given grid already exists
-                grid_rec = retrieve_record(
-                    session, DistGrid, name=grid, distset_id=dist_rec.did)
-                mlogger.debug(f'grid_rec: {grid_rec}')
-
-                # determine new gridLocations
-                locations = []
-                locs = grids['locs']
-                for l in locs:
-                    if grid_rec:
-                        locations.append(
-                            GridLocation(
-                                distgrid_id=grid_rec.did,
-                                branch_id=get_id_from_index(
-                                    l['branchCbx'].get(), branch_idx),
-                                shelfcode_id=get_id_from_index(
-                                    l['shelfCbx'].get(), shelf_idx),
-                                qty=int(l['qtyEnt'].get())))
-                    else:
-                        locations.append(
-                            GridLocation(
-                                branch_id=get_id_from_index(
-                                    l['branchCbx'].get(), branch_idx),
-                                shelfcode_id=get_id_from_index(
-                                    l['shelfCbx'].get(), shelf_idx),
-                                qty=int(l['qtyEnt'].get())))
-                mlogger.debug(f'New locations: {locations}')
-
-                if grid_rec:
-                    mlogger.debug('Updating existing grid_rec.')
-                    update_record(
-                        session,
-                        DistGrid,
-                        grid_rec.did,
-                        name=grid,
-                        distset_id=dist_rec.did,
-                        gridlocations=locations)
-                else:
-                    mlogger.debug('Inserting new grid_rec.')
-                    insert(
-                        session,
-                        DistGrid,
-                        name=grid,
-                        distset_id=dist_rec.did,
-                        gridlocations=locations)
-
-    except ValueError as e:
-        mlogger.error(
-            'User attempted to save new grid with incorrect values.'
-            f'Error: {e}')
-        raise BabelError(
-            'Your new grid includes invalid values.\n'
-            'Please make sure branch, shelf, and qty are valid.')
-
-
-def save_grid_data(**kwargs):
-    """
-    used in GridView
-    """
-    locs = []
-    for loc in kwargs['gridlocs']:
-        branch_id = get_id_from_index(loc['branch'], kwargs['branch_idx'])
-        shelf_id = get_id_from_index(loc['shelf'], kwargs['shelf_idx'])
-        if loc['gridloc_id']:
-            locs.append(
-                GridLocation(
-                    did=loc['gridloc_id'],
-                    distgrid_id=loc['distgrid_id'],
-                    branch_id=branch_id,
-                    shelfcode_id=shelf_id,
-                    qty=loc['qty']))
-        else:
-            if loc['distgrid_id']:
-                locs.append(
-                    GridLocation(
-                        distgrid_id=loc['distgrid_id'],
-                        branch_id=branch_id,
-                        shelfcode_id=shelf_id,
-                        qty=loc['qty']
-                    ))
-            else:
-                locs.append(
-                    GridLocation(
-                        branch_id=branch_id,
-                        shelfcode_id=shelf_id,
-                        qty=loc['qty']
-                    ))
-
-    with session_scope() as session:
-        try:
-            if kwargs['grid_did']:
-                update_record(
-                    session,
-                    DistGrid,
-                    kwargs['grid_did'],
-                    name=kwargs['name'],
-                    distset_id=kwargs['distset_id'],
-                    gridlocations=locs)
-            else:
-                insert(
-                    session,
-                    DistGrid,
-                    name=kwargs['name'],
-                    distset_id=kwargs['distset_id'],
-                    gridlocations=locs)
-        except IntegrityError as e:
-            raise BabelError(e)
-        except InternalError as e:
-            raise BabelError(e)
 
 
 def get_fund_data(fund_rec):
@@ -881,16 +742,3 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
             progbar.update()
 
     saving_status.set('Complete!')
-
-
-
-
-
-
-
-
-
-
-
-
-
