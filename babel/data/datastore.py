@@ -174,7 +174,10 @@ class DistGrid(Base):
                         nullable=False)
 
     gridlocations = relationship(
-        'GridLocation', lazy='joined', cascade='all, delete-orphan')
+        'GridLocation',
+        lazy='joined',
+        order_by='GridLocation.did',
+        cascade='all, delete-orphan')
 
     def __repr__(self):
         state = inspect(self)
