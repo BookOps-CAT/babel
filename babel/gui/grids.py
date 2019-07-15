@@ -446,9 +446,12 @@ class GridView(Frame):
             disable_widgets([self.distnameEnt])
 
     def copy_distribution(self):
-        messagebox.showwarning(
-            'Copy Distribution',
-            'Please be patient.\nCopying entire distribution feature is under construction.')
+        if self.distr_record:
+            try:
+                copy_distribution_data(self.distr_record)
+                self.update_distributionLst()
+            except BabelError as e:
+                messagebox.showerror('Database error', e)
 
     def add_grid(self):
         if self.distr_name.get():
@@ -487,53 +490,61 @@ class GridView(Frame):
 
     def insert_or_update_grid(self):
         if self.distr_record:
-            if self.grid_record:
-                grid_id = self.grid_record.did
-            else:
-                grid_id = None
+            if self.grid_name.get():
+                if self.grid_record:
+                    grid_id = self.grid_record.did
+                else:
+                    grid_id = None
 
-            if self.delete_locations:
-                for did in self.delete_locations:
-                    delete_data_by_did(GridLocation, did)
+                if self.delete_locations:
+                    for did in self.delete_locations:
+                        delete_data_by_did(GridLocation, did)
 
-            gridlocs = []
+                gridlocs = []
 
-            for loc in self.locations.values():
-                gridlocs.append(
-                    dict(
-                        gridloc_id=loc['did'],
-                        distgrid_id=grid_id,
-                        branch=loc['branchCbx'].get().strip(),
-                        shelf=loc['shelfCbx'].get().strip(),
-                        qty=loc['qtySbx'].get()
-                    )
-                )
-
-            # validate
-            valid, issues = self.validate_gridLocations(gridlocs)
-            if valid:
-                try:
-                    save_grid_data(
-                        grid_did=grid_id,
-                        name=self.gridEnt.get().strip(),
-                        distset_id=self.distr_record.did,
-                        gridlocs=gridlocs,
-                        branch_idx=self.branch_idx,
-                        shelf_idx=self.shelf_idx,
+                for loc in self.locations.values():
+                    gridlocs.append(
+                        dict(
+                            gridloc_id=loc['did'],
+                            distgrid_id=grid_id,
+                            branch=loc['branchCbx'].get().strip(),
+                            shelf=loc['shelfCbx'].get().strip(),
+                            qty=loc['qtySbx'].get()
+                        )
                     )
 
-                    self.update_gridLst()
-                    disable_widgets(self.gridFrm.winfo_children())
-                    disable_widgets(self.locFrm.winfo_children())
-                except BabelError as e:
-                    messagebox.showerror('Database Error', e)
+                # validate
+                valid, issues = self.validate_gridLocations(gridlocs)
+                if valid:
+                    try:
+                        save_grid_data(
+                            grid_did=grid_id,
+                            name=self.gridEnt.get().strip(),
+                            distset_id=self.distr_record.did,
+                            gridlocs=gridlocs,
+                            branch_idx=self.branch_idx,
+                            shelf_idx=self.shelf_idx,
+                        )
+
+                        self.update_gridLst()
+                        disable_widgets(self.gridFrm.winfo_children())
+                        disable_widgets(self.locFrm.winfo_children())
+                    except BabelError as e:
+                        messagebox.showerror('Database Error', e)
+                else:
+                    messagebox.showerror('Validation', '\n*'.join(issues))
             else:
-                messagebox.showerror('Validation', '\n*'.join(issues))
+                messagebox.showwarning(
+                    'Input Error',
+                    "Please enter grid's name")
 
     def copy_grid(self):
         if self.grid_record:
-            copy_grid_data(self.grid_record)
-            self.update_gridLst()
+            try:
+                copy_grid_data(self.grid_record)
+                self.update_gridLst()
+            except BabelError as e:
+                messagebox.showerror('Database error', e)
 
     def remove_location(self, n):
         # add removed location to list for deletion
@@ -549,7 +560,6 @@ class GridView(Frame):
 
     def help(self):
         open_url('https://github.com/BookOps-CAT/babel/wiki/Grids')
-
 
     def update_gridLst(self):
         self.gridLst.delete(0, END)

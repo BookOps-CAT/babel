@@ -1,5 +1,6 @@
 # Supports datastore transations on GridView
 import logging
+import sys
 
 from sqlalchemy.exc import IntegrityError, InternalError
 
@@ -9,6 +10,7 @@ from data.datastore import session_scope, DistGrid, GridLocation
 from data.datastore_worker import (insert, update_record,
                                    retrieve_record)
 from gui.utils import get_id_from_index
+from logging_settings import format_traceback
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -71,40 +73,55 @@ def save_grid_data(**kwargs):
 
 
 def copy_grid_data(grid_record):
-    mlogger.debug('Copying grid record did={}, name={}'.format(
-        grid_record.did, grid_record.name))
+    mlogger.debug(
+        f'Copying grid record did={grid_record.did}, name={grid_record.name}')
 
-    with session_scope() as session:
-        # create new name
-        # check if used and adjust
-        exists = True
-        n = 0
-        while exists:
-            new_name = '{}-copy({})'.format(grid_record.name, n)
-            rec = retrieve_record(
+    try:
+        with session_scope() as session:
+            # create new name
+            # check if used and adjust
+            exists = True
+            n = 0
+            while exists:
+                new_name = f'{grid_record.name}-copy({n})'
+                rec = retrieve_record(
+                    session, DistGrid,
+                    distset_id=grid_record.distset_id,
+                    name=new_name)
+                if not rec:
+                    exists = False
+                n += 1
+
+            # compile location data
+            locs = []
+            for loc in grid_record.gridlocations:
+                locs.append(
+                    GridLocation(
+                        branch_id=loc.branch_id,
+                        shelfcode_id=loc.shelfcode_id,
+                        qty=loc.qty))
+
+            # # insert to datastore
+            rec = insert(
                 session, DistGrid,
                 distset_id=grid_record.distset_id,
-                name=new_name)
-            if not rec:
-                exists = False
-            n += 1
+                name=new_name,
+                gridlocations=locs)
 
-        # compile location data
-        locs = []
-        for loc in grid_record.gridlocations:
-            locs.append(
-                GridLocation(
-                    branch_id=loc.branch_id,
-                    shelfcode_id=loc.shelfcode_id,
-                    qty=loc.qty))
+            mlogger.debug(
+                f'New DistGrid record added: {rec}')
 
-        # # insert to datastore
-        insert(
-            session, DistGrid,
-            distset_id=grid_record.distset_id,
-            name=new_name,
-            gridlocations=locs)
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            f'Unhandled error while using ResourceDataReader.'
+            'Traceback: {tb}')
+        raise BabelError(exc)
 
 
-def copy_distribution_data():
-    pass
+def copy_distribution_data(distr_record, user=None):
+    if user is not None:
+        # determine new user_id
+        pass
+
