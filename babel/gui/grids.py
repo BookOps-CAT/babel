@@ -40,7 +40,7 @@ class GridView(Frame):
         self.profile_idx = app_data['profile_idx']
         self.system = app_data['system']
         self.system.trace('w', self.system_observer)
-        list_height = int((self.winfo_screenheight() - 200) / 50)
+        # list_height = int((self.winfo_screenheight() - 200) / 50)
 
         # local variables
         self.distr_name = StringVar()
@@ -68,184 +68,168 @@ class GridView(Frame):
         copyImg = self.app_data['img']['copy']
         helpImg = self.app_data['img']['help']
 
-        # distributions list
-        Label(self, text='Distributions:').grid(
-            row=0, column=0, sticky='nw')
-        scrollbarA = Scrollbar(self, orient=VERTICAL)
+        # distributions
+        self.distFrm = LabelFrame(
+            self, text='Distributions')
+        self.distFrm.grid(
+            row=0, column=0, sticky='snew', pady=10)
+        self.distFrm.columnconfigure(0, minsize=10)
+
+        self.distnameEnt = Entry(
+            self.distFrm,
+            textvariable=self.distr_name,
+            font=RFONT)
+        self.distnameEnt.grid(
+            row=0, column=1, columnspan=2, sticky='snew', pady=20)
+
+        scrollbarA = Scrollbar(self.distFrm, orient=VERTICAL)
         scrollbarA.grid(
-            row=1, column=1, rowspan=40, sticky='nsw', pady=5)
+            row=1, column=2, rowspan=40, sticky='nsw')
         self.distLst = Listbox(
-            self,
+            self.distFrm,
+            width=30,
             font=RFONT,
-            height=list_height,
+            height=30,
             selectmode=SINGLE,
             yscrollcommand=scrollbarA.set)
         self.distLst.bind('<Double-Button-1>', self.show_distribution)
         self.distLst.grid(
-            row=1, column=0, rowspan=40, sticky='snew', pady=5)
+            row=1, column=1, rowspan=40, sticky='snew')
         scrollbarA['command'] = self.distLst.yview
-
-        # distribution name
-        Label(self, text='name').grid(
-            row=1, column=3, sticky='snw', padx=10)
-        self.distnameEnt = Entry(
-            self,
-            textvariable=self.distr_name,
-            font=RFONT)
-        self.distnameEnt.grid(
-            row=1, column=4, columnspan=4, sticky='snew', pady=20)
 
         # distribution action buttons
         self.daddBtn = Button(
-            self,
+            self.distFrm,
             image=addImg,
             command=self.add_distribution)
-        self.daddBtn.image = addImg
+        # self.daddBtn.image = addImg
         self.daddBtn.grid(
-            row=1, column=2, sticky='sw', padx=10, pady=10)
+            row=1, column=3, sticky='sw', padx=10, pady=10)
         self.createToolTip(self.daddBtn, 'add new distribution')
 
         self.deditBtn = Button(
-            self,
+            self.distFrm,
             image=editImg,
             command=self.edit_distribution)
-        self.deditBtn.image = editImg
+        # self.deditBtn.image = editImg
         self.deditBtn.grid(
-            row=2, column=2, sticky='sw', padx=10, pady=5)
+            row=2, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.deditBtn, 'edit distribution')
 
         self.dcopyBtn = Button(
-            self,
+            self.distFrm,
             image=copyImg,
             command=self.select_distr_profile_widget)
-        self.dcopyBtn.image = copyImg
+        # self.dcopyBtn.image = copyImg
         self.dcopyBtn.grid(
-            row=3, column=2, sticky='sw', padx=10, pady=5)
+            row=3, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.dcopyBtn, 'copy distribution')
 
         self.ddeleteBtn = Button(
-            self,
+            self.distFrm,
             image=self.deleteImg,
             command=self.delete_distribution)
-        self.ddeleteBtn.image = self.deleteImg
+        # self.ddeleteBtn.image = self.deleteImg
         self.ddeleteBtn.grid(
-            row=4, column=2, sticky='sw', padx=10, pady=5)
+            row=4, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.ddeleteBtn, 'delete distribution')
 
         self.dsaveBtn = Button(
-            self,
+            self.distFrm,
             image=self.saveImg,
             command=self.insert_or_update_distribution)
         self.dsaveBtn.image = self.saveImg
         self.dsaveBtn.grid(
-            row=5, column=2, sticky='sw', padx=10, pady=5)
+            row=5, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.dsaveBtn, 'save distribution')
 
         self.helpBtn = Button(
-            self,
+            self.distFrm,
             image=helpImg,
             command=self.help)
-        self.helpBtn.image = helpImg
+        # self.helpBtn.image = helpImg
         self.helpBtn.grid(
-            row=6, column=2, sticky='sw', padx=10, pady=5)
+            row=6, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
 
-        # details frame
-        self.detFrm = LabelFrame(self, text='Distribution details')
-        self.detFrm.grid(
-            row=2, column=3, rowspan=40,
+        # distribution details frame
+        self.gridFrm = LabelFrame(self.distFrm, text='Grids')
+        self.gridFrm.grid(
+            row=0, column=4, rowspan=40,
             columnspan=10, sticky='snew', padx=10, pady=10)
+        self.gridFrm.columnconfigure(0, minsize=10)
+
+        self.gridEnt = Entry(
+            self.gridFrm, textvariable=self.grid_name, font=RFONT, width=30)
+        self.gridEnt.grid(
+            row=0, column=1, columnspan=2, sticky='snew', pady=5)
 
         # grid list
-        Label(self.detFrm, text='Grids:').grid(
-            row=0, column=0, sticky='nw')
-        scrollbarB = Scrollbar(self.detFrm, orient=VERTICAL)
+        scrollbarB = Scrollbar(self.gridFrm, orient=VERTICAL)
         scrollbarB.grid(
-            row=1, column=1, rowspan=40, sticky='nsw')
+            row=1, column=2, rowspan=40, sticky='nsw')
         self.gridLst = Listbox(
-            self.detFrm,
+            self.gridFrm,
             font=RFONT,
-            height=list_height,
+            width=30,
+            height=30,
             selectmode=SINGLE,
             yscrollcommand=scrollbarB.set)
         self.gridLst.bind('<Double-Button-1>', self.show_grid)
         self.gridLst.grid(
-            row=1, column=0, rowspan=40, sticky='snew')
+            row=1, column=1, rowspan=40, sticky='snew')
         scrollbarB['command'] = self.gridLst.yview
 
         # grid action buttons
         self.gaddBtn = Button(
-            self.detFrm,
+            self.gridFrm,
             image=addImg,
             command=self.add_grid)
-        self.gaddBtn.image = addImg
+        # self.gaddBtn.image = addImg
         self.gaddBtn.grid(
-            row=1, column=2, sticky='sw', padx=10, pady=10)
+            row=1, column=3, sticky='sw', padx=10, pady=10)
         self.createToolTip(self.gaddBtn, 'add new grid')
 
         self.geditBtn = Button(
-            self.detFrm,
+            self.gridFrm,
             image=editImg,
             command=self.edit_grid)
-        self.geditBtn.image = editImg
+        # self.geditBtn.image = editImg
         self.geditBtn.grid(
-            row=2, column=2, sticky='sw', padx=10, pady=5)
+            row=2, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.geditBtn, 'edit grid')
 
         self.gcopyBtn = Button(
-            self.detFrm,
+            self.gridFrm,
             image=copyImg,
             command=self.copy_grid)
-        self.gcopyBtn.image = copyImg
+        # self.gcopyBtn.image = copyImg
         self.gcopyBtn.grid(
-            row=3, column=2, sticky='sw', padx=10, pady=5)
+            row=3, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.gcopyBtn, 'copy grid')
 
         self.gdeleteBtn = Button(
-            self.detFrm,
+            self.gridFrm,
             image=self.deleteImg,
             command=self.delete_grid)
-        self.gdeleteBtn.image = self.deleteImg
+        # self.gdeleteBtn.image = self.deleteImg
         self.gdeleteBtn.grid(
-            row=4, column=2, sticky='sw', padx=10, pady=5)
+            row=4, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.gdeleteBtn, 'delete grid')
 
         self.gsaveBtn = Button(
-            self.detFrm,
+            self.gridFrm,
             image=self.saveImg,
             command=self.insert_or_update_grid)
-        self.gsaveBtn.image = self.saveImg
+        # self.gsaveBtn.image = self.saveImg
         self.gsaveBtn.grid(
-            row=5, column=2, sticky='sw', padx=10, pady=5)
+            row=5, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.gsaveBtn, 'save grid')
-
-        # grid details frame
-        self.gridFrm = LabelFrame(
-            self.detFrm,
-            text='Grid details')
-        self.gridFrm.grid(
-            row=0, column=3, rowspan=40, columnspan=10,
-            sticky='snew', padx=5, pady=10)
-        self.gridFrm.columnconfigure(2, minsize=20)
-        # self.gridFrm.columnconfigure(3, minsize=230)
-        # self.gridFrm.rowconfigure(8, minsize=250)
-
-        Label(self.gridFrm, text='name').grid(
-            row=0, column=0, sticky='snew', padx=5)
-        self.gridEnt = Entry(
-            self.gridFrm, textvariable=self.grid_name, font=RFONT, width=30)
-        self.gridEnt.grid(
-            row=1, column=0, columnspan=2, sticky='snew', padx=5, pady=5)
-
-        self.counterLbl = Label(
-            self.gridFrm, textvariable=self.counter, font=RFONT)
-        self.counterLbl.grid(
-            row=2, column=0, columnspan=2, sticky='snew', padx=5, pady=5)
 
         # location frame
         self.locFrm = LabelFrame(self.gridFrm, text='Locations')
         self.locFrm.grid(
-            row=3, column=0, rowspan=10)
+            row=0, column=4, rowspan=40, sticky='snew', padx=10)
         Label(self.locFrm, text='branch').grid(
             row=0, column=0, sticky='snew', pady=5)
         Label(self.locFrm, text='shelf').grid(
@@ -256,14 +240,15 @@ class GridView(Frame):
         # locations canvas
         self.scrollbarC = Scrollbar(self.locFrm, orient=VERTICAL)
         self.scrollbarC.grid(
-            row=1, column=3, rowspan=20, sticky='nsw')
+            row=1, column=3, rowspan=40, sticky='nsw')
         self.locCnv = Canvas(
             self.locFrm,
             width=220,
-            # height=450,  # find a way to adjust based on preview frm size
+            height='13c',
             yscrollcommand=self.scrollbarC.set)
         self.locCnv.grid(
-            row=2, column=0, columnspan=3, rowspan=20, sticky='snew')
+            row=2, column=0, columnspan=3, rowspan=40, sticky='snew')
+        # self.locCnv.bind_all("<MouseWheel>", self.on_mousewheel)
         self.display_frame()
 
     def show_distribution(self, *args):
@@ -407,17 +392,15 @@ class GridView(Frame):
 
     def add_grid(self):
         if self.distr_name.get():
-            # enable_widgets(self.gridFrm.winfo_children())
-            # enable_widgets(self.locFrm.winfo_children())
             self.grid_name.set('')
             self.grid_record = None
             self.recreate_location_widgets()
-            enable_widgets(self.gridFrm.winfo_children())
+            enable_widgets([self.gridEnt])
             enable_widgets(self.locFrm.winfo_children())
 
     def edit_grid(self):
         if self.grid_name.get():
-            enable_widgets(self.gridFrm.winfo_children())
+            enable_widgets([self.gridEnt])
             enable_widgets(self.locFrm.winfo_children())
 
     def delete_grid(self):
@@ -435,6 +418,7 @@ class GridView(Frame):
                 self.last_row = 0
                 self.grid_name.set('')
                 self.grid_record = None
+                self.recreate_location_widgets()
                 self.update_gridLst()
 
             else:
@@ -469,7 +453,7 @@ class GridView(Frame):
                 valid, issues = self.validate_gridLocations(gridlocs)
                 if valid:
                     try:
-                        save_grid_data(
+                        self.grid_record = save_grid_data(
                             grid_did=grid_id,
                             name=self.gridEnt.get().strip(),
                             distset_id=self.distr_record.did,
@@ -479,14 +463,16 @@ class GridView(Frame):
                         )
 
                         self.update_gridLst()
-                        disable_widgets(self.gridFrm.winfo_children())
+                        disable_widgets([self.gridEnt])
                         disable_widgets(self.locFrm.winfo_children())
                     except BabelError as e:
                         messagebox.showerror(
                             'Database Error',
                             f'Something went wrong:\n{e}')
                 else:
-                    messagebox.showerror('Validation', '\n*'.join(issues))
+                    messagebox.showerror(
+                        'Validation Error',
+                        '\n'.join(issues))
             else:
                 messagebox.showwarning(
                     'Input Error',
@@ -623,10 +609,14 @@ class GridView(Frame):
         for loc in gridLocs:
             loc_issues = []
             n += 1
-            if loc['branch'] == '':
+            if loc['branch'] not in self.branch_idx.values():
                 valid = False
                 loc_issues.append(
                     'branch code')
+            if loc['shelf'] not in self.shelf_idx.values():
+                valid = False
+                loc_issues.append(
+                    'shelf code')
             if loc['qty'] == '' or \
                     loc['qty'] == '0':
                 valid = False
@@ -634,7 +624,7 @@ class GridView(Frame):
                     'qty')
             if loc_issues:
                 issues.append(
-                    'Location number {} is missing {}'.format(
+                    'Location number {} has invalid {}'.format(
                         n,
                         ','.join(loc_issues)))
         return valid, issues
@@ -660,7 +650,7 @@ class GridView(Frame):
         self.recreate_location_widgets()
 
         disable_widgets([self.distnameEnt])
-        disable_widgets(self.gridFrm.winfo_children())
+        disable_widgets([self.gridEnt])
         disable_widgets(self.locFrm.winfo_children())
 
     def display_frame(self):
@@ -673,6 +663,13 @@ class GridView(Frame):
 
     def onFrameConfigure(self, event):
         self.locCnv.config(scrollregion=self.locCnv.bbox('all'))
+
+    def on_mousewheel(self, event):
+        try:
+            self.locCnv.yview_scroll(
+                int(-1 * (event.delta / 120)), "units")
+        except tk.TclError:
+            pass
 
     def createToolTip(self, widget, text):
         toolTip = ToolTip(widget)
@@ -720,5 +717,5 @@ class GridView(Frame):
                 self.recreate_location_widgets()
 
         disable_widgets([self.distnameEnt])
-        disable_widgets(self.gridFrm.winfo_children())
+        disable_widgets([self.gridEnt])
         disable_widgets(self.locFrm.winfo_children())

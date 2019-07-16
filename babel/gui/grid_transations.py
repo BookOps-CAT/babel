@@ -52,6 +52,7 @@ def save_grid_data(**kwargs):
 
     with session_scope() as session:
         try:
+            record = None
             if kwargs['grid_did']:
                 update_record(
                     session,
@@ -60,13 +61,24 @@ def save_grid_data(**kwargs):
                     name=kwargs['name'],
                     distset_id=kwargs['distset_id'],
                     gridlocations=locs)
+                record = retrieve_record(
+                    session,
+                    DistGrid,
+                    name=kwargs['name'],
+                    distset_id=kwargs['distset_id'])
+                mlogger.debug(
+                    f'Updated record {record}')
             else:
-                insert(
+                record = insert(
                     session,
                     DistGrid,
                     name=kwargs['name'],
                     distset_id=kwargs['distset_id'],
                     gridlocations=locs)
+                mlogger.debug(
+                    f'Added new record {record}')
+            session.expunge_all()
+            return record
         except IntegrityError as e:
             raise BabelError(e)
         except InternalError as e:
@@ -109,7 +121,7 @@ def copy_grid_data(grid_record):
                 gridlocations=locs)
 
             mlogger.debug(
-                f'New DistGrid record added: {rec}')
+                f'Added new record {rec}')
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
@@ -162,7 +174,7 @@ def copy_distribution_data(distr_record, user_id):
                 user_id=user_id,
                 distgrids=grids)
 
-            mlogger.debug(f'New DistSet added: {rec}')
+            mlogger.debug(f'Added new record: {rec}')
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
