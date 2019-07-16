@@ -1,5 +1,4 @@
 import logging
-import shelve
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
@@ -14,7 +13,6 @@ from gui.data_retriever import (get_codes, get_names, get_record,
                                 insert_fund, delete_data)
 from gui.fonts import RFONT
 from gui.utils import disable_widgets, enable_widgets, open_url
-from paths import USER_DATA
 
 
 mlogger = logging.getLogger('babel_logger')

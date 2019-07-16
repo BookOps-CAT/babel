@@ -9,11 +9,11 @@ from tkinter import messagebox
 from errors import BabelError
 from data.datastore import (Branch, DistSet, DistGrid, GridLocation,
                             ShelfCode)
+from data.grid_transations import (copy_distribution_data, save_grid_data,
+                                   copy_grid_data)
 from gui.data_retriever import (get_names, get_record,
                                 delete_data, delete_data_by_did,
                                 create_code_index, save_data)
-from gui.grid_transations import (copy_distribution_data, save_grid_data,
-                                  copy_grid_data)
 from gui.fonts import RFONT
 from gui.utils import (disable_widgets, enable_widgets, get_id_from_index,
                        ToolTip, open_url)

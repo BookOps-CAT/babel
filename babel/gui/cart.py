@@ -6,6 +6,7 @@ from tkinter.ttk import *
 from tkinter import messagebox
 
 from errors import BabelError
+from data.cart_transactions import save_new_dist_and_grid
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status)
@@ -19,7 +20,6 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 apply_globals_to_cart, assign_wlo_to_cart,
                                 assign_blanketPO_to_cart,
                                 apply_fund_to_cart)
-from gui.cart_transactions import save_new_dist_and_grid
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, BusyManager, get_id_from_index, disable_widgets,
                        enable_widgets, open_url)
