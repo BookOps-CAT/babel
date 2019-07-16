@@ -6,7 +6,8 @@ from sqlalchemy.exc import IntegrityError, InternalError
 
 
 from errors import BabelError
-from data.datastore import session_scope, DistGrid, GridLocation
+from data.datastore import (session_scope, DistGrid, DistSet,
+                            GridLocation)
 from data.datastore_worker import (insert, update_record,
                                    retrieve_record)
 from gui.utils import get_id_from_index
@@ -75,7 +76,6 @@ def save_grid_data(**kwargs):
 def copy_grid_data(grid_record):
     mlogger.debug(
         f'Copying grid record did={grid_record.did}, name={grid_record.name}')
-
     try:
         with session_scope() as session:
             # create new name
@@ -120,8 +120,45 @@ def copy_grid_data(grid_record):
         raise BabelError(exc)
 
 
-def copy_distribution_data(distr_record, user=None):
-    if user is not None:
-        # determine new user_id
-        pass
+def copy_distribution_data(distr_record, user_id):
 
+    with session_scope() as session:
+        # create new name
+        # check if used and adjust
+        exists = True
+        n = 0
+        while exists:
+            new_name = f'{distr_record.name}-copy({n})'
+            rec = retrieve_record(
+                session, DistSet,
+                name=new_name,
+                user_id=user_id,
+                system_id=distr_record.system_id)
+            if not rec:
+                exists = False
+            n += 1
+
+        # prep copy of distrgrids & gridlocations
+        grids = []
+        for grid in distr_record.distgrids:
+            locs = []
+            for loc in grid.gridlocations:
+                locs.append(
+                    GridLocation(
+                        branch_id=loc.branch_id,
+                        shelfcode_id=loc.shelfcode_id,
+                        qty=loc.qty))
+            grids.append(
+                DistGrid(
+                    name=grid.name,
+                    gridlocations=locs))
+
+        rec = insert(
+            session,
+            DistSet,
+            name=new_name,
+            system_id=distr_record.system_id,
+            user_id=user_id,
+            distgrids=grids)
+
+        mlogger.debug(f'New DistSet added: {rec}')

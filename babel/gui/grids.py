@@ -448,10 +448,18 @@ class GridView(Frame):
     def copy_distribution(self):
         if self.distr_record:
             try:
+                # user = self.select_distr_profile()
+                
+                
                 copy_distribution_data(self.distr_record)
                 self.update_distributionLst()
             except BabelError as e:
                 messagebox.showerror('Database error', e)
+
+    def select_distr_profile(self):
+        # top = Top(parent=self)
+        for user, user_id in self.profile_idx.items():
+            print(user, user_id)
 
     def add_grid(self):
         if self.distr_name.get():
