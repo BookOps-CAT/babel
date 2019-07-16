@@ -122,43 +122,51 @@ def copy_grid_data(grid_record):
 
 def copy_distribution_data(distr_record, user_id):
 
-    with session_scope() as session:
-        # create new name
-        # check if used and adjust
-        exists = True
-        n = 0
-        while exists:
-            new_name = f'{distr_record.name}-copy({n})'
-            rec = retrieve_record(
-                session, DistSet,
+    try:
+        with session_scope() as session:
+            # create new name
+            # check if used and adjust
+            exists = True
+            n = 0
+            while exists:
+                new_name = f'{distr_record.name}-copy({n})'
+                rec = retrieve_record(
+                    session, DistSet,
+                    name=new_name,
+                    user_id=user_id,
+                    system_id=distr_record.system_id)
+                if not rec:
+                    exists = False
+                n += 1
+
+            # prep copy of distrgrids & gridlocations
+            grids = []
+            for grid in distr_record.distgrids:
+                locs = []
+                for loc in grid.gridlocations:
+                    locs.append(
+                        GridLocation(
+                            branch_id=loc.branch_id,
+                            shelfcode_id=loc.shelfcode_id,
+                            qty=loc.qty))
+                grids.append(
+                    DistGrid(
+                        name=grid.name,
+                        gridlocations=locs))
+
+            rec = insert(
+                session,
+                DistSet,
                 name=new_name,
+                system_id=distr_record.system_id,
                 user_id=user_id,
-                system_id=distr_record.system_id)
-            if not rec:
-                exists = False
-            n += 1
+                distgrids=grids)
 
-        # prep copy of distrgrids & gridlocations
-        grids = []
-        for grid in distr_record.distgrids:
-            locs = []
-            for loc in grid.gridlocations:
-                locs.append(
-                    GridLocation(
-                        branch_id=loc.branch_id,
-                        shelfcode_id=loc.shelfcode_id,
-                        qty=loc.qty))
-            grids.append(
-                DistGrid(
-                    name=grid.name,
-                    gridlocations=locs))
-
-        rec = insert(
-            session,
-            DistSet,
-            name=new_name,
-            system_id=distr_record.system_id,
-            user_id=user_id,
-            distgrids=grids)
-
-        mlogger.debug(f'New DistSet added: {rec}')
+            mlogger.debug(f'New DistSet added: {rec}')
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            f'Unhandled error while using ResourceDataReader.'
+            'Traceback: {tb}')
+        raise BabelError(exc)

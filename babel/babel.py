@@ -46,8 +46,6 @@ if __name__ == '__main__':
         s = Style()
         s.theme_use('xpnative')
         s.configure('.', font=('device', 12))
-        # s.configure('lefttab.TNotebook', tabposition='wn')
-        # s.configure('red.TLabel', foreground='tomato2')
         app.iconbitmap('./icons/babel.ico')
         app.title('Babel v.{}'.format(version))
         app.mainloop()
