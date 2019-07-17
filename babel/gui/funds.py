@@ -12,7 +12,8 @@ from gui.data_retriever import (get_codes, get_names, get_record,
                                 get_fund_data, update_fund,
                                 insert_fund, delete_data)
 from gui.fonts import RFONT
-from gui.utils import disable_widgets, enable_widgets, open_url
+from gui.utils import (BusyManager, disable_widgets, enable_widgets,
+                       open_url)
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -35,6 +36,7 @@ class FundView(Frame):
         self.system.trace('w', self.system_observer)
         list_height = int((self.winfo_screenheight() - 100) / 25)
 
+        # local variables
         self.record = None
         self.all_branches = IntVar()
         self.all_branches.trace('w', self.branch_selection_observer)
@@ -42,6 +44,9 @@ class FundView(Frame):
         self.all_branchesLbl.set('select all')
         self.fund_code = StringVar()
         self.fund_desc = StringVar()
+
+        # busy icon manager
+        self.cur_manager = BusyManager(self)
 
         # pull icons from main img dictionary instead to preserve memory
         # setup small add/remove icons
@@ -354,6 +359,7 @@ class FundView(Frame):
 
     def show_fund(self, *args):
         mlogger.debug('Displaying fund details.')
+        self.cur_manager.busy()
         enable_widgets(self.detFrm.winfo_children())
         self.record = get_record(Fund, code=self.fundLst.get(ACTIVE))
         self.display_branches()
@@ -401,6 +407,7 @@ class FundView(Frame):
 
         # lock the interface
         disable_widgets(self.detFrm.winfo_children())
+        self.cur_manager.notbusy()
 
     def add_data(self):
         if self.system.get():
@@ -441,6 +448,7 @@ class FundView(Frame):
             missing.append('valid material types')
 
         if not missing:
+            self.cur_manager.busy()
             try:
                 kwargs = dict(
                     system_id=self.system.get(),
@@ -459,6 +467,8 @@ class FundView(Frame):
                 disable_widgets(self.detFrm.winfo_children())
             except BabelError as e:
                 messagebox.showerror(e)
+            finally:
+                self.cur_manager.notbusy()
         else:
             msg = 'Missing requried elements:\n-{}'.format(
                 '\n-'.join(missing))
