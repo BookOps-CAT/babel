@@ -3,14 +3,13 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
 
-from PIL import Image, ImageTk
-
 
 from errors import BabelError
 from data.datastore import (Audn, Branch, Fund, Library, MatType)
+from data.fund_transactions import (get_fund_data, update_fund,
+                                    insert_fund)
 from gui.data_retriever import (get_codes, get_names, get_record,
-                                get_fund_data, update_fund,
-                                insert_fund, delete_data)
+                                delete_data)
 from gui.fonts import RFONT
 from gui.utils import (BusyManager, disable_widgets, enable_widgets,
                        open_url)
@@ -48,12 +47,14 @@ class FundView(Frame):
         # busy icon manager
         self.cur_manager = BusyManager(self)
 
-        # pull icons from main img dictionary instead to preserve memory
-        # setup small add/remove icons
-        img = Image.open('./icons/Action-edit-add-iconS.png')
-        addSImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/Action-remove-iconS.png')
-        removeSImg = ImageTk.PhotoImage(img)
+        # icons
+        addImg = self.app_data['img']['add']
+        editImg = self.app_data['img']['edit']
+        deleteImg = self.app_data['img']['delete']
+        saveImg = self.app_data['img']['save']
+        helpImg = self.app_data['img']['help']
+        addSImg = self.app_data['img']['addS']
+        removeSImg = self.app_data['img']['removeS']
 
         # tables list
         Label(self, text='Funds:').grid(
@@ -73,53 +74,43 @@ class FundView(Frame):
         scrollbarA['command'] = self.fundLst.yview
 
         # action buttons
-        img = Image.open('./icons/Action-edit-add-iconM.png')
-        addImg = ImageTk.PhotoImage(img)
         self.addBtn = Button(
             self,
             image=addImg,
             command=self.add_data)
-        self.addBtn.image = addImg
+        # self.addBtn.image = addImg
         self.addBtn.grid(
             row=1, column=5, sticky='sw', padx=10, pady=10)
 
-        img = Image.open('./icons/Action-reload-iconM.png')
-        editImg = ImageTk.PhotoImage(img)
         self.editBtn = Button(
             self,
             image=editImg,
             command=self.edit_data)
-        self.editBtn.image = editImg
+        # self.editBtn.image = editImg
         self.editBtn.grid(
             row=2, column=5, sticky='sw', padx=10, pady=5)
 
-        img = Image.open('./icons/Action-cancel-iconM.png')
-        deleteImg = ImageTk.PhotoImage(img)
         self.deleteBtn = Button(
             self,
             image=deleteImg,
             command=self.delete_data)
-        self.deleteBtn.image = deleteImg
+        # self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
             row=3, column=5, sticky='sw', padx=10, pady=5)
 
-        img = Image.open('./icons/Action-ok-iconM.png')
-        saveImg = ImageTk.PhotoImage(img)
         self.saveBtn = Button(
             self,
             image=saveImg,
             command=self.insert_or_update_data)
-        self.saveBtn.image = saveImg
+        # self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=4, column=5, sticky='sw', padx=10, pady=5)
 
-        img = Image.open('./icons/Action-button-info-iconM.png')
-        helpImg = ImageTk.PhotoImage(img)
         self.helpBtn = Button(
             self,
             image=helpImg,
             command=self.help)
-        self.helpBtn.image = helpImg
+        # self.helpBtn.image = helpImg
         self.helpBtn.grid(
             row=5, column=5, sticky='sw', padx=10, pady=5)
 
@@ -190,7 +181,7 @@ class FundView(Frame):
                 'branchLst',
                 self.branchOutLst, self.branchInLst,
                 self.branchOutLst.curselection()))
-        self.branchInBtn.image = addSImg
+        # self.branchInBtn.image = addSImg
         self.branchInBtn.grid(
             row=1, column=2, sticky='sw', padx=2, pady=2)
 
@@ -201,7 +192,7 @@ class FundView(Frame):
                 'branchLst',
                 self.branchOutLst, self.branchInLst,
                 self.branchInLst.curselection()))
-        self.branchOutBtn.image = removeSImg
+        # self.branchOutBtn.image = removeSImg
         self.branchOutBtn.grid(
             row=2, column=2, sticky='sw', padx=2, pady=2)
 
@@ -241,7 +232,7 @@ class FundView(Frame):
                 'libLst',
                 self.libOutLst, self.libInLst,
                 self.libOutLst.curselection()))
-        self.libInBtn.image = addSImg
+        # self.libInBtn.image = addSImg
         self.libInBtn.grid(
             row=0, column=1, sticky='sw', padx=5, pady=2)
 
@@ -252,7 +243,7 @@ class FundView(Frame):
                 'LibLst',
                 self.libOutLst, self.libInLst,
                 self.libInLst.curselection()))
-        self.libOutBtn.image = removeSImg
+        # self.libOutBtn.image = removeSImg
         self.libOutBtn.grid(
             row=1, column=1, sticky='sw', padx=5, pady=2)
 
@@ -287,7 +278,7 @@ class FundView(Frame):
                 'audnLst',
                 self.audnOutLst, self.audnInLst,
                 self.audnOutLst.curselection()))
-        self.audnInBtn.image = addSImg
+        # self.audnInBtn.image = addSImg
         self.audnInBtn.grid(
             row=0, column=1, sticky='sw', padx=5, pady=2)
 
@@ -298,7 +289,7 @@ class FundView(Frame):
                 'audnLst',
                 self.audnOutLst, self.audnInLst,
                 self.audnInLst.curselection()))
-        self.audnOutBtn.image = removeSImg
+        # self.audnOutBtn.image = removeSImg
         self.audnOutBtn.grid(
             row=1, column=1, sticky='sw', padx=5, pady=2)
 
@@ -333,7 +324,7 @@ class FundView(Frame):
                 'mattypeLst',
                 self.mattypeOutLst, self.mattypeInLst,
                 self.mattypeOutLst.curselection()))
-        self.mattypeInBtn.image = addSImg
+        # self.mattypeInBtn.image = addSImg
         self.mattypeInBtn.grid(
             row=0, column=1, sticky='sw', padx=5, pady=2)
 
@@ -344,7 +335,7 @@ class FundView(Frame):
                 'mattypesLst',
                 self.mattypeOutLst, self.mattypeInLst,
                 self.mattypeInLst.curselection()))
-        self.mattypeOutBtn.image = removeSImg
+        # self.mattypeOutBtn.image = removeSImg
         self.mattypeOutBtn.grid(
             row=1, column=1, sticky='sw', padx=5, pady=2)
 
@@ -425,7 +416,6 @@ class FundView(Frame):
 
     def edit_data(self):
         if self.record:
-            self.show_fund()
             enable_widgets(self.detFrm.winfo_children())
 
     def delete_data(self):
@@ -460,12 +450,20 @@ class FundView(Frame):
                     matTypes=self.mattypeInLst.get(0, END))
 
                 if not self.record:
-                    insert_fund(**kwargs)
+                    try:
+                        insert_fund(**kwargs)
+                    except BabelError as e:
+                        messagebox.showerror('Save Error', e)
                 else:
-                    update_fund(**kwargs)
+                    kwargs['did'] = self.record.did
+                    try:
+                        update_fund(**kwargs)
+                    except BabelError as e:
+                        messagebox.showerror('Update Error', e)
                 self.display_funds()
                 disable_widgets(self.detFrm.winfo_children())
             except BabelError as e:
+                self.cur_manager.notbusy()
                 messagebox.showerror(e)
             finally:
                 self.cur_manager.notbusy()
@@ -603,6 +601,8 @@ class FundView(Frame):
     def system_observer(self, *args):
         if self.activeW.get() == 'FundView':
             self.record = None
+            self.fund_code.set('')
+            self.fund_desc.set('')
             enable_widgets(self.detFrm.winfo_children())
             self.display_funds()
             self.all_branches.set(0)
