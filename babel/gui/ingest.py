@@ -5,8 +5,6 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox, filedialog
 
-from PIL import Image, ImageTk
-
 
 from errors import BabelError
 from data.datastore import Resource, Sheet
@@ -66,62 +64,61 @@ class ImportView(Frame):
         self.updated = StringVar()
         self.fh = None
 
+        # icons
+        addImg = self.app_data['img']['add']
+        editImg = self.app_data['img']['edit']
+        deleteImg = self.app_data['img']['delete']
+        saveImg = self.app_data['img']['save']
+        helpImg = self.app_data['img']['help']
+        loadImg = self.app_data['img']['load']
+        importImg = self.app_data['img']['import']
+
         self.actionFrm = Frame(self)
         self.actionFrm.grid(
             row=0, column=0, sticky='snew', padx=10, pady=10)
 
         # action buttons
-        img = Image.open('./icons/Action-edit-add-iconM.png')
-        addImg = ImageTk.PhotoImage(img)
         self.addBtn = Button(
             self.actionFrm,
             image=addImg,
             command=self.add_data)
-        self.addBtn.image = addImg
+        # self.addBtn.image = addImg
         self.addBtn.grid(
             row=0, column=0, sticky='sw', padx=20, pady=10)
         self.createToolTip(self.addBtn, 'new sheet template')
 
-        img = Image.open('./icons/Action-reload-iconM.png')
-        editImg = ImageTk.PhotoImage(img)
         self.editBtn = Button(
             self.actionFrm,
             image=editImg,
             command=self.edit_data)
-        self.editBtn.image = editImg
+        # self.editBtn.image = editImg
         self.editBtn.grid(
             row=1, column=0, sticky='sw', padx=20, pady=5)
         self.createToolTip(self.editBtn, 'edit sheet template')
 
-        img = Image.open('./icons/Action-cancel-iconM.png')
-        deleteImg = ImageTk.PhotoImage(img)
         self.deleteBtn = Button(
             self.actionFrm,
             image=deleteImg,
             command=self.delete_data)
-        self.deleteBtn.image = deleteImg
+        # self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
             row=2, column=0, sticky='sw', padx=20, pady=5)
         self.createToolTip(self.deleteBtn, 'delete sheet template')
 
-        img = Image.open('./icons/Action-ok-iconM.png')
-        saveImg = ImageTk.PhotoImage(img)
         self.saveBtn = Button(
             self.actionFrm,
             image=saveImg,
             command=self.insert_or_update_data)
-        self.saveBtn.image = saveImg
+        # self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=3, column=0, sticky='sw', padx=20, pady=5)
         self.createToolTip(self.saveBtn, 'save sheet template')
 
-        img = Image.open('./icons/Action-button-info-iconM.png')
-        helpImg = ImageTk.PhotoImage(img)
         self.helpBtn = Button(
             self.actionFrm,
             image=helpImg,
             command=self.help)
-        self.helpBtn.image = helpImg
+        # self.helpBtn.image = helpImg
         self.helpBtn.grid(
             row=4, column=0, sticky='sw', padx=20, pady=5)
         self.createToolTip(self.helpBtn, 'help')
@@ -335,8 +332,6 @@ class ImportView(Frame):
         self.sheetFrm.grid(
             row=0, column=2, sticky='snew', padx=5, pady=10)
 
-        img = Image.open('./icons/Action-viewmag-iconM.png')
-        loadImg = ImageTk.PhotoImage(img)
         self.loadBtn = Button(
             self.sheetFrm,
             image=loadImg,
@@ -344,12 +339,10 @@ class ImportView(Frame):
             compound=TOP,
             width=10,
             command=self.load_sheet)
-        self.loadBtn.image = loadImg
+        # self.loadBtn.image = loadImg
         self.loadBtn.grid(
             row=0, column=0, sticky='snw', padx=50, pady=20)
 
-        img = Image.open('./icons/App-ark-iconM.png')
-        importImg = ImageTk.PhotoImage(img)
         self.importBtn = Button(
             self.sheetFrm,
             image=importImg,
@@ -357,7 +350,7 @@ class ImportView(Frame):
             compound=TOP,
             width=10,
             command=self.name_cart_widget)
-        self.importBtn.image = importImg
+        # self.importBtn.image = importImg
         self.importBtn.grid(
             row=0, column=0, sticky='sne', padx=50, pady=20)
 

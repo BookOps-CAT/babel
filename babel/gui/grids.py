@@ -531,12 +531,14 @@ class GridView(Frame):
             row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
         removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
 
-        branchCbx = Combobox(unitFrm, font=RFONT, width=3)
+        branchCbx = Combobox(
+            unitFrm, font=RFONT, width=3)
         branchCbx.grid(
             row=self.last_row, column=1, sticky='snew', padx=2, pady=4)
         branchCbx['values'] = sorted(self.branch_idx.values())
         branchCbx.set(loc[1])
-        shelfCbx = Combobox(unitFrm, font=RFONT, width=3)
+        shelfCbx = Combobox(
+            unitFrm, font=RFONT, width=3)
         shelfCbx.grid(
             row=self.last_row, column=2, sticky='snew', padx=2, pady=4)
         shelfCbx['values'] = sorted(self.shelf_idx.values())
