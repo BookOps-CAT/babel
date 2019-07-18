@@ -359,6 +359,7 @@ class ImportView(Frame):
         self.sheetPreviewFrm.grid(
             row=1, column=0, columnspan=3, sticky='snw')
         self.sheetPreviewFrm.columnconfigure(2, minsize=800)
+
         # sheet preview
         self.xscrollbar = Scrollbar(self.sheetPreviewFrm, orient=HORIZONTAL)
         self.xscrollbar.grid(
@@ -776,6 +777,7 @@ class ImportView(Frame):
                 disable_widgets(self.templateFrm.winfo_children())
                 enable_widgets([self.sheetCbx])
                 self.sheetCbx['state'] = 'readonly'
+                self.generate_preview()
 
     def profile_observer(self, *args):
         if self.activeW.get() == "ImportView":
