@@ -489,7 +489,7 @@ class FundView(Frame):
         mlogger.debug('Retrieving indices for values {} in a listbox.'.format(
             data))
         values = widgetLst.get(0, END)
-        return [values.index(d) for d in data]
+        return sorted([values.index(d) for d in data])
 
     def add_condition(self, category, widgetOut, widgetIn, selected):
         mlogger.debug('Adding condition(s) to {} initiated.'.format(
@@ -518,7 +518,7 @@ class FundView(Frame):
             category))
 
         values = [widgetIn.get(x) for x in selected]
-        mlogger.debug('Selected condiction values: {}'.format(values))
+        mlogger.debug('Selected condition values: {}'.format(values))
 
         # remove from in widget
         for x in reversed(selected):

@@ -91,7 +91,7 @@ def get_names(model, **kwargs):
         res = get_column_values(
             session, model, 'name', **kwargs)
         for x in res:
-            values = [x.name for x in res]
+            values = sorted([x.name for x in res])
     return values
 
 
@@ -101,7 +101,7 @@ def get_codes(model, **kwargs):
         res = get_column_values(
             session, model, 'code', **kwargs)
         for x in res:
-            values = [x.code for x in res]
+            values = sorted([x.code for x in res])
     return values
 
 
