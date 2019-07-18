@@ -123,9 +123,9 @@ class ResourceDataReader:
             raise AttributeError(
                 'Header row number is a required argument')
 
-        if not title_col:
+        if title_col is None:
             raise AttributeError(
-                'Title column letter is a required argument')
+                'Title column number is a required argument')
 
         wb = load_workbook(
             filename=fh,

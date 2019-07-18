@@ -7,7 +7,7 @@ from tkinter import messagebox, filedialog
 
 
 from errors import BabelError
-from data.datastore import Resource, Sheet
+from data.datastore import Sheet
 from gui.data_retriever import (get_names, save_data, get_record,
                                 convert4display, delete_data,
                                 create_resource_reader, create_cart)
