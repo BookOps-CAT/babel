@@ -498,20 +498,16 @@ class ImportView(Frame):
 
     def delete_data(self, *args):
         if self.record and self.sheet_name.get():
-            msg = 'Are you sure you want to delete\n{}?'.format(
-                str(self.record))
+            msg = f'Are you sure you want to delete\n"{self.record.name}"?'
             if messagebox.askokcancel('Deletion', msg):
-                mlogger.info('Data for deletion: {}'.format(
-                    str(self.record)))
                 delete_data(self.record)
-
-                mlogger.debug('Data deleted.')
+                mlogger.debug(f'Record deleted: {self.record}')
                 self.reset_template()
                 disable_widgets(self.templateFrm.winfo_children())
                 enable_widgets([self.sheetCbx])
                 self.sheetCbx['state'] = 'readonly'
             else:
-                mlogger.debug('Delection cancelled by user.')
+                pass
 
     def insert_or_update_data(self, *args):
         if self.sheet_name.get() and self.header_row.get() and \
@@ -571,6 +567,8 @@ class ImportView(Frame):
             except BabelError as e:
                 messagebox.showerror('Database Error', e)
 
+            self.generate_preview()
+
     def help(self):
         open_url('https://github.com/BookOps-CAT/babel/wiki/Import')
 
@@ -591,7 +589,7 @@ class ImportView(Frame):
             if fh.rfind('.xlsx') == -1:
                 msg = 'Wrong type of spreadsheet file.\n' \
                       'Only sheets with extention .xlsx are permitted'
-                tkMessageBox.showwarning('File type error', msg)
+                messagebox.showwarning('File type error', msg)
             else:
                 self.fh = fh
                 self.generate_preview()
@@ -696,6 +694,7 @@ class ImportView(Frame):
         self.sheetCbx['values'] = templates
         self.edit_mode = False
         self.sheetCbx['state'] = 'readonly'
+        self.generate_preview()
 
     def reset_template(self):
         self.record = None
