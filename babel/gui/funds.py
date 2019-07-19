@@ -6,7 +6,7 @@ from tkinter import messagebox
 
 from errors import BabelError
 from data.datastore import (Audn, Branch, Fund, Library, MatType)
-from data.fund_transactions import (get_fund_data, update_fund,
+from data.transactions_fund import (get_fund_data, update_fund,
                                     insert_fund)
 from gui.data_retriever import (get_codes, get_names, get_record,
                                 delete_data)

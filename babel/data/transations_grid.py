@@ -127,8 +127,8 @@ def copy_grid_data(grid_record):
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
         mlogger.error(
-            f'Unhandled error in copy grid.'
-            'Traceback: {tb}')
+            'Unhandled error in copy grid.'
+            f'Traceback: {tb}')
         raise BabelError(exc)
 
 

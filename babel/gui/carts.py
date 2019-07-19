@@ -4,16 +4,14 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox, filedialog
 
-from PIL import Image, ImageTk
-
 
 from errors import BabelError
 from data.datastore import Cart, Library, Status
-from gui.data_retriever import (get_record, get_carts_data,
-                                export_orders_to_marc_file)
+from data.transactions_carts import (get_carts_data,
+                                     export_orders_to_marc_file)
+from gui.data_retriever import get_record
 from gui.fonts import RFONT
-from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
-                       enable_widgets, open_url)
+from gui.utils import ToolTip, open_url
 from paths import USER_DATA, MY_DOCS
 from reports.carts import summarize_cart
 
@@ -348,7 +346,11 @@ class CartsView(Frame):
         cart_rec = get_record(Cart, did=self.active_id.get())
         status = get_record(Status, did=cart_rec.status_id)
         if status.name == 'finalized':
-            self.create_to_marc_widget(cart_rec)
+            try:
+                self.create_to_marc_widget(cart_rec)
+            except BabelError as e:
+                messagebox.showerror(
+                    'Saving error', e)
         else:
             msg = f'Cart {cart_rec.name} is not finalized.\n' \
                   'Please change cart status to proceed.'
@@ -384,9 +386,14 @@ class CartsView(Frame):
             self.cartTrv.delete(*self.cartTrv.get_children())
 
             # populate carts tree
-            carts = get_carts_data(
-                self.system.get(), self.profile.get(),
-                self.status_filter.get())
+            try:
+                carts = get_carts_data(
+                    self.system.get(), self.profile.get(),
+                    self.status_filter.get())
+            except BabelError as e:
+                carts = {}
+                messagebox.showerror(
+                    'Retrieval error', e)
 
             self.cart_idx = {}
             for cart_id, cart in carts:

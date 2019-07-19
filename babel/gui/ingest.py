@@ -8,7 +8,7 @@ from tkinter import messagebox, filedialog
 
 from errors import BabelError
 from data.datastore import Sheet
-from data.ingest_transactions import create_cart, create_resource_reader
+from data.transactions_ingest import create_cart, create_resource_reader
 from gui.data_retriever import (get_names, save_data, get_record,
                                 convert4display, delete_data)
 from gui.fonts import RFONT, LFONT
@@ -627,8 +627,8 @@ class ImportView(Frame):
                 _, _, exc_traceback = sys.exc_info()
                 tb = format_traceback(exc, exc_traceback)
                 mlogger.error(
-                    f'Unhandled error while using ResourceDataReader.'
-                    'Traceback: {tb}')
+                    'Unhandled error on ResourceDataReader.'
+                    f'Traceback: {tb}')
 
             frm = Frame(top)
             frm.grid(
