@@ -28,8 +28,6 @@ from data.datastore_worker import (get_column_values, retrieve_record,
 from data.wlo_generator import wlo_pool
 from data.blanket_po_generator import create_blanketPO
 from errors import BabelError
-from gui.utils import get_id_from_index
-from ingest.xlsx import ResourceDataReader
 from marc.marc21 import make_bib
 
 
@@ -50,39 +48,6 @@ def convert4datastore(kwargs):
         if value == '':
             kwargs[key] = None
     return kwargs
-
-
-def create_resource_reader(template_record, sheet_fh):
-    record = template_record
-
-    # convert any empty strings back to None
-    state = inspect(record)
-    for attr in state.attrs:
-        if attr.loaded_value == '':
-            setattr(record, attr.key, None)
-
-    mlogger.debug('Applying following sheet template: {}'.format(record))
-
-    reader = ResourceDataReader(
-        sheet_fh,
-        header_row=record.header_row,
-        title_col=record.title_col,
-        add_title_col=record.add_title_col,
-        author_col=record.author_col,
-        series_col=record.series_col,
-        publisher_col=record.publisher_col,
-        pub_date_col=record.pub_date_col,
-        pub_place_col=record.pub_place_col,
-        summary_col=record.summary_col,
-        isbn_col=record.isbn_col,
-        upc_col=record.upc_col,
-        other_no_col=record.other_no_col,
-        price_list_col=record.price_list_col,
-        price_disc_col=record.price_disc_col,
-        desc_url_col=record.desc_url_col,
-        misc_col=record.misc_col)
-
-    return reader
 
 
 def get_names(model, **kwargs):
@@ -196,64 +161,6 @@ def save_data(model, did=None, **kwargs):
         raise BabelError(e)
 
 
-def create_cart(
-        cart_name, system_id, profile_id,
-        resource_data, progbar):
-
-    with session_scope() as session:
-
-        # create Cart record
-        name_exists = True
-        n = 0
-        while name_exists and n < 10:
-            name_exists = retrieve_record(
-                session, Cart, name=cart_name)
-            if name_exists:
-                n += 1
-                if '(' in cart_name:
-                    end = cart_name.index('(')
-                    cart_name = cart_name[:end]
-                cart_name = f'{cart_name}({n})'
-
-        cart_rec = insert(
-            session, Cart,
-            name=cart_name,
-            created=datetime.now(),
-            updated=datetime.now(),
-            system_id=system_id,
-            user_id=profile_id)
-
-        progbar['value'] += 1
-        progbar.update()
-
-        # create Resource records
-        for d in resource_data:
-            ord_rec = insert(
-                session, Order,
-                cart_id=cart_rec.did)
-
-            insert(
-                session, Resource,
-                order_id=ord_rec.did,
-                title=d.title,
-                add_title=d.add_title,
-                author=d.author,
-                series=d.series,
-                publisher=d.publisher,
-                pub_date=d.pub_date,
-                summary=d.summary,
-                isbn=d.isbn,
-                upc=d.upc,
-                other_no=d.other_no,
-                price_list=d.price_list,
-                price_disc=d.price_disc,
-                desc_url=d.desc_url,
-                misc=d.misc)
-
-            progbar['value'] += 1
-            progbar.update()
-
-
 def delete_data(record):
     with session_scope() as session:
         model = type(record)
@@ -337,8 +244,9 @@ def save_displayed_order_data(tracker_values):
             okwargs = {}
             locations = []
             for l in locs:
-                mlogger.debug('Saving orderLoc data: order_id:{}, loc_id:{}, frm_id:{}'.format(
-                    order['order_id'], l['loc_id'], l['unitFrm'].winfo_id()))
+                mlogger.debug(
+                    'Saving orderLoc data: order_id:{}, loc_id:{}, frm_id:{}'.format(
+                        order['order_id'], l['loc_id'], l['unitFrm'].winfo_id()))
                 lkwargs = {}
                 if l['loc_id'] is not None:
                     lkwargs['did'] = l['loc_id']
@@ -420,7 +328,8 @@ def apply_fund_to_cart(system_id, cart_id, fund_codes):
                         print(audn_match, mat_match)
                         if audn_match and mat_match:
                             # update
-                            mlogger.debug('Full match. Updating OrderLocation.')
+                            mlogger.debug(
+                                'Full match. Updating OrderLocation.')
                             update_record(
                                 session,
                                 OrderLocation,

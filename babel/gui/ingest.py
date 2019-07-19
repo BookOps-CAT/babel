@@ -8,9 +8,9 @@ from tkinter import messagebox, filedialog
 
 from errors import BabelError
 from data.datastore import Sheet
+from data.ingest_transactions import create_cart, create_resource_reader
 from gui.data_retriever import (get_names, save_data, get_record,
-                                convert4display, delete_data,
-                                create_resource_reader, create_cart)
+                                convert4display, delete_data)
 from gui.fonts import RFONT, LFONT
 from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
                        enable_widgets, open_url)
@@ -73,6 +73,15 @@ class ImportView(Frame):
         loadImg = self.app_data['img']['load']
         importImg = self.app_data['img']['import']
 
+        # validation of column comboboxes
+        self.vlcl = (self.register(self.onValidateCol),
+                     '%d', '%i', '%P', '%W')
+        self.vlen = (self.register(self.onValidateName),
+                     '%P')
+        self.vlcn = (self.register(self.onValidateCartName),
+                     '%P')
+
+        # layout
         self.actionFrm = Frame(self)
         self.actionFrm.grid(
             row=0, column=0, sticky='snew', padx=10, pady=10)
@@ -127,12 +136,6 @@ class ImportView(Frame):
         self.templateFrm = LabelFrame(self, text='sheet template')
         self.templateFrm.grid(
             row=0, column=1, sticky='snew', padx=5, pady=10)
-
-        # validation of column comboboxes
-        self.vlcl = (self.register(self.onValidateCol),
-                     '%d', '%i', '%P', '%W')
-        self.vlen = (self.register(self.onValidateName),
-                     '%P')
 
         self.sheetCbx = Combobox(
             self.templateFrm,
@@ -558,7 +561,8 @@ class ImportView(Frame):
                 self.updated.set(
                     f'updated:{kwargs["updated"]:%y-%m-%d %H:%M}')
 
-                self.record = get_record(Sheet, name=self.sheet_name.get().strip())
+                self.record = get_record(
+                    Sheet, name=self.sheet_name.get().strip())
                 self.update_sheet_templates()
                 disable_widgets(self.templateFrm.winfo_children())
                 enable_widgets([self.sheetCbx])
@@ -635,7 +639,7 @@ class ImportView(Frame):
                 frm,
                 font=RFONT,
                 textvariable=cart_name,
-                validate="key", validatecommand=self.vlen)
+                validate="key", validatecommand=self.vlcn)
             nameEnt.grid(
                 row=1, column=0, columnspan=2, sticky='snew')
             Label(frm, text=system).grid(
@@ -675,13 +679,19 @@ class ImportView(Frame):
             data = create_resource_reader(
                 self.record, self.fh)
             try:
-                create_cart(
+                cart_id = create_cart(
                     cart_name, system_id, profile_id, data,
                     progbar)
+
             except BabelError as e:
                 messagebox.showerror('Database Error', e)
             finally:
+                self.reset_template()
                 top_widget.destroy()
+                if cart_id:
+                    # go to cart
+                    self.app_data['active_id'].set(cart_id)
+                    self.controller.show_frame('CartView')
 
     def update_sheet_templates(self):
         if self.profile.get() == 'All users':
@@ -737,6 +747,12 @@ class ImportView(Frame):
     def onValidateName(self, P):
         valid = True
         if len(P) > 50:
+            valid = False
+        return valid
+
+    def onValidateCartName(self, P):
+        valid = self.onValidateName(P)
+        if ('(' in P or ')' in P):
             valid = False
         return valid
 
