@@ -7,7 +7,6 @@ from tkinter import messagebox
 
 from errors import BabelError
 from data.transactions_cart import save_new_dist_and_grid
-from data.transactions_carts import get_carts_data
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status)

@@ -4,11 +4,14 @@ from datetime import datetime, date
 import logging
 import sys
 
+from pandas import read_sql
+
 
 from data.datastore import (session_scope, Audn, Branch, Fund, Order, Lang,
                             Library, MatType, ShelfCode, User, Vendor)
 from data.datastore_worker import (count_records, get_cart_data_view_records,
-                                   retrieve_record, retrieve_records)
+                                   retrieve_record, retrieve_records,
+                                   retrieve_cart_details_view_stmn)
 from errors import BabelError
 from logging_settings import format_traceback
 from marc.marc21 import make_bib
@@ -27,11 +30,12 @@ def get_carts_data(
                 session,
                 system_id, user, status)
             for r in recs:
-                data.append((r.cart_id, (
+                data.append((
+                    r.cart_id,
                     r.cart_name,
                     f'{r.cart_date:%y-%m-%d %H:%M}',
                     r.cart_status,
-                    r.cart_owner)))
+                    r.cart_owner))
         return data
 
     except Exception as exc:
@@ -139,3 +143,35 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
             'Unhandled error on saving to MARC.'
             f'Traceback: {tb}')
         raise BabelError(exc)
+
+
+def get_cart_details_as_dataframe(cart_id):
+    with session_scope() as session:
+        stmn = retrieve_cart_details_view_stmn(cart_id)
+        df = read_sql(stmn, session.bind)
+        return df
+
+
+def get_order_sheet_data(cart_id):
+    data_set = []
+    pass
+    # loops over orders
+        # data.append(bib.venNo)
+        # data.append(bib.isbn)
+        # data.append(bib.title)
+        # data.append(bib.author)
+        # total_cost = 0
+        # total_qty = 0
+        # for related_record in singleOrder.orderSingleLocations:
+        #     total_cost = total_cost + (
+        #         related_record.qty * singleOrder.priceDisc)
+        #     total_qty = total_qty + related_record.qty
+        # total_cost = cents2dollars(total_cost)
+        # data.append(cents2dollars(singleOrder.priceDisc))
+        # data.append(total_qty)
+        # data.append(total_cost)
+        # data.append(singleOrder.oNumber)
+        # data.append(self.blanketPO)
+        # data_set.append(data)
+
+    return data_set

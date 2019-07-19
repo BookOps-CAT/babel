@@ -1,7 +1,7 @@
-import pandas as pd
+# import pandas as pd
 
 
-from gui.data_retriever import get_cart_details_as_dataframe
+from data.transactions_carts import get_cart_details_as_dataframe
 
 
 def summarize_cart(cart_id):
@@ -19,7 +19,7 @@ def summarize_cart(cart_id):
             'damage': fd['damage'].sum(),
             'copies': fd['qty'].sum(),
             'titles': fd.shape[0]}
-        
+
     details['funds'] = funds
     details['langs'] = ','.join(df['lang'].unique().tolist())
     details['vendors'] = ','.join(df['vendor'].unique().tolist())
@@ -27,4 +27,3 @@ def summarize_cart(cart_id):
     details['audns'] = ','.join(df['audn'].unique().tolist())
 
     return details
-

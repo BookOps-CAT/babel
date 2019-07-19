@@ -1,34 +1,32 @@
 """
 Methods to retrieve data from Babel datastore
 """
-from datetime import datetime, date
 from decimal import Decimal
 import logging
+import sys
 
-from pandas import read_sql
 from sqlalchemy.exc import IntegrityError
 
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from sqlalchemy.inspection import inspect
 
 
-from data.datastore import (session_scope, Audn, Branch, Fund, FundAudnJoiner,
-                            FundLibraryJoiner, FundMatTypeJoiner, Lang, Fund,
-                            FundBranchJoiner, Library, MatType, DistGrid,
-                            DistSet, Vendor, ShelfCode, Wlos, User,
-                            GridLocation, Resource, Cart, Order, OrderLocation)
+from data.datastore import (session_scope, Audn, Branch,
+                            Lang, Fund,
+                            MatType,
+                            Vendor, ShelfCode, Wlos,
+                            Resource, Cart, Order, OrderLocation)
 from data.datastore_worker import (get_column_values, retrieve_record,
                                    retrieve_records, insert,
                                    insert_or_ignore, delete_record,
-                                   update_record, get_cart_data_view_records,
+                                   update_record,
                                    retrieve_cart_order_ids, count_records,
                                    retrieve_last_record,
-                                   retrieve_cart_details_view_stmn,
                                    retrieve_unique_vendors_from_cart)
 from data.wlo_generator import wlo_pool
 from data.blanket_po_generator import create_blanketPO
 from errors import BabelError
-
+from logging_settings import format_traceback
 
 mlogger = logging.getLogger('babel_logger')
 
@@ -150,29 +148,54 @@ def create_code_index(model, **kwargs):
 
 def save_data(model, did=None, **kwargs):
     kwargs = convert4datastore(kwargs)
+
     try:
         with session_scope() as session:
             if did:
                 update_record(session, model, did, **kwargs)
             else:
                 insert_or_ignore(session, model, **kwargs)
+
     except IntegrityError as e:
+        mlogger.error(
+            f'DB IntegrityError while saving {model.__name__} '
+            f'record with parameters {kwargs}')
         raise BabelError(e)
 
 
 def delete_data(record):
-    with session_scope() as session:
-        model = type(record)
-        delete_record(session, model, did=record.did)
-    mlogger.debug('Deleted {} record did={}'.format(
-        model.__name__, record.did))
+    try:
+
+        with session_scope() as session:
+            model = type(record)
+            delete_record(session, model, did=record.did)
+        mlogger.debug('Deleted {} record did={}'.format(
+            model.__name__, record.did))
+
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            'Unhandled error cart deletion.'
+            f'Traceback: {tb}')
+        raise BabelError(exc)
 
 
 def delete_data_by_did(model, did):
-    with session_scope() as session:
-        delete_record(session, model, did=did)
-    mlogger.debug('Deleted {} record did={}'.format(
-        model.__name__, did))
+    try:
+
+        with session_scope() as session:
+            delete_record(session, model, did=did)
+        mlogger.debug('Deleted {} record did={}'.format(
+            model.__name__, did))
+
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            'Unhandled error cart deletion.'
+            f'Traceback: {tb}')
+        raise BabelError(exc)
 
 
 def get_ids_for_order_boxes_values(values_dict):
@@ -366,13 +389,6 @@ def apply_globals_to_cart(cart_id, widgets):
                     rec.resource.did,
                     **rkwargs)
                 rkwargs = {}
-
-
-def get_cart_details_as_dataframe(cart_id):
-    with session_scope() as session:
-        stmn = retrieve_cart_details_view_stmn(cart_id)
-        df = read_sql(stmn, session.bind)
-        return df
 
 
 def get_last_wlo():

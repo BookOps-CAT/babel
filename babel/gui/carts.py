@@ -9,7 +9,7 @@ from errors import BabelError
 from data.datastore import Cart, Library, Status
 from data.transactions_carts import (get_carts_data,
                                      export_orders_to_marc_file)
-from gui.data_retriever import get_record
+from gui.data_retriever import get_record, delete_data_by_did
 from gui.fonts import RFONT
 from gui.utils import ToolTip, open_url
 from paths import USER_DATA, MY_DOCS
@@ -40,8 +40,9 @@ class CartsView(Frame):
 
         # local variables
         self.status_filter = StringVar()
-        self.selected_cart = StringVar()
-        self.cart_owner = StringVar()
+        self.selected_cart_id = IntVar()
+        self.selected_cart_name = StringVar()
+        self.selected_cart_owner = StringVar()
 
         # images
         # addImg = self.app_data['img']['add']
@@ -60,18 +61,18 @@ class CartsView(Frame):
         Label(self, text='selected: ').grid(
             row=0, column=0, sticky='snw', padx=10, pady=5)
         self.selcartLbl = Label(
-            self, textvariable=self.selected_cart, font=RFONT)
+            self, textvariable=self.selected_cart_id, font=RFONT)
         self.selcartLbl.grid(
             row=0, column=0, sticky='sne', pady=5)
 
         # carts treeview
         columns = (
-            'cart', 'date', 'status', 'owner')
+            'cart_id', 'cart', 'date', 'status', 'owner')
 
         self.cartTrv = Treeview(
             self,
             columns=columns,
-            displaycolumns=columns,
+            displaycolumns=columns[1:],
             show='headings',
             height=list_height)
 
@@ -190,14 +191,13 @@ class CartsView(Frame):
             row=0, column=0, sticky='nsw')
 
     def view_data(self):
-        self.active_id.set(self.cart_idx[self.selected_cart.get()])
 
         # reset cartdataTxt
         self.cartdataTxt['state'] = 'normal'
         self.cartdataTxt.delete(1.0, END)
 
         # display basic info
-        summary = self.generate_cart_summary(self.active_id.get())
+        summary = self.generate_cart_summary(self.selected_cart_id.get())
         self.cartdataTxt.insert(END, summary)
 
         self.cartdataTxt['state'] = 'disable'
@@ -236,15 +236,23 @@ class CartsView(Frame):
 
     def edit_data(self):
         # figure out profile cart belongs to first
-        self.profile.set(self.cart_owner.get())
-        self.active_id.set(self.cart_idx[self.selected_cart.get()])
+        self.profile.set(self.selected_cart_owner.get())
+        self.active_id.set(self.selected_cart_id.get())
         self.controller.show_frame('CartView')
 
     def copy_data(self):
         pass
 
     def delete_data(self):
-        pass
+        if self.selected_cart_id.get():
+            msg = 'Are you sure you want to delete\n' \
+                f'"{self.selected_cart_name.get()} ' \
+                f'({self.selected_cart_owner.get()})" cart?'
+            if messagebox.askokcancel('Deletion', msg):
+
+                delete_data_by_did(Cart, self.selected_cart_id.get())
+                curItem = self.cartTrv.focus()
+                self.cartTrv.delete(curItem)
 
     def link_ids(self):
         pass
@@ -342,8 +350,7 @@ class CartsView(Frame):
         # top.wait_window()
 
     def create_marc_file(self):
-        self.active_id.set(self.cart_idx[self.selected_cart.get()])
-        cart_rec = get_record(Cart, did=self.active_id.get())
+        cart_rec = get_record(Cart, did=self.selected_cart_id.get())
         status = get_record(Status, did=cart_rec.status_id)
         if status.name == 'finalized':
             try:
@@ -362,8 +369,12 @@ class CartsView(Frame):
     def selectItem(self, a):
         curItem = self.cartTrv.focus()
         try:
-            self.selected_cart.set(self.cartTrv.item(curItem)['values'][0])
-            self.cart_owner.set(self.cartTrv.item(curItem)['values'][3])
+            self.selected_cart_id.set(
+                self.cartTrv.item(curItem)['values'][0])
+            self.selected_cart_name.set(
+                self.cartTrv.item(curItem)['values'][1])
+            self.selected_cart_owner.set(
+                self.cartTrv.item(curItem)['values'][4])
         except IndexError:
             pass
 
@@ -395,11 +406,9 @@ class CartsView(Frame):
                 messagebox.showerror(
                     'Retrieval error', e)
 
-            self.cart_idx = {}
-            for cart_id, cart in carts:
+            for cart in carts:
                 self.cartTrv.insert(
                     '', END, values=cart)
-                self.cart_idx[cart[0]] = cart_id
 
     def createToolTip(self, widget, text):
         toolTip = ToolTip(widget)
