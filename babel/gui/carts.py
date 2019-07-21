@@ -47,10 +47,11 @@ class CartsView(Frame):
         # images
         # addImg = self.app_data['img']['add']
         editImg = self.app_data['img']['edit']
-        deleteImg = self.app_data['img']['delete']
-        # saveImg = self.app_data['img']['save']
+        self.deleteImg = self.app_data['img']['delete']
+        self.saveImg = self.app_data['img']['save']
         helpImg = self.app_data['img']['help']
-        self.viewImg = self.app_data['img']['view']
+        viewImg = self.app_data['img']['view']
+        self.viewImgS = self.app_data['img']['viewS']
         copyImg = self.app_data['img']['copy']
         marcImg = self.app_data['img']['marc']
         sheetImg = self.app_data['img']['sheet']
@@ -61,7 +62,7 @@ class CartsView(Frame):
         Label(self, text='selected: ').grid(
             row=0, column=0, sticky='snw', padx=10, pady=5)
         self.selcartLbl = Label(
-            self, textvariable=self.selected_cart_id, font=RFONT)
+            self, textvariable=self.selected_cart_name, font=RFONT)
         self.selcartLbl.grid(
             row=0, column=0, sticky='sne', pady=5)
 
@@ -106,9 +107,9 @@ class CartsView(Frame):
 
         self.viewBtn = Button(
             self.actionFrm,
-            image=self.viewImg,
+            image=viewImg,
             command=self.view_data)
-        self.viewBtn.image = self.viewImg
+        # self.viewBtn.image = self.viewImg
         self.viewBtn.grid(
             row=1, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.viewBtn, 'view cart')
@@ -117,7 +118,7 @@ class CartsView(Frame):
             self.actionFrm,
             image=editImg,
             command=self.edit_data)
-        self.editBtn.image = editImg
+        # self.editBtn.image = editImg
         self.editBtn.grid(
             row=2, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.editBtn, 'edit cart')
@@ -126,7 +127,7 @@ class CartsView(Frame):
             self.actionFrm,
             image=marcImg,
             command=self.create_marc_file)
-        self.marcBtn.image = marcImg
+        # self.marcBtn.image = marcImg
         self.marcBtn.grid(
             row=3, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.marcBtn, 'create MARC file')
@@ -135,7 +136,7 @@ class CartsView(Frame):
             self.actionFrm,
             image=sheetImg,
             command=self.create_order_sheet)
-        self.sheetBtn.image = sheetImg
+        # self.sheetBtn.image = sheetImg
         self.sheetBtn.grid(
             row=4, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.sheetBtn, 'create order sheet')
@@ -144,7 +145,7 @@ class CartsView(Frame):
             self.actionFrm,
             image=copyImg,
             command=self.copy_data)
-        self.copyBtn.image = copyImg
+        # self.copyBtn.image = copyImg
         self.copyBtn.grid(
             row=5, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.copyBtn, 'copy cart')
@@ -153,16 +154,16 @@ class CartsView(Frame):
             self.actionFrm,
             image=linkImg,
             command=self.link_ids)
-        self.linkBtn.image = linkImg
+        # self.linkBtn.image = linkImg
         self.linkBtn.grid(
             row=6, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.linkBtn, 'link IDs')
 
         self.deleteBtn = Button(
             self.actionFrm,
-            image=deleteImg,
+            image=self.deleteImg,
             command=self.delete_data)
-        self.deleteBtn.image = deleteImg
+        # self.deleteBtn.image = self.deleteImg
         self.deleteBtn.grid(
             row=7, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.deleteBtn, 'delete cart')
@@ -171,7 +172,7 @@ class CartsView(Frame):
             self.actionFrm,
             image=helpImg,
             command=self.help)
-        self.helpBtn.image = helpImg
+        # self.helpBtn.image = helpImg
         self.helpBtn.grid(
             row=8, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
@@ -203,7 +204,7 @@ class CartsView(Frame):
         self.cartdataTxt['state'] = 'disable'
 
     def generate_cart_summary(self, cart_id):
-        cart_rec = get_record(Cart, did=self.active_id.get())
+        cart_rec = get_record(Cart, did=cart_id)
         owner = self.profile_idx[cart_rec.user_id]
         try:
             library = get_record(Library, did=cart_rec.library_id).name
@@ -280,7 +281,7 @@ class CartsView(Frame):
 
         dst_fh = filedialog.asksaveasfilename(
             parent=parent,
-            title='Save to MARC file',
+            title=title,
             filetypes=(('marc file', '*.mrc'),
                        ('sheet file', '*xlsx')),
             initialfile=f'{cart_name}.{extention}',
@@ -302,50 +303,59 @@ class CartsView(Frame):
         frm = Frame(top)
         frm.grid(
             row=0, column=0, sticky='snew', padx=20, pady=20)
-        Label(frm, text='file path:').grid(
-            row=0, column=0, sticky='snew')
+
+        Label(frm, text=f'"{cart_rec.name}" cart').grid(
+            row=0, column=0, columnspan=4, sticky='snew')
         nameEnt = Entry(
             frm,
             justify='right',
-            textvariable=self.dst_fh)
+            textvariable=self.dst_fh,
+            state='readonly',
+            width=60)
         nameEnt.grid(
-            row=1, column=0, columnspan=2, sticky='snew', pady=10)
+            row=1, column=0, columnspan=3, sticky='snew', pady=10)
 
         dstBtn = Button(
             frm,
-            image=self.viewImg,
+            image=self.viewImgS,
             command=lambda: self.ask_for_destination(
                 top, 'Save to MARC file', cart_rec.name))
         dstBtn.grid(
-            row=1, column=2, sticky='snw', padx=5, pady=10)
-
-        statusLbl = Label(
-            frm,
-            textvariable=self.saving_status)
-        statusLbl.grid(
-            row=2, column=0, columnspan=2, sticky='snew', pady=10)
+            row=1, column=4, sticky='snw', padx=5, pady=10)
 
         progbar = Progressbar(
             frm,
             mode='determinate',
             orient=HORIZONTAL,)
         progbar.grid(
-            row=3, column=0, columnspan=3, sticky='snew', pady=10)
+            row=2, column=0, columnspan=4, sticky='snew', pady=5)
+
+        statusLbl = Label(
+            frm,
+            textvariable=self.saving_status)
+        statusLbl.grid(
+            row=3, column=0, columnspan=2, sticky='snew', pady=5)
+
+        btnFrm = Frame(frm)
+        btnFrm.grid(
+            row=4, column=0, columnspan=4, sticky='snew')
+        btnFrm.columnconfigure(0, minsize=100)
 
         okBtn = Button(
-            frm,
-            text='create',
+            btnFrm,
+            image=self.saveImg,
             command=lambda: export_orders_to_marc_file(
                 self.dst_fh.get(), self.saving_status,
                 cart_rec, progbar) if self.dst_fh.get() else None)
         okBtn.grid(
-            row=4, column=0, sticky='snew', padx=25, pady=10)
+            row=4, column=1, sticky='snew', padx=25, pady=10)
+
         cancelBtn = Button(
-            frm,
-            text='close',
+            btnFrm,
+            image=self.deleteImg,
             command=top.destroy)
         cancelBtn.grid(
-            row=4, column=1, sticky='snew', padx=25, pady=10)
+            row=4, column=2, sticky='snew', padx=25, pady=10)
 
         # top.wait_window()
 
@@ -359,8 +369,8 @@ class CartsView(Frame):
                 messagebox.showerror(
                     'Saving error', e)
         else:
-            msg = f'Cart {cart_rec.name} is not finalized.\n' \
-                  'Please change cart status to proceed.'
+            msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
+                'Please change cart status to proceed.'
             messagebox.showwarning('MARC file', msg)
 
     def create_order_sheet(self):

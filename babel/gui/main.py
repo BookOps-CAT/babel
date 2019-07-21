@@ -159,6 +159,8 @@ class Base(Tk):
         copyImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-viewmag-iconM.png')
         viewImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-viewmag-iconS.png')
+        viewImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-floppy-iconM.png')
         marcImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-spreadsheet-iconM.png')
@@ -215,6 +217,7 @@ class Base(Tk):
                 'copy': copyImg,
                 'copyS': copyImgS,
                 'view': viewImg,
+                'viewS': viewImgS,
                 'marc': marcImg,
                 'sheet': sheetImg,
                 'link': linkImg,

@@ -2,6 +2,7 @@
 
 from datetime import datetime, date
 import logging
+import os
 import sys
 
 from pandas import read_sql
@@ -52,6 +53,16 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
     # and easier to maintain
 
     try:
+        progbar['value'] = 0
+
+        # overwrite existing files
+        if os.path.isfile(fh):
+            try:
+                os.remove(fh)
+            except WindowsError as e:
+                raise BabelError(
+                    f'File in use. Error: {e}')
+
         with session_scope() as session:
             rec_count = count_records(session, Order, cart_id=cart_rec.did)
             progbar['maximum'] = rec_count
@@ -134,7 +145,7 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
                 progbar['value'] += 1
                 progbar.update()
 
-        saving_status.set('Cart saved to MARC file successfully.')
+        saving_status.set('Data saved to MARC file successfully.')
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
