@@ -1,4 +1,5 @@
 import logging
+from os import path
 import shelve
 from tkinter import *
 from tkinter.ttk import *
@@ -8,10 +9,12 @@ from tkinter import messagebox, filedialog
 from errors import BabelError
 from data.datastore import Cart, Library, Status
 from data.transactions_carts import (get_carts_data,
-                                     export_orders_to_marc_file)
+                                     export_orders_to_marc_file,
+                                     get_cart_data_for_order_sheet)
 from gui.data_retriever import get_record, delete_data_by_did
 from gui.fonts import RFONT
 from gui.utils import ToolTip, open_url
+from ingest.xlsx import save2spreadsheet
 from paths import USER_DATA, MY_DOCS
 from reports.carts import summarize_cart
 
@@ -264,33 +267,33 @@ class CartsView(Frame):
     def ask_for_destination(self, parent, title, cart_name):
         # retrieve initial directory
         if 'MARC' in title:
-            initialdir = 'marc_out'
+            initialdir_key = 'marc_out'
             extention = 'mrc'
+            file_types = ('marc file', '*.mrc')
         elif 'sheet' in title:
-            initialdir = 'sheet_out'
+            initialdir_key = 'sheet_out'
             extention = 'xlsx'
-        else:
-            initialdir = MY_DOCS
-            extention = 'out'
+            file_types = ('sheet file', '*xlsx')
 
         user_data = shelve.open(USER_DATA)
-        if initialdir in user_data:
-            initialdir = user_data[initialdir]
+        if initialdir_key in user_data:
+            initialdir = user_data[initialdir_key]
         else:
             initialdir = MY_DOCS
 
         dst_fh = filedialog.asksaveasfilename(
             parent=parent,
             title=title,
-            filetypes=(('marc file', '*.mrc'),
-                       ('sheet file', '*xlsx')),
+            filetypes=(file_types, ),
             initialfile=f'{cart_name}.{extention}',
             initialdir=initialdir)
 
         if dst_fh:
-            user_data[initialdir] = initialdir
+            user_data[initialdir_key] = path.dirname(dst_fh)
             user_data.close()
             self.dst_fh.set(dst_fh)
+        else:
+            user_data.close()
 
     def create_to_marc_widget(self, cart_rec):
 
@@ -371,10 +374,97 @@ class CartsView(Frame):
         else:
             msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
                 'Please change cart status to proceed.'
-            messagebox.showwarning('MARC file', msg)
+            messagebox.showwarning('Output to MARC file', msg)
+
+    def create_to_sheet_widget(self, cart_rec, system, cart_data):
+
+        top = Toplevel()
+        top.title('Saving to spreadsheet')
+
+        self.dst_fh = StringVar()
+        self.saving_status = StringVar()
+
+        frm = Frame(top)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=20, pady=20)
+
+        Label(frm, text=f'"{cart_rec.name}" cart').grid(
+            row=0, column=0, columnspan=4, sticky='snew')
+        nameEnt = Entry(
+            frm,
+            justify='right',
+            textvariable=self.dst_fh,
+            state='readonly',
+            width=60)
+        nameEnt.grid(
+            row=1, column=0, columnspan=3, sticky='snew', pady=10)
+
+        dstBtn = Button(
+            frm,
+            image=self.viewImgS,
+            command=lambda: self.ask_for_destination(
+                top, 'Save to spreadsheet', cart_rec.name))
+        dstBtn.grid(
+            row=1, column=4, sticky='snw', padx=5, pady=10)
+
+        statusLbl = Label(
+            frm,
+            textvariable=self.saving_status)
+        statusLbl.grid(
+            row=2, column=0, columnspan=2, sticky='snew', pady=5)
+
+        btnFrm = Frame(frm)
+        btnFrm.grid(
+            row=4, column=0, columnspan=4, sticky='snew')
+        btnFrm.columnconfigure(0, minsize=100)
+
+        okBtn = Button(
+            btnFrm,
+            image=self.saveImg,
+            command=lambda: save2spreadsheet(
+                self.dst_fh.get(), self.saving_status,
+                system, cart_data) if self.dst_fh.get() else None)
+        okBtn.grid(
+            row=4, column=1, sticky='snew', padx=25, pady=10)
+
+        cancelBtn = Button(
+            btnFrm,
+            image=self.deleteImg,
+            command=top.destroy)
+        cancelBtn.grid(
+            row=4, column=2, sticky='snew', padx=25, pady=10)
 
     def create_order_sheet(self):
-        pass
+        cart_rec = get_record(Cart, did=self.selected_cart_id.get())
+        status = get_record(Status, did=cart_rec.status_id)
+
+        if cart_rec.system_id == 1:
+            systemLbl = 'Brooklyn Public Library'
+        else:
+            systemLbl = 'New York Public Library'
+
+        if status.name == 'finalized':
+
+            cart_data = []
+            try:
+                cart_data = get_cart_data_for_order_sheet(
+                    self.selected_cart_id.get())
+            except BabelError as e:
+                messagebox.showerror(
+                    'Retrieval Error',
+                    'Unable to retrieve records from database.\n'
+                    f'Error: {e}')
+
+            if cart_data:
+                try:
+                    self.create_to_sheet_widget(cart_rec, systemLbl, cart_data)
+                except BabelError as e:
+                    messagebox.showerror(
+                        'Saving error', e)
+        else:
+            msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
+                'Please change cart status to proceed.'
+            messagebox.showwarning('Output to spreadsheet', msg)
 
     def selectItem(self, a):
         curItem = self.cartTrv.focus()

@@ -228,87 +228,85 @@ class ResourceDataReader:
             return None
 
 
-def create_order(fname, library, data):
-    red_font = Font(color='CC0000')
-    order_wb = Workbook()
-    order_ws = order_wb.active
-    address_line1 = f'BookOps {library}'
-    address_line2 = '31-11 Thomson Avenue'
-    address_line3 = 'Long Island City, NY 11101'
-
-    # set columns width
-    order_ws.column_dimensions['A'].width = 4
-    order_ws.column_dimensions['C'].width = 16
-    order_ws.column_dimensions['D'].width = 25
-    order_ws.column_dimensions['E'].width = 20
-    order_ws.column_dimensions['F'].width = 9
-    order_ws.column_dimensions['G'].width = 8
-    order_ws.column_dimensions['H'].width = 10
-    order_ws.column_dimensions['I'].width = 12
-    order_ws.column_dimensions['J'].width = 18
-
-    order_ws.cell(row=2, column=1).value = address_line1
-    order_ws.cell(row=2, column=1).font = FONT_BOLD
-    order_ws.cell(row=3, column=1).value = address_line2
-    order_ws.cell(row=3, column=1).font = FONT_BOLD
-    order_ws.cell(row=4, column=1).value = address_line3
-    order_ws.cell(row=4, column=1).font = FONT_BOLD
-
-    # headers
-    order_ws.cell(row=6, column=1).value = '#'
-    order_ws.cell(row=6, column=1).fill = FILL_GRAY
-    order_ws.cell(row=6, column=2).value = 'SKU'
-    order_ws.cell(row=6, column=2).fill = FILL_GRAY
-    order_ws.cell(row=6, column=3).value = 'ISBN'
-    order_ws.cell(row=6, column=3).fill = FILL_GRAY
-    order_ws.cell(row=6, column=4).value = 'Title'
-    order_ws.cell(row=6, column=4).fill = FILL_GRAY
-    order_ws.cell(row=6, column=5).value = 'Author'
-    order_ws.cell(row=6, column=5).fill = FILL_GRAY
-    order_ws.cell(row=6, column=6).value = 'Unit Price'
-    order_ws.cell(row=6, column=6).fill = FILL_GRAY
-    order_ws.cell(row=6, column=7).value = 'Copies'
-    order_ws.cell(row=6, column=7).fill = FILL_GRAY
-    order_ws.cell(row=6, column=8).value = 'Total Price'
-    order_ws.cell(row=6, column=8).fill = FILL_GRAY
-    order_ws.cell(row=6, column=9).value = 'o Number'
-    order_ws.cell(row=6, column=9).fill = FILL_GRAY
-    order_ws.cell(row=6, column=10).value = 'blanket PO'
-    order_ws.cell(row=6, column=10).fill = FILL_GRAY
-
-    r = 1
-    for title in data:
-        row = []
-        row.append(r)
-        row.extend(title)
-        order_ws.append(row)
-        order_ws.cell(row=6 + r, column=9).font = red_font
-        order_ws.cell(row=6 + r, column=10).font = red_font
-        r += 1
-    last_r = 6 + r
-    order_ws.cell(row=last_r + 2, column=3).value = 'total copies='
-    order_ws.cell(row=last_r + 2, column=3).fill = FILL_GRAY
-    order_ws.cell(row=last_r + 2, column=4).value = \
-        '=SUM(G7:G' + str(last_r) + ')'
-    order_ws.cell(row=last_r + 2, column=4).fill = FILL_GRAY
-    order_ws.cell(row=last_r + 3, column=3).value = 'total cost='
-    order_ws.cell(row=last_r + 3, column=3).fill = FILL_GRAY
-    order_ws.cell(row=last_r + 3, column=4).value = \
-        '=SUM(H7:H' + str(last_r) + ')'
-    order_ws.cell(row=last_r + 3, column=4).fill = FILL_GRAY
-
-    # determine if new file name needed
-    n = 0
-    fh = fname + '.xlsx'
-    while os.path.isfile(fh):
-        n += 1
-        fh = fname + '(' + str(n) + ')' + '.xlsx'
-    else:
-        filehandle = fh
-
+def save2spreadsheet(fh, saving_status, system, data):
     try:
-        order_wb.save(filename=filehandle)
-        return filehandle
+        if os.path.isfile(fh):
+            os.remove(fh)
+
+        red_font = Font(color='CC0000')
+        order_wb = Workbook()
+        order_ws = order_wb.active
+        address_line1 = f'BookOps {system}'
+        address_line2 = '31-11 Thomson Avenue'
+        address_line3 = 'Long Island City, NY 11101'
+
+        # set columns width
+        order_ws.column_dimensions['A'].width = 4
+        order_ws.column_dimensions['C'].width = 16
+        order_ws.column_dimensions['D'].width = 25
+        order_ws.column_dimensions['E'].width = 20
+        order_ws.column_dimensions['F'].width = 9
+        order_ws.column_dimensions['G'].width = 8
+        order_ws.column_dimensions['H'].width = 10
+        order_ws.column_dimensions['I'].width = 12
+        order_ws.column_dimensions['J'].width = 18
+
+        order_ws.cell(row=2, column=1).value = address_line1
+        order_ws.cell(row=2, column=1).font = FONT_BOLD
+        order_ws.cell(row=3, column=1).value = address_line2
+        order_ws.cell(row=3, column=1).font = FONT_BOLD
+        order_ws.cell(row=4, column=1).value = address_line3
+        order_ws.cell(row=4, column=1).font = FONT_BOLD
+
+        # headers
+        order_ws.cell(row=6, column=1).value = '#'
+        order_ws.cell(row=6, column=1).fill = FILL_GRAY
+        order_ws.cell(row=6, column=2).value = 'SKU'
+        order_ws.cell(row=6, column=2).fill = FILL_GRAY
+        order_ws.cell(row=6, column=3).value = 'ISBN'
+        order_ws.cell(row=6, column=3).fill = FILL_GRAY
+        order_ws.cell(row=6, column=4).value = 'Title'
+        order_ws.cell(row=6, column=4).fill = FILL_GRAY
+        order_ws.cell(row=6, column=5).value = 'Author'
+        order_ws.cell(row=6, column=5).fill = FILL_GRAY
+        order_ws.cell(row=6, column=6).value = 'Unit Price'
+        order_ws.cell(row=6, column=6).fill = FILL_GRAY
+        order_ws.cell(row=6, column=7).value = 'Copies'
+        order_ws.cell(row=6, column=7).fill = FILL_GRAY
+        order_ws.cell(row=6, column=8).value = 'Total Price'
+        order_ws.cell(row=6, column=8).fill = FILL_GRAY
+        order_ws.cell(row=6, column=9).value = 'o Number'
+        order_ws.cell(row=6, column=9).fill = FILL_GRAY
+        order_ws.cell(row=6, column=10).value = 'blanket PO'
+        order_ws.cell(row=6, column=10).fill = FILL_GRAY
+
+        r = 1
+        for title in data:
+            row = []
+            row.append(r)
+            row.extend(title)
+            order_ws.append(row)
+            order_ws.cell(row=6 + r, column=9).font = red_font
+            order_ws.cell(row=6 + r, column=10).font = red_font
+            r += 1
+        last_r = 6 + r
+        order_ws.cell(row=last_r + 2, column=3).value = 'total copies='
+        order_ws.cell(row=last_r + 2, column=3).fill = FILL_GRAY
+        order_ws.cell(row=last_r + 2, column=4).value = \
+            '=SUM(G7:G' + str(last_r) + ')'
+        order_ws.cell(row=last_r + 2, column=4).fill = FILL_GRAY
+        order_ws.cell(row=last_r + 3, column=3).value = 'total cost='
+        order_ws.cell(row=last_r + 3, column=3).fill = FILL_GRAY
+        order_ws.cell(row=last_r + 3, column=4).value = \
+            '=SUM(H7:H' + str(last_r) + ')'
+        order_ws.cell(row=last_r + 3, column=4).fill = FILL_GRAY
+
+        order_wb.save(filename=fh)
+        saving_status.set('Data saved to spreadsheet successfuly.')
+
+    except WindowsError as e:
+        raise BabelError(e)
+
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)

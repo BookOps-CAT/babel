@@ -8,8 +8,8 @@ import sys
 from pandas import read_sql
 
 
-from data.datastore import (session_scope, Audn, Branch, Fund, Order, Lang,
-                            Library, MatType, ShelfCode, User, Vendor)
+from data.datastore import (session_scope, Audn, Branch, Cart, Fund, Order,
+                            Lang, Library, MatType, ShelfCode, User, Vendor)
 from data.datastore_worker import (count_records, get_cart_data_view_records,
                                    retrieve_record, retrieve_records,
                                    retrieve_cart_details_view_stmn)
@@ -163,26 +163,37 @@ def get_cart_details_as_dataframe(cart_id):
         return df
 
 
-def get_order_sheet_data(cart_id):
-    data_set = []
-    pass
-    # loops over orders
-        # data.append(bib.venNo)
-        # data.append(bib.isbn)
-        # data.append(bib.title)
-        # data.append(bib.author)
-        # total_cost = 0
-        # total_qty = 0
-        # for related_record in singleOrder.orderSingleLocations:
-        #     total_cost = total_cost + (
-        #         related_record.qty * singleOrder.priceDisc)
-        #     total_qty = total_qty + related_record.qty
-        # total_cost = cents2dollars(total_cost)
-        # data.append(cents2dollars(singleOrder.priceDisc))
-        # data.append(total_qty)
-        # data.append(total_cost)
-        # data.append(singleOrder.oNumber)
-        # data.append(self.blanketPO)
-        # data_set.append(data)
+def get_cart_data_for_order_sheet(cart_id):
+    try:
+        data_set = []
+        with session_scope() as session:
+            cart_rec = retrieve_record(session, Cart, did=cart_id)
+            order_recs = retrieve_records(session, Order, cart_id=cart_id)
+            for rec in order_recs:
+                data = []
+                data.append(rec.resource.other_no)
+                data.append(rec.resource.isbn)
+                data.append(rec.resource.title)
+                data.append(rec.resource.author)
+                total_cost = 0
+                total_qty = 0
+                for loc in rec.locations:
+                    total_cost += loc.qty * rec.resource.price_disc
+                    total_qty += loc.qty
+                data.append(f'{rec.resource.price_disc:.2f}')
+                data.append(total_qty)
+                data.append(total_cost)
+                data.append(rec.oid)
+                data.append(cart_rec.blanketPO)
+                data_set.append(data)
+            session.expunge_all()
 
-    return data_set
+        return data_set
+
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            'Unhandled error on saving to MARC.'
+            f'Traceback: {tb}')
+        raise BabelError(exc)
