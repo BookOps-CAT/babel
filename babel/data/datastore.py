@@ -368,7 +368,7 @@ class Cart(Base):
     did = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
     created = Column(DateTime, nullable=False, default=datetime.now())
-    updated = Column(DateTime, nullable=False)
+    updated = Column(DateTime, nullable=False, default=datetime.now())
     status_id = Column(
         Integer, ForeignKey('status.did'), nullable=False,
         default=1)

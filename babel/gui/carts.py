@@ -8,9 +8,10 @@ from tkinter import messagebox, filedialog
 
 from errors import BabelError
 from data.datastore import Cart, Library, Status
-from data.transactions_carts import (get_carts_data,
+from data.transactions_carts import (create_cart_copy,
                                      export_orders_to_marc_file,
-                                     get_cart_data_for_order_sheet)
+                                     get_cart_data_for_order_sheet,
+                                     get_carts_data)
 from gui.data_retriever import get_record, delete_data_by_did
 from gui.fonts import RFONT
 from gui.utils import ToolTip, open_url
@@ -20,6 +21,114 @@ from reports.carts import summarize_cart
 
 
 mlogger = logging.getLogger('babel_logger')
+
+
+class CopyCartWidget:
+    """
+    Widget for copying entire cart
+    """
+    def __init__(self, parent, source_cart_id,
+                 source_cart_name, **app_data):
+        self.parent = parent
+        self.source_cart_id = source_cart_id
+        self.source_cart_name = source_cart_name
+        self.app_data = app_data
+        self.profile_idx = self.app_data['profile_idx']
+
+        top = self.top = Toplevel(master=self.parent)
+        top.title('Copy cart')
+
+        # variables
+        self.system = StringVar()
+        self.profile = StringVar()
+        self.profiles = sorted(self.profile_idx.values())
+        self.new_cart_name = StringVar()
+        self.status = StringVar()
+
+        # icons
+        saveImg = self.app_data['img']['save']
+        closeImg = self.app_data['img']['delete']
+
+        # register cart name validator
+        self.vlcn = (top.register(self.onValidateCartName),
+                     '%P')
+
+        frm = Frame(top)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=20, pady=20)
+
+        Label(frm, text=f'Copying "{self.source_cart_name}"').grid(
+            row=0, column=0, columnspan=4, padx=10, pady=10, sticky='snew')
+
+        Label(frm, text='system:').grid(
+            row=1, column=0, sticky='snw', padx=10, pady=5)
+        systemCbx = Combobox(
+            frm,
+            font=RFONT,
+            values=['NYPL', 'BPL'],
+            state='readonly',
+            textvariable=self.system)
+        systemCbx.grid(
+            row=2, column=0, sticky='snew', padx=10, pady=5)
+
+        Label(frm, text='profile:').grid(
+            row=1, column=1, sticky='snw', padx=10, pady=5)
+        profileCbx = Combobox(
+            frm,
+            font=RFONT,
+            values=self.profiles,
+            state='readonly',
+            textvariable=self.profile)
+        profileCbx.grid(
+            row=2, column=1, sticky='snew', padx=10, pady=5)
+
+        Label(frm, text='new cart name:').grid(
+            row=3, column=0, columnspan=2, sticky='snw', padx=10, pady=5)
+        cart_nameEnt = Entry(
+            frm,
+            font=RFONT,
+            textvariable=self.new_cart_name,
+            validate="key", validatecommand=self.vlcn)
+        cart_nameEnt.grid(
+            row=4, column=0, columnspan=2, sticky='snew', padx=10, pady=10)
+
+        statusLbl = Label(
+            frm,
+            textvariable=self.status)
+        statusLbl.grid(
+            row=5, column=0, columnspan=2, sticky='snew', padx=10, pady=5)
+
+        okBtn = Button(
+            frm,
+            image=saveImg,
+            command=self.create_copy)
+        okBtn.grid(
+            row=6, column=0, sticky='sne', padx=25, pady=10)
+
+        cancelBtn = Button(
+            frm,
+            image=closeImg,
+            command=top.destroy)
+        cancelBtn.grid(
+            row=6, column=1, sticky='snw', padx=25, pady=10)
+
+    def create_copy(self):
+        try:
+            create_cart_copy(
+                self.source_cart_id, self.system.get(),
+                self.profile.get(), self.profile_idx,
+                self.new_cart_name.get(), self.status)
+        except BabelError as e:
+            messagebox.showerror('Copying Error', e)
+
+    def onValidateCartName(self, P):
+        valid = True
+        if len(P) > 50:
+            valid = False
+        if ('(' in P or ')' in P):
+            valid = False
+
+        return valid
 
 
 class CartsView(Frame):
@@ -245,7 +354,12 @@ class CartsView(Frame):
         self.controller.show_frame('CartView')
 
     def copy_data(self):
-        pass
+
+        ccw = CopyCartWidget(
+            self, self.selected_cart_id.get(),
+            self.selected_cart_name.get(), **self.app_data)
+        self.wait_window(ccw.top)
+        self.observer()
 
     def delete_data(self):
         if self.selected_cart_id.get():

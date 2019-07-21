@@ -617,10 +617,10 @@ class ImportView(Frame):
                 self.profile.get(), self.profile_idx)
 
             # calculate number of resources
-            c = 0
-            data = create_resource_reader(
-                self.record, self.fh)
             try:
+                c = 0
+                data = create_resource_reader(
+                    self.record, self.fh)
                 for d in data:
                     c += 1
             except Exception as exc:

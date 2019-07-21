@@ -9,12 +9,15 @@ from pandas import read_sql
 
 
 from data.datastore import (session_scope, Audn, Branch, Cart, Fund, Order,
-                            Lang, Library, MatType, ShelfCode, User, Vendor)
+                            OrderLocation, Lang, Library, MatType, Resource,
+                            ShelfCode, User, Vendor)
 from data.datastore_worker import (count_records, get_cart_data_view_records,
+                                   insert,
                                    retrieve_record, retrieve_records,
                                    retrieve_cart_details_view_stmn)
 from errors import BabelError
 from logging_settings import format_traceback
+from gui.utils import get_id_from_index
 from marc.marc21 import make_bib
 
 
@@ -189,6 +192,125 @@ def get_cart_data_for_order_sheet(cart_id):
             session.expunge_all()
 
         return data_set
+
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            'Unhandled error on saving to MARC.'
+            f'Traceback: {tb}')
+        raise BabelError(exc)
+
+
+def create_cart_copy(
+        cart_id, system, user, profile_idx,
+        cart_name, status):
+    """
+    Creates a copy of a cart
+    args:
+        cart_id: int, datastore cart did
+        system: str, NYPL or BPL
+        user: str, profile/user name
+        profile_idx: dict, dictionary of user_id (key) and names
+        cart_name: str, new cart name
+        status: tkinter StringVar
+    """
+    valid = True
+    if not cart_id:
+        valid = False
+        status.set('Invalid cart id')
+    elif not system:
+        valid = False
+        status.set('Failed. Missing system parameter.')
+    elif not user:
+        valid = False
+        status.set('Failed. Missing profile prameter.')
+    elif not cart_name:
+        valid = False
+        status.set('Failed. Missing new cart name.')
+
+    try:
+        with session_scope() as session:
+            if cart_id and system and user and cart_name:
+                # verify name/user not used:
+                if system == 'BPL':
+                    system_id = 1
+                elif system == 'NYPL':
+                    system_id = 2
+
+                rec = retrieve_record(
+                    session, Cart,
+                    system_id=system_id,
+                    user_id=get_id_from_index(
+                        user, profile_idx),
+                    name=cart_name)
+                if rec:
+                    valid = False
+                    status.set(
+                        'Failed. A cart with the same name'
+                        'already exists.\nPlease change the name.')
+            if valid:
+                # create copy of the original cart
+                old_cart = retrieve_record(
+                    session,
+                    Cart,
+                    did=cart_id)
+
+                old_orders = retrieve_records(
+                    session,
+                    Order,
+                    cart_id=cart_id)
+
+                new_orders = []
+                for order in old_orders:
+
+                    resource = Resource(
+                        title=order.resource.title,
+                        add_title=order.resource.add_title,
+                        author=order.resource.author,
+                        series=order.resource.series,
+                        publisher=order.resource.publisher,
+                        pub_place=order.resource.pub_place,
+                        summary=order.resource.summary,
+                        isbn=order.resource.isbn,
+                        upc=order.resource.upc,
+                        other_no=order.resource.other_no,
+                        price_list=order.resource.price_list,
+                        price_disc=order.resource.price_disc,
+                        desc_url=order.resource.desc_url,
+                        misc=order.resource.misc)
+
+                    locations = []
+                    for loc in order.locations:
+                        locations.append(
+                            OrderLocation(
+                                branch_id=loc.branch_id,
+                                shelfcode_id=loc.shelfcode_id,
+                                qty=loc.qty,
+                                fund_id=loc.fund_id))
+
+                    new_orders.append(
+                        Order(
+                            lang_id=order.lang_id,
+                            audn_id=order.audn_id,
+                            vendor_id=order.vendor_id,
+                            matType_id=order.matType_id,
+                            poPerLine=order.poPerLine,
+                            note=order.note,
+                            comment=order.comment,
+                            resource=resource,
+                            locations=locations))
+
+                new_cart = insert(
+                    session,
+                    Cart,
+                    name=cart_name,
+                    user_id=get_id_from_index(
+                        user, profile_idx),
+                    system_id=system_id,
+                    orders=new_orders)
+
+                status.set('Cart copied successfully.')
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
