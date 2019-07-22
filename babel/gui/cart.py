@@ -8,8 +8,9 @@ from tkinter import messagebox
 from errors import BabelError
 from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     assign_blanketPO_to_cart,
-                                    assign_wlo_to_cart,
-                                    get_last_cart, save_displayed_order_data,
+                                    assign_wlo_to_cart, get_last_cart,
+                                    get_orders_by_id,
+                                    save_displayed_order_data,
                                     save_new_dist_and_grid)
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
@@ -18,7 +19,7 @@ from gui.carts import CopyCartWidget
 from gui.data_retriever import (get_names, save_data, get_record,
                                 get_records, convert4display,
                                 delete_data, delete_data_by_did,
-                                get_codes, get_orders_by_id,
+                                get_codes,
                                 get_order_ids, create_code_index,
                                 create_name_index)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
@@ -459,7 +460,7 @@ class CartView(Frame):
                 self.libCbx['state'] = 'disable'
                 self.statusCbx['state'] = 'disable'
 
-        except BabelError:
+        except BabelError as e:
             messagebox.showerror('Database error', e)
 
     def show_fund_widget(self):

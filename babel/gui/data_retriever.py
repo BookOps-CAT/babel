@@ -1,7 +1,6 @@
 """
 Methods to retrieve data from Babel datastore
 """
-from decimal import Decimal
 import logging
 import sys
 
@@ -11,20 +10,13 @@ from sqlalchemy.orm.exc import UnmappedInstanceError
 from sqlalchemy.inspection import inspect
 
 
-from data.datastore import (session_scope, Audn, Branch,
-                            Lang, Fund,
-                            MatType,
-                            Vendor, ShelfCode, Wlos,
-                            Resource, Cart, Order, OrderLocation)
+from data.datastore import session_scope
 from data.datastore_worker import (get_column_values, retrieve_record,
-                                   retrieve_records, insert,
+                                   retrieve_records,
                                    insert_or_ignore, delete_record,
                                    update_record,
-                                   retrieve_cart_order_ids, count_records,
-                                   retrieve_last_record,
-                                   retrieve_unique_vendors_from_cart)
-from data.wlo_generator import wlo_pool
-from data.blanket_po_generator import create_blanketPO
+                                   retrieve_cart_order_ids)
+
 from errors import BabelError
 from logging_settings import format_traceback
 
@@ -93,17 +85,6 @@ def get_order_ids(cart_id):
         for i in order_ids:
             ids.append(i[0])
     return ids
-
-
-def get_orders_by_id(order_ids=[]):
-    orders = []
-    with session_scope() as session:
-        for did in order_ids:
-            instance = retrieve_record(session, Order, did=did)
-            if instance:
-                orders.append(instance)
-        session.expunge_all()
-    return orders
 
 
 def create_name_index(model, **kwargs):

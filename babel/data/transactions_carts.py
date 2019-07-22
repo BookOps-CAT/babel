@@ -251,11 +251,6 @@ def create_cart_copy(
                         'already exists.\nPlease change the name.')
             if valid:
                 # create copy of the original cart
-                old_cart = retrieve_record(
-                    session,
-                    Cart,
-                    did=cart_id)
-
                 old_orders = retrieve_records(
                     session,
                     Order,
@@ -301,7 +296,7 @@ def create_cart_copy(
                             resource=resource,
                             locations=locations))
 
-                new_cart = insert(
+                insert(
                     session,
                     Cart,
                     name=cart_name,
@@ -319,3 +314,7 @@ def create_cart_copy(
             'Unhandled error on cart copy.'
             f'Traceback: {tb}')
         raise BabelError(exc)
+
+
+def add_sierra_ids_to_orders(source_fh):
+    pass

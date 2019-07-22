@@ -10,4 +10,3 @@ def create_blanketPO(vendor_codes=[], sequence=0):
         date_today = date.strftime(date.today(), '%Y%m%d')
         codes = '-'.join(vendor_codes)
         return f'{codes}-{date_today}-{sequence}'
-

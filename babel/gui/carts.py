@@ -14,7 +14,7 @@ from data.transactions_carts import (create_cart_copy,
                                      get_carts_data)
 from gui.data_retriever import get_record, delete_data_by_did
 from gui.fonts import RFONT
-from gui.utils import ToolTip, open_url
+from gui.utils import BusyManager, ToolTip, open_url
 from ingest.xlsx import save2spreadsheet
 from paths import USER_DATA, MY_DOCS
 from reports.carts import summarize_cart
@@ -27,6 +27,7 @@ class CopyCartWidget:
     """
     Widget for copying entire cart
     """
+
     def __init__(self, parent, source_cart_id,
                  source_cart_name, **app_data):
         self.parent = parent
@@ -37,6 +38,7 @@ class CopyCartWidget:
 
         top = self.top = Toplevel(master=self.parent)
         top.title('Copy cart')
+        self.cur_manager = BusyManager(self.top)
 
         # variables
         self.system = StringVar()
@@ -114,11 +116,14 @@ class CopyCartWidget:
 
     def create_copy(self):
         try:
+            self.cur_manager.busy()
             create_cart_copy(
                 self.source_cart_id, self.system.get(),
                 self.profile.get(), self.profile_idx,
                 self.new_cart_name.get(), self.status)
+            self.cur_manager.notbusy()
         except BabelError as e:
+            self.cur_manager.notbusy()
             messagebox.showerror('Copying Error', e)
 
     def onValidateCartName(self, P):
@@ -149,6 +154,7 @@ class CartsView(Frame):
         self.profile.trace('w', self.observer)
         self.profile_idx = app_data['profile_idx']
         self.active_id = app_data['active_id']
+        self.cur_manager = BusyManager(self)
 
         # local variables
         self.status_filter = StringVar()
@@ -304,7 +310,7 @@ class CartsView(Frame):
             row=0, column=0, sticky='nsw')
 
     def view_data(self):
-
+        self.cur_manager.busy()
         # reset cartdataTxt
         self.cartdataTxt['state'] = 'normal'
         self.cartdataTxt.delete(1.0, END)
@@ -314,6 +320,7 @@ class CartsView(Frame):
         self.cartdataTxt.insert(END, summary)
 
         self.cartdataTxt['state'] = 'disable'
+        self.cur_manager.notbusy()
 
     def generate_cart_summary(self, cart_id):
         cart_rec = get_record(Cart, did=cart_id)
@@ -343,7 +350,9 @@ class CartsView(Frame):
 
         lines.append(f'funds:')
         for fund, values in details["funds"].items():
-            lines.append(f'\t{fund}: ${values["damage"]:.2f}, copies: {values["copies"]}, titles: {values["titles"]}')
+            lines.append(
+                f'\t{fund}: ${values["damage"]:.2f}, '
+                f'copies: {values["copies"]}, titles: {values["titles"]}')
 
         return '\n'.join(lines)
 
@@ -354,7 +363,6 @@ class CartsView(Frame):
         self.controller.show_frame('CartView')
 
     def copy_data(self):
-
         ccw = CopyCartWidget(
             self, self.selected_cart_id.get(),
             self.selected_cart_name.get(), **self.app_data)
@@ -367,13 +375,27 @@ class CartsView(Frame):
                 f'"{self.selected_cart_name.get()} ' \
                 f'({self.selected_cart_owner.get()})" cart?'
             if messagebox.askokcancel('Deletion', msg):
-
+                self.cur_manager.busy()
                 delete_data_by_did(Cart, self.selected_cart_id.get())
                 curItem = self.cartTrv.focus()
                 self.cartTrv.delete(curItem)
+                self.cur_manager.notbusy()
 
     def link_ids(self):
-        pass
+        cart_rec = get_record(Cart, did=self.selected_cart_id.get())
+        status = get_record(Status, did=cart_rec.status_id)
+        if status.name == 'finalized':
+            source_fh = self.ask_for_source()
+            try:
+                add_sierra_ids_to_orders(source_fh)
+            except BabelError as e:
+                messagebox.showerror(
+                    'Sierra IDs Error',
+                    f'Unable to link Sierra IDs. Error: {e}')
+        else:
+            msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
+                'Please change cart status to proceed.'
+            messagebox.showwarning('Linking to Sierra IDs', msg)
 
     def help(self):
         open_url('https://github.com/BookOps-CAT/babel/wiki/Carts')
@@ -408,6 +430,18 @@ class CartsView(Frame):
             self.dst_fh.set(dst_fh)
         else:
             user_data.close()
+
+    def ask_for_source(self):
+        user_data = shelve.open(USER_DATA)
+        if 'ids_dir' in user_data:
+            initialdir = user_data['ids_dir']
+        else:
+            initialdir = MY_DOCS
+        source_fh = filedialog.askopenfilename(initialdir=initialdir)
+        if source_fh:
+            user_data['ids_dir'] = path.dirname(source_fh)
+        user_data.close()
+        return source_fh
 
     def create_to_marc_widget(self, cart_rec):
 
@@ -473,8 +507,6 @@ class CartsView(Frame):
             command=top.destroy)
         cancelBtn.grid(
             row=4, column=2, sticky='snew', padx=25, pady=10)
-
-        # top.wait_window()
 
     def create_marc_file(self):
         cart_rec = get_record(Cart, did=self.selected_cart_id.get())

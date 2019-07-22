@@ -1,11 +1,22 @@
+from decimal import Decimal
 import logging
+import sys
+
+from sqlalchemy.exc import IntegrityError
 
 
 from errors import BabelError
-from data.datastore import (session_scope, Cart, DistSet, DistGrid,
-                            GridLocation)
-from data.datastore_worker import (insert_or_ignore, insert, update_record,
-                                   retrieve_last_record, retrieve_record)
+from data.blanket_po_generator import create_blanketPO
+from data.datastore import (session_scope, Audn, Branch, Cart, DistSet,
+                            DistGrid, Fund, GridLocation, Lang, MatType,
+                            Order, OrderLocation, Resource, ShelfCode, Vendor,
+                            Wlos)
+from data.datastore_worker import (count_records, insert_or_ignore, insert,
+                                   retrieve_last_record, retrieve_record,
+                                   retrieve_unique_vendors_from_cart,
+                                   retrieve_records, update_record)
+from data.wlo_generator import wlo_pool
+from gui.data_retriever import (get_record, get_records)
 from gui.utils import get_id_from_index
 from logging_settings import format_traceback
 
@@ -105,6 +116,17 @@ def get_last_cart():
             session, Cart)
         session.expunge_all()
         return cart_rec
+
+
+def get_orders_by_id(order_ids=[]):
+    orders = []
+    with session_scope() as session:
+        for did in order_ids:
+            instance = retrieve_record(session, Order, did=did)
+            if instance:
+                orders.append(instance)
+        session.expunge_all()
+    return orders
 
 
 def get_ids_for_order_boxes_values(values_dict):
