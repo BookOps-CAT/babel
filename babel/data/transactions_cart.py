@@ -2,9 +2,10 @@ import logging
 
 
 from errors import BabelError
-from data.datastore import session_scope, DistSet, DistGrid, GridLocation
+from data.datastore import (session_scope, Cart, DistSet, DistGrid,
+                            GridLocation)
 from data.datastore_worker import (insert_or_ignore, insert, update_record,
-                                   retrieve_record)
+                                   retrieve_last_record, retrieve_record)
 from gui.utils import get_id_from_index
 
 
@@ -92,3 +93,14 @@ def save_new_dist_and_grid(
         raise BabelError(
             'Your new grid includes invalid values.\n'
             'Please make sure branch, shelf, and qty are valid.')
+
+
+def get_last_cart():
+    """
+    retrieves the most recent cart
+    """
+    with session_scope() as session:
+        cart_rec = retrieve_last_record(
+            session, Cart)
+        session.expunge_all()
+        return cart_rec

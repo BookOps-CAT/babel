@@ -6,10 +6,11 @@ from tkinter.ttk import *
 from tkinter import messagebox
 
 from errors import BabelError
-from data.transactions_cart import save_new_dist_and_grid
+from data.transactions_cart import get_last_cart, save_new_dist_and_grid
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status)
+from gui.carts import CopyCartWidget
 from gui.data_retriever import (get_names, save_data, get_record,
                                 get_records, convert4display,
                                 delete_data, delete_data_by_did,
@@ -25,7 +26,6 @@ from gui.utils import (ToolTip, BusyManager, get_id_from_index, disable_widgets,
 
 
 mlogger = logging.getLogger('babel_logger')
-
 
 class CartView(Frame):
     """
@@ -122,7 +122,7 @@ class CartView(Frame):
             self.actionFrm,
             image=editImg,
             command=self.rename_cart)
-        self.editBtn.image = editImg
+        # self.editBtn.image = editImg
         self.editBtn.grid(
             row=0, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.editBtn, 'edit cart name')
@@ -131,7 +131,7 @@ class CartView(Frame):
             self.actionFrm,
             image=saveImg,
             command=self.save_cart)
-        self.saveBtn.image = saveImg
+        # self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=1, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.saveBtn, 'save cart')
@@ -140,7 +140,7 @@ class CartView(Frame):
             self.actionFrm,
             image=fundImgM,
             command=self.show_fund_widget)
-        self.fundBtn.image = fundImgM
+        # self.fundBtn.image = fundImgM
         self.fundBtn.grid(
             row=2, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.fundBtn, 'apply funds')
@@ -158,7 +158,7 @@ class CartView(Frame):
             self.actionFrm,
             image=copyImg,
             command=self.copy_cart)
-        self.copyBtn.image = copyImg
+        # self.copyBtn.image = copyImg
         self.copyBtn.grid(
             row=4, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.copyBtn, 'copy entire cart')
@@ -167,7 +167,7 @@ class CartView(Frame):
             self.actionFrm,
             image=deleteImg,
             command=self.delete_cart)
-        self.deleteBtn.image = deleteImg
+        # self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
             row=5, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.deleteBtn, 'delete cart')
@@ -176,7 +176,7 @@ class CartView(Frame):
             self.actionFrm,
             image=sierraImg,
             command=self.search_sierra)
-        self.sierraBtn.image = sierraImg
+        # self.sierraBtn.image = sierraImg
         self.sierraBtn.grid(
             row=6, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.sierraBtn, 'search Sierra')
@@ -185,7 +185,7 @@ class CartView(Frame):
             self.actionFrm,
             image=helpImg,
             command=self.help)
-        self.helpBtn.image = helpImg
+        # self.helpBtn.image = helpImg
         self.helpBtn.grid(
             row=7, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
@@ -413,7 +413,6 @@ class CartView(Frame):
         if self.cart_name.get():
             self.cartEnt['state'] = '!disable'
             self.statusCbx['state'] = 'readonly'
-            print(self.statusCbx['state'])
             if self.system.get() == 2:
                 self.libCbx['state'] = 'readonly'
 
@@ -513,7 +512,17 @@ class CartView(Frame):
         pass
 
     def copy_cart(self):
-        pass
+        ccw = CopyCartWidget(
+            self, self.cart_id.get(),
+            self.cart_name.get(), **self.app_data)
+        self.wait_window(ccw.top)
+
+        # show new cart
+        self.reset()
+        cart_rec = get_last_cart()
+        self.cart_id.set(cart_rec.did)
+        self.system.set(cart_rec.system_id)
+        self.profile.set(self.profile_idx[cart_rec.user_id])
 
     def delete_cart(self):
         msg = 'Are you sure you want to delete entire cart?'
@@ -864,8 +873,6 @@ class CartView(Frame):
         orderFrm = Frame(parent)
         orderFrm.grid(
             row=1, column=0, sticky='snew', padx=5, pady=5)
-        # mlogger.debug('New orderFrm ({}, child of mainTab {})'.format(
-            # orderFrm.winfo_id(), parent.winfo_id()))
 
         Label(orderFrm, text='lang:').grid(
             row=0, column=0, sticky='snw', padx=2, pady=2)
