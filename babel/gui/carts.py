@@ -8,7 +8,8 @@ from tkinter import messagebox, filedialog
 
 from errors import BabelError
 from data.datastore import Cart, Library, Status
-from data.transactions_carts import (create_cart_copy,
+from data.transactions_carts import (add_sierra_ids_to_orders,
+                                     create_cart_copy,
                                      export_orders_to_marc_file,
                                      get_cart_data_for_order_sheet,
                                      get_carts_data)
@@ -382,20 +383,20 @@ class CartsView(Frame):
                 self.cur_manager.notbusy()
 
     def link_ids(self):
-        cart_rec = get_record(Cart, did=self.selected_cart_id.get())
-        status = get_record(Status, did=cart_rec.status_id)
-        if status.name == 'finalized':
-            source_fh = self.ask_for_source()
-            try:
-                add_sierra_ids_to_orders(source_fh)
-            except BabelError as e:
-                messagebox.showerror(
-                    'Sierra IDs Error',
-                    f'Unable to link Sierra IDs. Error: {e}')
-        else:
-            msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
-                'Please change cart status to proceed.'
-            messagebox.showwarning('Linking to Sierra IDs', msg)
+        source_fh = self.ask_for_source()
+        try:
+            self.cur_manager.busy()
+            add_sierra_ids_to_orders(source_fh, self.system.get())
+            self.cur_manager.notbusy()
+            messagebox.showinfo(
+                'Linking IDs',
+                'Sierra bib and order numbers linked successfully.')
+
+        except BabelError as e:
+            self.cur_manager.notbusy()
+            messagebox.showerror(
+                'Sierra IDs Error',
+                f'Unable to link Sierra IDs. Error: {e}')
 
     def help(self):
         open_url('https://github.com/BookOps-CAT/babel/wiki/Carts')
@@ -437,7 +438,10 @@ class CartsView(Frame):
             initialdir = user_data['ids_dir']
         else:
             initialdir = MY_DOCS
-        source_fh = filedialog.askopenfilename(initialdir=initialdir)
+        source_fh = filedialog.askopenfilename(
+            parent=self,
+            title='Sierra IDs file',
+            initialdir=initialdir)
         if source_fh:
             user_data['ids_dir'] = path.dirname(source_fh)
         user_data.close()

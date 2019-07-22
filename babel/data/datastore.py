@@ -392,8 +392,8 @@ class Order(Base):
     __tablename__ = 'order'
 
     did = Column(Integer, primary_key=True)
-    oid = Column(String(8))  # include prefix?
-    bid = Column(String(9))  # include prefix?
+    oid = Column(String(9))
+    bid = Column(String(10))
     wlo = Column(String(13))
     cart_id = Column(Integer, ForeignKey('cart.did'), nullable=False)
     lang_id = Column(Integer, ForeignKey('lang.did'))
@@ -507,7 +507,6 @@ class Wlos(Base):
 
 
 def datastore_url():
-    """Windows Cred Vault mod needed below"""
     user_data = shelve.open(USER_DATA)
     if 'db_config' in user_data:
         db_details = user_data['db_config']

@@ -14,10 +14,12 @@ from data.datastore import (session_scope, Audn, Branch, Cart, Fund, Order,
 from data.datastore_worker import (count_records, get_cart_data_view_records,
                                    insert,
                                    retrieve_record, retrieve_records,
-                                   retrieve_cart_details_view_stmn)
+                                   retrieve_cart_details_view_stmn,
+                                   update_record)
 from errors import BabelError
 from logging_settings import format_traceback
 from gui.utils import get_id_from_index
+from ingest.sierra_exports import get_sierra_ids
 from marc.marc21 import make_bib
 
 
@@ -202,9 +204,7 @@ def get_cart_data_for_order_sheet(cart_id):
         raise BabelError(exc)
 
 
-def create_cart_copy(
-        cart_id, system, user, profile_idx,
-        cart_name, status):
+def create_cart_copy(cart_id, system, user, profile_idx, cart_name, status):
     """
     Creates a copy of a cart
     args:
@@ -316,5 +316,26 @@ def create_cart_copy(
         raise BabelError(exc)
 
 
-def add_sierra_ids_to_orders(source_fh):
-    pass
+def add_sierra_ids_to_orders(source_fh, system_id):
+    mlogger.debug(f'Linking IDs initiated system_id-{system_id}.')
+    sids = get_sierra_ids(source_fh, system_id)
+    try:
+        with session_scope() as session:
+            for sid in sids:
+                wlo, oid, bid = sid
+                ord_rec = retrieve_record(session, Order, wlo=wlo)
+                if ord_rec:
+                    update_record(
+                        session, Order, ord_rec.did, oid=oid, bid=bid)
+                    mlogger.debug(
+                        f'Record updated: order_id={ord_rec.did}, '
+                        f'wlo={wlo}, oid={oid}, bid={bid}')
+
+        mlogger.debug('Linking completed.')
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            'Unhandled error on linking IDs.'
+            f'Traceback: {tb}')
+        raise BabelError(exc)

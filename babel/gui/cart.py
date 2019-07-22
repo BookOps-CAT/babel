@@ -29,6 +29,7 @@ from gui.utils import (ToolTip, BusyManager, get_id_from_index, disable_widgets,
 
 mlogger = logging.getLogger('babel_logger')
 
+
 class CartView(Frame):
     """
     Gui for creating and managing order cart
