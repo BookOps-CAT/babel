@@ -46,7 +46,7 @@ def get_carts_data(
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
         mlogger.error(
-            'Unhandled error on saving to MARC.'
+            'Unhandled error on cart data retrieval.'
             f'Traceback: {tb}')
         raise BabelError(exc)
 
@@ -197,7 +197,7 @@ def get_cart_data_for_order_sheet(cart_id):
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
         mlogger.error(
-            'Unhandled error on saving to MARC.'
+            'Unhandled error cart data retrieval.'
             f'Traceback: {tb}')
         raise BabelError(exc)
 
@@ -316,6 +316,6 @@ def create_cart_copy(
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
         mlogger.error(
-            'Unhandled error on saving to MARC.'
+            'Unhandled error on cart copy.'
             f'Traceback: {tb}')
         raise BabelError(exc)

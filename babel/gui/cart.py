@@ -6,7 +6,11 @@ from tkinter.ttk import *
 from tkinter import messagebox
 
 from errors import BabelError
-from data.transactions_cart import get_last_cart, save_new_dist_and_grid
+from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
+                                    assign_blanketPO_to_cart,
+                                    assign_wlo_to_cart,
+                                    get_last_cart, save_displayed_order_data,
+                                    save_new_dist_and_grid)
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status)
@@ -16,10 +20,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 delete_data, delete_data_by_did,
                                 get_codes, get_orders_by_id,
                                 get_order_ids, create_code_index,
-                                create_name_index, save_displayed_order_data,
-                                apply_globals_to_cart, assign_wlo_to_cart,
-                                assign_blanketPO_to_cart,
-                                apply_fund_to_cart)
+                                create_name_index)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, BusyManager, get_id_from_index, disable_widgets,
                        enable_widgets, open_url)
@@ -441,8 +442,14 @@ class CartView(Frame):
                     # run validation
 
                     # assign blanketPO and wlo numbers
-                    assign_wlo_to_cart(self.cart_id.get())
-                    assign_blanketPO_to_cart(self.cart_id.get())
+                    try:
+                        assign_wlo_to_cart(self.cart_id.get())
+                        assign_blanketPO_to_cart(self.cart_id.get())
+                    except BabelError as e:
+                        messagebox.showerror(
+                            'WLO & blanketPo',
+                            'Encountered error while assigning wlo & blanketPo.\n'
+                            f'Error: {e}')
 
                     self.redo_preview_frame()
                     self.display_selected_orders(self.selected_order_ids)
@@ -497,8 +504,16 @@ class CartView(Frame):
         self.cur_manager.busy()
         values = listbox.get(0, END)
         selected_funds = [values[s] for s in selected]
-        apply_fund_to_cart(self.system.get(), self.cart_id.get(), selected_funds)
-        self.cur_manager.notbusy()
+        try:
+            apply_fund_to_cart(
+                self.system.get(), self.cart_id.get(), selected_funds)
+        except BabelError as e:
+            self.cur_manager.notbusy()
+            messagebox.showerror(
+                'Funds error',
+                f'Unable to apply funds correctly. Error: {e}')
+        else:
+            self.cur_manager.notbusy()
 
         # update display
         # maybe it would be better to simply insert
