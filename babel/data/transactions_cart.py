@@ -375,8 +375,8 @@ def assign_wlo_to_cart(cart_id):
 
             orders = retrieve_records(session, Order, cart_id=cart_id)
             for o in orders:
-                wlo = wlo_numbers.__next__()
                 if o.wlo is None:
+                    wlo = wlo_numbers.__next__()
                     update_record(
                         session, Order, o.did, wlo=wlo)
                     insert(session, Wlos, did=wlo)
@@ -394,26 +394,27 @@ def assign_blanketPO_to_cart(cart_id):
     try:
 
         with session_scope() as session:
-            res = retrieve_unique_vendors_from_cart(
-                session, cart_id)
-            vendor_codes = [name[0] for name in res]
-            blanketPO = create_blanketPO(vendor_codes)
-            unique = True
-            n = 0
-            while unique:
-                try:
-                    print(blanketPO)
-                    update_record(
-                        session,
-                        Cart,
-                        cart_id,
-                        blanketPO=blanketPO)
-                    session.flush()
-                    unique = False
-                except IntegrityError:
-                    session.rollback()
-                    n += 1
-                    blanketPO = create_blanketPO(vendor_codes, n)
+            cart_rec = retrieve_record(session, Cart, did=cart_id)
+            if cart_rec.blanketPO is None:
+                res = retrieve_unique_vendors_from_cart(
+                    session, cart_id)
+                vendor_codes = [name[0] for name in res]
+                blanketPO = create_blanketPO(vendor_codes)
+                unique = True
+                n = 0
+                while unique:
+                    try:
+                        update_record(
+                            session,
+                            Cart,
+                            cart_id,
+                            blanketPO=blanketPO)
+                        session.flush()
+                        unique = False
+                    except IntegrityError:
+                        session.rollback()
+                        n += 1
+                        blanketPO = create_blanketPO(vendor_codes, n)
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
