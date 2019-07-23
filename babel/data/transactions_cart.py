@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from decimal import Decimal
 import logging
 import sys
@@ -425,8 +426,71 @@ def assign_blanketPO_to_cart(cart_id):
         raise BabelError(exc)
 
 
-# def get_last_wlo():
-#     with session_scope() as session:
-#         last_wlo_record = retrieve_last_record(session, Wlos)
-#         session.expunge()
-#         return last_wlo_record.did
+def validate_cart_data(cart_id):
+    issues = OrderedDict()
+    iss_count = 0
+    with session_scope() as session:
+        cart_rec = retrieve_record(
+            session, Cart,
+            did=cart_id)
+        if cart_rec.system_id == 2:
+            if not cart_rec.library_id:
+                iss_count += 1
+                issues[0] = 'NYPL carts must specify library'
+
+        n = 0
+        order_records = retrieve_records(
+            session, Order,
+            cart_id=cart_id)
+        for o in order_records:
+            ord_issues = []
+            n += 1
+            if not o.lang_id:
+                iss_count += 1
+                ord_issues.append('missing language')
+            if not o.audn_id:
+                iss_count += 1
+                ord_issues.append('missing audience')
+            if not o.vendor_id:
+                iss_count += 1
+                ord_issues.append('missing vendor')
+            if not o.matType_id:
+                iss_count += 1
+                ord_issues.append('missing material type')
+            if not o.resource.title:
+                iss_count += 1
+                ord_issues.append('missing title')
+            if not o.resource.price_disc:
+                iss_count += 1
+                ord_issues.append('missing discount price')
+
+            grid_issues = OrderedDict()
+            m = 0
+            if o.locations:
+                for l in o.locations:
+                    m += 1
+                    loc_issues = []
+                    print(l.branch_id, type(l.branch_id))
+                    if not l.branch_id:
+                        iss_count += 1
+                        loc_issues.append('missing branch')
+                    if not l.shelfcode_id:
+                        iss_count += 1
+                        loc_issues.append('missing shelf code')
+                    if not l.qty:
+                        iss_count += 1
+                        loc_issues.append('missing qty')
+                    if not l.fund_id:
+                        iss_count += 1
+                        loc_issues.append('missing fund')
+
+                    if loc_issues:
+                        grid_issues[m] = loc_issues
+            else:
+                iss_count += 1
+                grid_issues[1] = ['no locations']
+
+            if ord_issues or grid_issues:
+                issues[n] = (ord_issues, grid_issues)
+
+    return iss_count, issues

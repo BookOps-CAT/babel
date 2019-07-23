@@ -11,7 +11,7 @@ from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     assign_wlo_to_cart, get_last_cart,
                                     get_orders_by_id,
                                     save_displayed_order_data,
-                                    save_new_dist_and_grid)
+                                    save_new_dist_and_grid, validate_cart_data)
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status)
@@ -23,7 +23,8 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 get_order_ids, create_code_index,
                                 create_name_index)
 from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
-from gui.utils import (ToolTip, BusyManager, get_id_from_index, disable_widgets,
+from gui.utils import (ToolTip, BusyManager,
+                       disable_widgets, get_id_from_index,
                        enable_widgets, open_url)
 
 
@@ -151,7 +152,7 @@ class CartView(Frame):
         self.validBtn = Button(
             self.actionFrm,
             image=validationImg,
-            command=self.validate_cart)
+            command=self.validation_report)
         # self.validBtn.image = saveImg
         self.validBtn.grid(
             row=3, column=0, sticky='sw', padx=10, pady=5)
@@ -525,8 +526,59 @@ class CartView(Frame):
 
         self.fundTop.destroy()
 
-    def validate_cart(self):
-        pass
+    def validation_report(self):
+        issues_count, issues = validate_cart_data(
+            self.cart_id.get())
+
+        self.validTop = Toplevel(self)
+        self.validTop.title('Cart validation report')
+
+        frm = Frame(self.validTop)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=10, pady=10)
+
+        scrollbar = Scrollbar(frm, orient=VERTICAL)
+        scrollbar.grid(row=0, column=0, rowspan=5, sticky='snw')
+
+        vrepTxt = Text(
+            frm,
+            background='SystemButtonFace',
+            borderwidth=0,
+            wrap='word',
+            yscrollcommand=scrollbar.set)
+        vrepTxt.grid(
+            row=0, column=1, columnspan=3, sticky='snew', pady=5)
+        scrollbar['command'] = vrepTxt.yview
+
+        vrepTxt.insert(
+            END,
+            f'Found {issues_count} problems in {list(issues.keys())[-1]} orders\n\n')
+
+        for no, ord_iss in issues.items():
+            if no == 0:
+                vrepTxt.insert(
+                    END,
+                    f'cart issues: {ord_iss}\n')
+            else:
+                vrepTxt.insert(
+                    END, f'order # {no}\n')
+                vrepTxt.insert(
+                    END, '  {}\n'.format(','.join(ord_iss[0])))
+                for gno, loc in ord_iss[1].items():
+                    vrepTxt.insert(
+                        END, '\tlocation {}: {}\n'.format(
+                            gno,
+                            ','.join(loc)))
+
+        vrepTxt.tag_add('header', '1.0', '1.end')
+        vrepTxt.tag_config('header', font=RBFONT, foreground='tomato2')
+        # resdataTxt.tag_add('normal', '3.0', '5.end')
+        # resdataTxt.tag_config('normal', font=LFONT)
+        # resdataTxt.tag_add('price', '6.0', '6.end')
+       # resdataTxt.tag_config('price', font=LFONT, foreground='tomato2
+        vrepTxt['state'] = 'disabled'
+
+
 
     def copy_cart(self):
         ccw = CopyCartWidget(
