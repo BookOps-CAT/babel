@@ -487,7 +487,7 @@ def validate_cart_data(cart_id):
                         grid_issues[m] = loc_issues
             else:
                 iss_count += 1
-                ord_issues = ['no locations']
+                ord_issues = ['locations']
 
             if ord_issues or grid_issues:
                 issues[n] = (ord_issues, grid_issues)

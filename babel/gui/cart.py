@@ -593,11 +593,12 @@ class CartView(Frame):
             else:
                 vrepTxt.insert(
                     END, f'order {ord_no}:\n')
-                vrepTxt.insert(
-                    END, '  {}\n'.format(','.join(ord_iss[0])))
+                if ord_iss[0]:
+                    vrepTxt.insert(
+                        END, '  missing: {}\n'.format(','.join(ord_iss[0])))
                 for gno, loc in ord_iss[1].items():
                     vrepTxt.insert(
-                        END, '\tlocation {}: {}\n'.format(
+                        END, '\tlocation {}: missing {}\n'.format(
                             gno,
                             ','.join(loc)))
 
