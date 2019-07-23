@@ -442,20 +442,34 @@ class CartView(Frame):
                     Cart, self.cart_id.get(), **kwargs)
 
                 if self.status.get() == 'finalized':
+
                     # run validation
+                    self.validation_report(final=True)
+                    self.wait_window(self.validTop)
 
-                    # assign blanketPO and wlo numbers
-                    try:
-                        assign_wlo_to_cart(self.cart_id.get())
-                        assign_blanketPO_to_cart(self.cart_id.get())
-                    except BabelError as e:
-                        messagebox.showerror(
-                            'WLO & blanketPo',
-                            'Encountered error while assigning wlo & blanketPo.\n'
-                            f'Error: {e}')
+                    if self.cart_valid:
+                        # assign blanketPO and wlo numbers
+                        try:
+                            assign_wlo_to_cart(self.cart_id.get())
+                            assign_blanketPO_to_cart(self.cart_id.get())
+                        except BabelError as e:
+                            messagebox.showerror(
+                                'WLO & blanketPo',
+                                'Encountered error while assigning wlo & '
+                                'blanketPo.\n'
+                                f'Error: {e}')
 
-                    self.redo_preview_frame()
-                    self.display_selected_orders(self.selected_order_ids)
+                        self.redo_preview_frame()
+                        self.display_selected_orders(self.selected_order_ids)
+                    else:
+                        # revert status
+                        self.status.set('in-works')
+                        rec = get_record(Status, name='in-works')
+                        kwargs = {}
+                        kwargs['status_id'] = rec.did
+                        kwargs['updated'] = datetime.now()
+                        save_data(
+                            Cart, self.cart_id.get(), **kwargs)
 
                 # disable cart widgets
                 self.cartEnt['state'] = 'disable'
@@ -526,10 +540,21 @@ class CartView(Frame):
 
         self.fundTop.destroy()
 
-    def validation_report(self):
+    def validation_report(self, final=False):
         issues_count, issues = validate_cart_data(
             self.cart_id.get())
 
+        if issues_count == 0:
+            self.cart_valid = True
+        else:
+            self.cart_valid = False
+
+        try:
+            affected_records = list(issues.keys())[-1]
+        except IndexError:
+            affected_records = 0
+
+        # generate report widget
         self.validTop = Toplevel(self)
         self.validTop.title('Cart validation report')
 
@@ -538,7 +563,7 @@ class CartView(Frame):
             row=0, column=0, sticky='snew', padx=10, pady=10)
 
         scrollbar = Scrollbar(frm, orient=VERTICAL)
-        scrollbar.grid(row=0, column=0, rowspan=5, sticky='snw')
+        scrollbar.grid(row=0, column=0, rowspan=5, sticky='snw', pady=5)
 
         vrepTxt = Text(
             frm,
@@ -547,21 +572,27 @@ class CartView(Frame):
             wrap='word',
             yscrollcommand=scrollbar.set)
         vrepTxt.grid(
-            row=0, column=1, columnspan=3, sticky='snew', pady=5)
+            row=0, column=1, rowspan=3, columnspan=2, sticky='snew', padx=5, pady=5)
         scrollbar['command'] = vrepTxt.yview
 
-        vrepTxt.insert(
-            END,
-            f'Found {issues_count} problems in {list(issues.keys())[-1]} orders\n\n')
+        if affected_records:
+            vrepTxt.insert(
+                END,
+                f'Found {issues_count} problems in '
+                f'{affected_records} orders\n\n')
+        else:
+            vrepTxt.insert(
+                END,
+                'No problems found :-). The cart is good to go.')
 
-        for no, ord_iss in issues.items():
-            if no == 0:
+        for ord_no, ord_iss in issues.items():
+            if ord_no == 0:
                 vrepTxt.insert(
                     END,
-                    f'cart issues: {ord_iss}\n')
+                    f'cart issues: {ord_iss}\n\n')
             else:
                 vrepTxt.insert(
-                    END, f'order # {no}\n')
+                    END, f'order {ord_no}:\n')
                 vrepTxt.insert(
                     END, '  {}\n'.format(','.join(ord_iss[0])))
                 for gno, loc in ord_iss[1].items():
@@ -572,13 +603,28 @@ class CartView(Frame):
 
         vrepTxt.tag_add('header', '1.0', '1.end')
         vrepTxt.tag_config('header', font=RBFONT, foreground='tomato2')
-        # resdataTxt.tag_add('normal', '3.0', '5.end')
-        # resdataTxt.tag_config('normal', font=LFONT)
-        # resdataTxt.tag_add('price', '6.0', '6.end')
-       # resdataTxt.tag_config('price', font=LFONT, foreground='tomato2
         vrepTxt['state'] = 'disabled'
 
+        if final:
+            if not self.cart_valid:
+                cancelBtn = Button(
+                    frm,
+                    text='cancel',
+                    width=10,
+                    command=self.validTop.destroy)
+                cancelBtn.grid(
+                    row=3, column=2, sticky='sne', padx=10, pady=10)
+                ovrwBtn = Button(
+                    frm,
+                    text='override',
+                    width=10,
+                    command=self.validation_override)
+                ovrwBtn.grid(
+                    row=3, column=3, sticky='snw', padx=10, pady=10)
 
+    def validation_override(self):
+        self.cart_valid = True
+        self.validTop.destroy()
 
     def copy_cart(self):
         ccw = CopyCartWidget(

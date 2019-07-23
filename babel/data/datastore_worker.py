@@ -36,7 +36,8 @@ def retrieve_first_n(session, model, n, **kwargs):
 
 
 def retrieve_records(session, model, **kwargs):
-    instances = session.query(model).filter_by(**kwargs).all()
+    instances = session.query(model).filter_by(**kwargs).order_by(
+        model.did).all()
     return instances
 
 
@@ -118,7 +119,7 @@ def retrieve_cart_details_view_stmn(cart_id):
 
 def retrieve_unique_vendors_from_cart(session, cart_id):
     stmn = text("""
-    SELECT DISTINCT name 
+    SELECT DISTINCT name
         FROM vendor
         JOIN `order` ON `order`.vendor_id = vendor.did
         WHERE `order`.cart_id=:cart_id

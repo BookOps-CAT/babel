@@ -447,22 +447,22 @@ def validate_cart_data(cart_id):
             n += 1
             if not o.lang_id:
                 iss_count += 1
-                ord_issues.append('missing language')
+                ord_issues.append('language')
             if not o.audn_id:
                 iss_count += 1
-                ord_issues.append('missing audience')
+                ord_issues.append('audience')
             if not o.vendor_id:
                 iss_count += 1
-                ord_issues.append('missing vendor')
+                ord_issues.append('vendor')
             if not o.matType_id:
                 iss_count += 1
-                ord_issues.append('missing material type')
+                ord_issues.append('material type')
             if not o.resource.title:
                 iss_count += 1
-                ord_issues.append('missing title')
+                ord_issues.append('title')
             if not o.resource.price_disc:
                 iss_count += 1
-                ord_issues.append('missing discount price')
+                ord_issues.append('discount price')
 
             grid_issues = OrderedDict()
             m = 0
@@ -470,25 +470,24 @@ def validate_cart_data(cart_id):
                 for l in o.locations:
                     m += 1
                     loc_issues = []
-                    print(l.branch_id, type(l.branch_id))
                     if not l.branch_id:
                         iss_count += 1
-                        loc_issues.append('missing branch')
+                        loc_issues.append('branch')
                     if not l.shelfcode_id:
                         iss_count += 1
-                        loc_issues.append('missing shelf code')
+                        loc_issues.append('shelf code')
                     if not l.qty:
                         iss_count += 1
-                        loc_issues.append('missing qty')
+                        loc_issues.append('quantity')
                     if not l.fund_id:
                         iss_count += 1
-                        loc_issues.append('missing fund')
+                        loc_issues.append('fund')
 
                     if loc_issues:
                         grid_issues[m] = loc_issues
             else:
                 iss_count += 1
-                grid_issues[1] = ['no locations']
+                ord_issues = ['no locations']
 
             if ord_issues or grid_issues:
                 issues[n] = (ord_issues, grid_issues)
