@@ -275,15 +275,6 @@ def create_cart_copy(cart_id, system, user, profile_idx, cart_name, status):
                         desc_url=order.resource.desc_url,
                         misc=order.resource.misc)
 
-                    locations = []
-                    for loc in order.locations:
-                        locations.append(
-                            OrderLocation(
-                                branch_id=loc.branch_id,
-                                shelfcode_id=loc.shelfcode_id,
-                                qty=loc.qty,
-                                fund_id=loc.fund_id))
-
                     new_orders.append(
                         Order(
                             lang_id=order.lang_id,
@@ -293,8 +284,7 @@ def create_cart_copy(cart_id, system, user, profile_idx, cart_name, status):
                             poPerLine=order.poPerLine,
                             note=order.note,
                             comment=order.comment,
-                            resource=resource,
-                            locations=locations))
+                            resource=resource))
 
                 insert(
                     session,
