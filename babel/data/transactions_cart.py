@@ -391,15 +391,28 @@ def assign_wlo_to_cart(cart_id):
         raise BabelError(exc)
 
 
+def retrieve_unique_vendor_codes_from_cart(session, cart_id):
+    stmn = text("""
+    SELECT DISTINCT code
+        FROM vendor
+        JOIN `order` ON `order`.vendor_id = vendor.did
+        WHERE `order`.cart_id=:cart_id
+        ;
+    """)
+    stmn = stmn.bindparams(cart_id=cart_id)
+    instances = session.execute(stmn)
+    return instances
+
+
 def assign_blanketPO_to_cart(cart_id):
     try:
 
         with session_scope() as session:
             cart_rec = retrieve_record(session, Cart, did=cart_id)
             if cart_rec.blanketPO is None:
-                res = retrieve_unique_vendors_from_cart(
+                res = retrieve_unique_vendor_codes_from_cart(
                     session, cart_id)
-                vendor_codes = [name[0] for name in res]
+                vendor_codes = [code[0] for code in res]
                 blanketPO = create_blanketPO(vendor_codes)
                 unique = True
                 n = 0

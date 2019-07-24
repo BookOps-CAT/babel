@@ -451,13 +451,17 @@ class CartView(Frame):
                         # assign blanketPO and wlo numbers
                         try:
                             assign_wlo_to_cart(self.cart_id.get())
-                            assign_blanketPO_to_cart(self.cart_id.get())
                         except BabelError as e:
                             messagebox.showerror(
-                                'WLO & blanketPo',
-                                'Encountered error while assigning wlo & '
-                                'blanketPo.\n'
-                                f'Error: {e}')
+                                'WLO number error',
+                                f'Unable to assign wlo #.\nError: {e}')
+                        try:
+                            assign_blanketPO_to_cart(self.cart_id.get())
+
+                        except BabelError as e:
+                            messagebox.showerror(
+                                'BlanketPo error',
+                                f'Unable to assign blanketPo.\nError: {e}')
 
                         self.redo_preview_frame()
                         self.display_selected_orders(self.selected_order_ids)
