@@ -4,6 +4,7 @@ import logging
 import sys
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import text
 
 
 from errors import BabelError
@@ -391,14 +392,23 @@ def assign_wlo_to_cart(cart_id):
         raise BabelError(exc)
 
 
-def retrieve_unique_vendor_codes_from_cart(session, cart_id):
-    stmn = text("""
-    SELECT DISTINCT code
-        FROM vendor
-        JOIN `order` ON `order`.vendor_id = vendor.did
-        WHERE `order`.cart_id=:cart_id
-        ;
-    """)
+def retrieve_unique_vendor_codes_from_cart(session, cart_id, system_id):
+    if system_id == 1:
+        stmn = text("""
+        SELECT DISTINCT bpl_code
+            FROM vendor
+            JOIN `order` ON `order`.vendor_id = vendor.did
+            WHERE `order`.cart_id=:cart_id
+            ;
+        """)
+    elif system_id == 2:
+        stmn = text("""
+        SELECT DISTINCT nyp_code
+            FROM vendor
+            JOIN `order` ON `order`.vendor_id = vendor.did
+            WHERE `order`.cart_id=:cart_id
+            ;
+        """)
     stmn = stmn.bindparams(cart_id=cart_id)
     instances = session.execute(stmn)
     return instances
@@ -411,7 +421,7 @@ def assign_blanketPO_to_cart(cart_id):
             cart_rec = retrieve_record(session, Cart, did=cart_id)
             if cart_rec.blanketPO is None:
                 res = retrieve_unique_vendor_codes_from_cart(
-                    session, cart_id)
+                    session, cart_id, cart_rec.system_id)
                 vendor_codes = [code[0] for code in res]
                 blanketPO = create_blanketPO(vendor_codes)
                 unique = True
