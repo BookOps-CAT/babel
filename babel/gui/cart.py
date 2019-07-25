@@ -8,7 +8,9 @@ from tkinter import messagebox
 from errors import BabelError
 from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     assign_blanketPO_to_cart,
-                                    assign_wlo_to_cart, get_last_cart,
+                                    assign_wlo_to_cart,
+                                    determine_needs_validation,
+                                    get_last_cart,
                                     get_orders_by_id,
                                     save_displayed_order_data,
                                     save_new_dist_and_grid, validate_cart_data)
@@ -416,6 +418,9 @@ class CartView(Frame):
 
     def save_cart(self):
         try:
+            needs_validation = determine_needs_validation(self.cart_id.get())
+            mlogger.debug(
+                f'Cart needs validation: {needs_validation}')
             save_displayed_order_data(self.tracker.values())
 
             # save cart data
@@ -435,7 +440,8 @@ class CartView(Frame):
                 save_data(
                     Cart, self.cart_id.get(), **kwargs)
 
-                if self.status.get() == 'finalized':
+                if self.status.get() == 'finalized' and \
+                        needs_validation:
 
                     # run validation
                     self.validation_report(final=True)
@@ -919,7 +925,7 @@ class CartView(Frame):
         line6 = f'\tlist price: ${resource.price_list:.2f} | discount price: ${resource.price_disc:.2f}'
 
         # empty widget for cases when repopulated
-        widget.delete(0.0, END)
+        widget.delete('1.0', END)
 
         widget.insert(END, line1)
         if resource.add_title:
@@ -970,7 +976,7 @@ class CartView(Frame):
         editBtn = Button(
             resourceFrm,
             image=self.editImgS,
-            command=lambda: self.edit_resource(parent.master))
+            command=lambda: self.edit_resource(parent.master.winfo_id()))
         editBtn.image = self.editImgS
         editBtn.grid(
             row=0, column=4, sticky='ne', padx=5, pady=5)
@@ -1380,8 +1386,11 @@ class CartView(Frame):
     def sierra_check(self, ntb):
         pass
 
-    def edit_resource(self, ntb):
-        pass
+    def edit_resource(self, ntb_id):
+        print(ntb_id)
+        resdataTxt = self.tracker[ntb_id]['resource']['resdataTxt']
+        print('resTxt', resdataTxt)
+        resdataTxt.delete('1.0', END)
 
     def delete_resource(self, ntb):
         msg = 'Are you sure you want to delete order?'

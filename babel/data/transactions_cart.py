@@ -518,3 +518,14 @@ def validate_cart_data(cart_id):
                 issues[n] = (ord_issues, grid_issues)
 
     return iss_count, issues
+
+
+def determine_needs_validation(cart_id):
+    with session_scope() as session:
+        cart_rec = retrieve_record(
+            session, Cart, did=cart_id)
+        # ignore status 'finlized' and 'archived'
+        if cart_rec.status_id in (2, 4):
+            return False
+        else:
+            return True
