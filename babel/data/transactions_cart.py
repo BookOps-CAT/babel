@@ -348,7 +348,9 @@ def apply_globals_to_cart(cart_id, widgets):
                         rec.resource.did,
                         **rkwargs)
 
-                elif discount:
+                session.flush()
+
+                if discount is not None:
                     rkwargs['price_disc'] = rec.resource.price_list - ((
                         rec.resource.price_list * discount) / Decimal(100))
                     update_record(
