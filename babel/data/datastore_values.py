@@ -234,4 +234,5 @@ USERS = [
 STATUS = [
     (1, 'in-works'),  # add background color value?
     (2, 'finalized'),
-    (3, 'on-hold')]
+    (3, 'on-hold'),
+    (4, 'archived')]
