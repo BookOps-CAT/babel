@@ -28,6 +28,7 @@ from gui.fonts import RFONT, RBFONT, LFONT, HBFONT
 from gui.utils import (ToolTip, BusyManager,
                        disable_widgets, get_id_from_index,
                        enable_widgets, open_url)
+from gui.top_resource import EditResourceWidget
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -799,7 +800,7 @@ class CartView(Frame):
             command=lambda: self.apply_grid_template(ntb.winfo_id()))
         applyBtn.grid(
             row=0, column=5, sticky='snw', padx=5, pady=2)
-        applyBtn.image = self.saveImgS
+        # applyBtn.image = self.saveImgS
 
         copyBtn = Button(
             gridFrm,
@@ -807,7 +808,7 @@ class CartView(Frame):
             command=lambda: self.copy_grid_to_template(ntb.winfo_id()))
         copyBtn.grid(
             row=0, column=6, sticky='snw', padx=5, pady=2)
-        copyBtn.image = self.copyImgS
+        # copyBtn.image = self.copyImgS
 
         # grid labels
         Label(gridFrm, text=' branch', font=LFONT).grid(
@@ -925,6 +926,7 @@ class CartView(Frame):
         line6 = f'\tlist price: ${resource.price_list:.2f} | discount price: ${resource.price_disc:.2f}'
 
         # empty widget for cases when repopulated
+        widget['state'] = 'normal'
         widget.delete('1.0', END)
 
         widget.insert(END, line1)
@@ -1387,10 +1389,15 @@ class CartView(Frame):
         pass
 
     def edit_resource(self, ntb_id):
-        print(ntb_id)
+        resource_id = self.tracker[ntb_id]['resource']['resource_id']
+        edit_widget = EditResourceWidget(self, resource_id, **self.app_data)
+        self.wait_window(edit_widget.top)
+
+        # update display
         resdataTxt = self.tracker[ntb_id]['resource']['resdataTxt']
-        print('resTxt', resdataTxt)
+        resdataTxt['state'] = 'normal'
         resdataTxt.delete('1.0', END)
+        resdataTxt['state'] = 'disabled'
 
     def delete_resource(self, ntb):
         msg = 'Are you sure you want to delete order?'
