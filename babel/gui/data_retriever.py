@@ -1,6 +1,7 @@
 """
 Methods to retrieve data from Babel datastore
 """
+from decimal import Decimal
 import logging
 import sys
 
@@ -28,7 +29,8 @@ def convert4display(record):
     for attr in state.attrs:
         if attr.loaded_value is None:
             setattr(record, attr.key, '')
-        # if type(attr.loaded_value) == int
+        if type(attr.loaded_value) == Decimal:
+            setattr(record, attr.key, f'{attr.loaded_value:.2f}')
     return record
 
 
