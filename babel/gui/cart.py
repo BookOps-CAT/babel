@@ -353,12 +353,6 @@ class CartView(Frame):
         self.navFrm.grid(
             row=17, column=1, sticky='snew', padx=10, pady=10)
 
-
-        # Label(self.navFrm, text='24 titles / 62 copies', font=LFONT).grid(
-        #     row=1, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
-        # Label(self.navFrm, text='206wl: $1,234.23 | 106wl: $923.00', font=LFONT).grid(
-        #     row=2, column=0, columnspan=4, sticky='snw', padx=5, pady=5)
-
         self.startBtn = Button(
             self.navFrm,
             image=startImg,
@@ -908,22 +902,12 @@ class CartView(Frame):
         summaryTxt.insert(END, f'Summary:\n{orec.resource.summary}\n')
         summaryTxt['state'] = 'disable'
 
-    def create_resource_frame(self, parent, resource):
-        resourceFrm = Frame(parent)
-        resourceFrm.grid(
-            row=0, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
-        resourceFrm.columnconfigure(3, minsize=710)
-        # mlogger.debug('New resourceFrm ({}, child of mainTab {})'.format(
-            # resourceFrm.winfo_id(), parent.winfo_id()))
-
-        # provide description data
-        sierraBtn = Button(
-            resourceFrm,
-            image=self.notfoundImg,
-            command=lambda: self.sierra_check(parent))
-        sierraBtn.image = self.notfoundImg
-        sierraBtn.grid(
-            row=0, column=0, sticky='nw', padx=2, pady=5)
+    def populate_resource_data_widget(self, widget, resource):
+        """
+        args:
+            widget: tkinter Text widget obj
+            resource: datastore Resource obj
+        """
 
         # prep data for display
         line1 = f'{resource.title} / {resource.author}.\n'
@@ -933,6 +917,43 @@ class CartView(Frame):
         line4 = f'\tseries: {resource.series}\n'
         line5 = f'\tISBN: {resource.isbn} | UPC: {resource.upc} | other no.: {resource.other_no}\n'
         line6 = f'\tlist price: ${resource.price_list:.2f} | discount price: ${resource.price_disc:.2f}'
+
+        # empty widget for cases when repopulated
+        widget.delete(0.0, END)
+
+        widget.insert(END, line1)
+        if resource.add_title:
+            widget.insert(END, line2)
+        else:
+            widget.insert(END, '\n')
+        widget.insert(END, line3)
+        widget.insert(END, line4)
+        widget.insert(END, line5)
+        widget.insert(END, line6)
+
+        widget.tag_add('header', '1.0', '2.end')
+        widget.tag_config('header', font=RBFONT)
+        widget.tag_add('normal', '3.0', '5.end')
+        widget.tag_config('normal', font=LFONT)
+        widget.tag_add('price', '6.0', '6.end')
+        widget.tag_config('price', font=LFONT, foreground='tomato2')
+
+        widget['state'] = 'disabled'
+
+    def create_resource_frame(self, parent, resource):
+        resourceFrm = Frame(parent)
+        resourceFrm.grid(
+            row=0, column=0, columnspan=4, sticky='snew', padx=5, pady=5)
+        resourceFrm.columnconfigure(3, minsize=710)
+
+        # provide description data
+        sierraBtn = Button(
+            resourceFrm,
+            image=self.notfoundImg,
+            command=lambda: self.sierra_check(parent))
+        sierraBtn.image = self.notfoundImg
+        sierraBtn.grid(
+            row=0, column=0, sticky='nw', padx=2, pady=5)
 
         # display Text widget
         resdataTxt = Text(
@@ -944,24 +965,7 @@ class CartView(Frame):
         resdataTxt.grid(
             row=0, column=1, columnspan=3, sticky='snew', padx=5, pady=5)
 
-        resdataTxt.insert(END, line1)
-        if resource.add_title:
-            resdataTxt.insert(END, line2)
-        else:
-            resdataTxt.insert(END, '\n')
-        resdataTxt.insert(END, line3)
-        resdataTxt.insert(END, line4)
-        resdataTxt.insert(END, line5)
-        resdataTxt.insert(END, line6)
-
-        resdataTxt.tag_add('header', '1.0', '2.end')
-        resdataTxt.tag_config('header', font=RBFONT)
-        resdataTxt.tag_add('normal', '3.0', '5.end')
-        resdataTxt.tag_config('normal', font=LFONT)
-        resdataTxt.tag_add('price', '6.0', '6.end')
-        resdataTxt.tag_config('price', font=LFONT, foreground='tomato2')
-
-        resdataTxt['state'] = 'disabled'
+        self.populate_resource_data_widget(resdataTxt, resource)
 
         editBtn = Button(
             resourceFrm,
