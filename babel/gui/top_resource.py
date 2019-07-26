@@ -5,8 +5,12 @@ from tkinter import messagebox
 
 
 from data.datastore import Resource
+from data.transactions_cart import (update_resource,
+                                    convert_price2datastore)
 from errors import BabelError
-from gui.data_retriever import convert4display, get_record
+from gui.data_retriever import (convert4display,
+                                convert4datastore,
+                                get_record)
 from gui.fonts import RFONT
 from gui.utils import BusyManager
 
@@ -41,7 +45,6 @@ class EditResourceWidget:
         self.publisher = StringVar()
         self.pub_date = StringVar()
         self.pub_place = StringVar()
-        self.summary = StringVar()
         self.isbn = StringVar()
         self.upc = StringVar()
         self.other_no = StringVar()
@@ -173,13 +176,13 @@ class EditResourceWidget:
 
         Label(frm, text='summary:').grid(
             row=9, column=0, sticky='snw')
-        summaryTxt = Text(
+        self.summaryTxt = Text(
             frm,
             font=RFONT,
             wrap='word',
             width=50,
             height=5)
-        summaryTxt.grid(
+        self.summaryTxt.grid(
             row=9, column=1, rowspan=3, columnspan=3,
             sticky='snew', padx=5, pady=5)
 
@@ -211,7 +214,6 @@ class EditResourceWidget:
         self.publisher.set(rec.publisher)
         self.pub_date.set(rec.pub_date)
         self.pub_place.set(rec.pub_place)
-        self.summary.set(rec.summary)
         self.isbn.set(rec.isbn)
         self.upc.set(rec.upc)
         self.other_no.set(rec.other_no)
@@ -219,5 +221,38 @@ class EditResourceWidget:
         self.price_disc.set(rec.price_disc)
         self.misc.set(rec.misc)
 
+        self.summaryTxt.insert('1.0', rec.summary)
+
     def save_resource(self):
-        pass
+        if self.title.get():
+            kwargs = dict(
+                title=self.title.get(),
+                add_title=self.add_title.get(),
+                author=self.author.get(),
+                series=self.series.get(),
+                publisher=self.publisher.get(),
+                pub_date=self.pub_date.get(),
+                pub_place=self.pub_place.get(),
+                summary=self.summaryTxt.get(
+                    '1.0', END).replace('\n', ' ').replace('\t', ''),
+                isbn=self.isbn.get(),
+                upc=self.upc.get(),
+                other_no=self.other_no.get(),
+                price_list=convert_price2datastore(self.price_list.get()),
+                price_disc=convert_price2datastore(self.price_disc.get()),
+                misc=self.misc.get()
+            )
+
+            kwargs = convert4datastore(kwargs)
+
+            try:
+                update_resource(self.rec_id, **kwargs)
+                self.top.destroy()
+            except BabelError as e:
+                messagebox.showerror(
+                    'Datastore Error', e, parent=self.top)
+
+        else:
+            messagebox.showwarning(
+                'Input Error',
+                'Resource must have title.', parent=self.top)

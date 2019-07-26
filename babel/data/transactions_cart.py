@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import logging
 import sys
 
@@ -529,3 +529,26 @@ def determine_needs_validation(cart_id):
             return False
         else:
             return True
+
+
+def update_resource(resource_id, **kwargs):
+    try:
+        with session_scope() as session:
+            update_record(
+                session, Resource, resource_id, **kwargs)
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            'Unhandled error on updating resource.'
+            f'Traceback: {tb}')
+        raise BabelError(exc)
+
+
+def convert_price2datastore(price_str):
+    try:
+        price = Decimal(price_str)
+    except InvalidOperation:
+        price = Decimal(0)
+
+    return price

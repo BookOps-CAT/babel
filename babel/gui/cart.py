@@ -1395,9 +1395,8 @@ class CartView(Frame):
 
         # update display
         resdataTxt = self.tracker[ntb_id]['resource']['resdataTxt']
-        resdataTxt['state'] = 'normal'
-        resdataTxt.delete('1.0', END)
-        resdataTxt['state'] = 'disabled'
+        resource_rec = get_record(Resource, did=resource_id)
+        self.populate_resource_data_widget(resdataTxt, resource_rec)
 
     def delete_resource(self, ntb):
         msg = 'Are you sure you want to delete order?'
