@@ -12,13 +12,12 @@ def summarize_cart(cart_id):
     # amount of money spend by fund
     funds = {}
     for fund, d in fdf:
-        # damage = df['price'] * df['qty']
-        fd = d.loc[:, ('price', 'qty')]
-        fd['damage'] = fd['price'] * fd['qty']
+        fd = d.loc[:, ('order_id', 'price', 'qty')]
+        fd['cost'] = fd['price'] * fd['qty']
         funds[fund] = {
-            'damage': fd['damage'].sum(),
+            'total_cost': fd['cost'].sum(),
             'copies': fd['qty'].sum(),
-            'titles': fd.shape[0]}
+            'titles': fd['order_id'].nunique()}
 
     details['funds'] = funds
     details['langs'] = ','.join(df['lang'].unique().tolist())

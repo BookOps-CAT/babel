@@ -352,7 +352,7 @@ class CartsView(Frame):
         lines.append(f'funds:')
         for fund, values in details["funds"].items():
             lines.append(
-                f'\t{fund}: ${values["damage"]:.2f}, '
+                f'\t{fund}: ${values["total_cost"]:.2f}, '
                 f'copies: {values["copies"]}, titles: {values["titles"]}')
 
         return '\n'.join(lines)
