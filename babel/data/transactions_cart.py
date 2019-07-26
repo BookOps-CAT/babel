@@ -288,7 +288,6 @@ def apply_fund_to_cart(system_id, cart_id, fund_codes):
                         if oloc.branch_id in fund_branch_ids:
                             mlogger.debug('OrdRec-Fund branch {} match'.format(
                                 oloc.branch_id))
-                            print(audn_match, mat_match)
                             if audn_match and mat_match:
                                 # update
                                 mlogger.debug(
