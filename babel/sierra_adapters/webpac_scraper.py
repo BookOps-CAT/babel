@@ -54,7 +54,7 @@ def get_html(system_id, keyword):
             pass
 
 
-def has_resource(system_id, keyword):
+def catalog_match(system_id, keyword):
     """
     Scrapes html page of OPAC of the keyword search
     args:

@@ -362,9 +362,9 @@ class Order(Base):
     poPerLine = Column(String(50))
     note = Column(String(50))
     comment = Column(String(150))
-    dup_babel = Column(Boolean, nullable=False, default=False)
-    dup_sierra = Column(Boolean, nullable=False, default=False)
-    dup_timestamp = Column(DateTime, nullable=False, default=datetime.now())
+    dup_babel = Column(Boolean)
+    dup_sierra = Column(Boolean)
+    dup_timestamp = Column(DateTime)
 
     resource = relationship(
         'Resource',

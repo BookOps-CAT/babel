@@ -1405,7 +1405,7 @@ class CartView(Frame):
         #     [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
 
     def sierra_check(self, ntb):
-        pass
+        find_matches(self.cart_id.get())
 
     def edit_resource(self, ntb_id):
         resource_id = self.tracker[ntb_id]['resource']['resource_id']

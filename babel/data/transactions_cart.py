@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 import logging
 import sys
@@ -15,12 +16,12 @@ from data.datastore import (session_scope, Audn, Branch, Cart, DistSet,
                             Wlos)
 from data.datastore_worker import (count_records, insert_or_ignore, insert,
                                    retrieve_last_record, retrieve_record,
-                                   retrieve_unique_vendors_from_cart,
                                    retrieve_records, update_record)
 from data.wlo_generator import wlo_pool
 from gui.data_retriever import (get_record, get_records)
 from gui.utils import get_id_from_index
 from logging_settings import format_traceback
+from sierra_adapters.webpac_scraper import catalog_match
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -551,3 +552,54 @@ def convert_price2datastore(price_str):
         price = Decimal(0)
 
     return price
+
+
+def babel_resource_match(session, system_id, library_id, **kwargs):
+    """Finds ordered previously resources"""
+
+    babel_rec_count = (session.query(
+        Cart, Order, Resource)
+        .join(Order, Cart.did == Order.cart_id)
+        .join(Resource, Order.did == Resource.order_id)
+        .filter(Cart.system_id == system_id)
+        .filter(Cart.library_id == library_id)
+        .filter(**kwargs).count())
+
+    if babel_rec_count > 1:
+        return True
+    else:
+        return False
+
+
+def find_matches(cart_id):
+    with session_scope() as session:
+        cart_rec = retrieve_record(session, Cart, did=cart_id)
+        ord_recs = retrieve_records(session, Order, cart_id=cart_id)
+        for rec in ord_recs:
+            keyword = None
+            if rec.resource.isbn:
+                babel_dup = babel_resource_match(
+                    session,
+                    cart_rec.system_id,
+                    cart_rec.library_id,
+                    isbn=rec.resouce.isbn)
+                keyword = rec.resource.isbn
+            elif rec.resource.upc:
+                babel_dup = babel_resource_match(upc=rec.resouce.upc)
+                keyword = rec.resource.upc
+            else:
+                sierra_dup = False
+                babel_dup = False
+
+            if keyword:
+                sierra_dup = catalog_match(cart_rec.system_id, keyword)
+
+            mlogger.debug(
+                f'Found following order matches: catalog={sierra_dup}, '
+                f'babel={babel_dup}')
+
+            update_record(
+                session, Order, rec.did,
+                dup_sierra=sierra_dup,
+                dup_babel=babel_dup,
+                dup_timestamp=datetime.now())
