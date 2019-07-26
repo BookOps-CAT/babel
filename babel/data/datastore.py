@@ -286,42 +286,6 @@ class Fund(Base):
         return f"<ShelfCode({attrs})>"
 
 
-class MatchLocation(Base):
-    __tablename__ = 'matchlocation'
-
-    did = Column(Integer, primary_key=True)
-    catalogmatch_id = Column(
-        Integer, ForeignKey('catalogmatch.did'), nullable=False)
-    branch_id = Column(Integer, ForeignKey('branch.did'), nullable=False)
-    checkouts = Column(Integer)
-
-    def __repr__(self):
-        state = inspect(self)
-        attrs = ', '.join([
-            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
-        return f"<MatchLocation({attrs})>"
-
-
-class CatalogMatch(Base):
-    __tablename__ = 'catalogmatch'
-
-    did = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, nullable=False, default=datetime.now())
-    resource_id = Column(Integer, ForeignKey('resource.did'), nullable=False)
-    bid = Column(String(10), nullable=False)
-
-    matchlocations = relationship(
-        'MatchLocation',
-        cascade='all, delete-orphan',
-        lazy='joined')
-
-    def __repr__(self):
-        state = inspect(self)
-        attrs = ', '.join([
-            f'{attr.key}={attr.loaded_value!r}' for attr in state.attrs])
-        return f"<CatalogMatch({attrs})>"
-
-
 class Resource(Base):
     __tablename__ = 'resource'
 
@@ -346,11 +310,6 @@ class Resource(Base):
     order = relationship(
         'Order',
         back_populates='resource',
-        lazy='joined')
-
-    catalogmatches = relationship(
-        'CatalogMatch',
-        cascade='all, delete-orphan',
         lazy='joined')
 
     def __repr__(self):
@@ -403,6 +362,9 @@ class Order(Base):
     poPerLine = Column(String(50))
     note = Column(String(50))
     comment = Column(String(150))
+    dup_babel = Column(Boolean, nullable=False, default=False)
+    dup_sierra = Column(Boolean, nullable=False, default=False)
+    dup_timestamp = Column(DateTime, nullable=False, default=datetime.now())
 
     resource = relationship(
         'Resource',
