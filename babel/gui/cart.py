@@ -867,14 +867,14 @@ class CartView(Frame):
 
         # miscellaneous tab
         moreTab = Frame(ntb)
-        more_tracker = self.populate_more_tab(
-            moreTab, orec)
-
+        more_tracker = self.more_tab_widget(
+            moreTab, orec.resource)
         ntb.add(mainTab, text=f'title {cart_no}')
         ntb.add(moreTab, text='more')
 
         self.tracker[ntb.winfo_id()] = {
             'resource': res_tracker,
+            'more_res': more_tracker,
             'order': ord_tracker,
             'grid': {
                 'gridCbx': gridCbx,
@@ -885,14 +885,14 @@ class CartView(Frame):
 
         return ntb
 
-    def populate_more_tab(self, tab, orec):
-        title = f'{orec.resource.title} / {orec.resource.author}.'
+    def more_tab_widget(self, tab, resource):
+        title = f'{resource.title} / {resource.author}.'
         Label(tab, text=title, font=RBFONT).grid(
             row=0, column=0, sticky='snw', padx=5, pady=5)
         urlBtn = Button(
             tab, text='link',
             width=10,
-            command=lambda aurl=orec.resource.desc_url: open_url(aurl))
+            command=lambda aurl=resource.desc_url: open_url(aurl))
         urlBtn.grid(
             row=0, column=0, sticky='sne', padx=20, pady=20)
 
@@ -909,9 +909,24 @@ class CartView(Frame):
             row=1, column=0, rowspan=5, sticky="snew", padx=10)
         scrollbar['command'] = summaryTxt.yview
 
-        summaryTxt.insert(END, f'Misc:\n{orec.resource.misc}\n\n')
-        summaryTxt.insert(END, f'Summary:\n{orec.resource.summary}\n')
-        summaryTxt['state'] = 'disable'
+        self.populate_more_tab_summary(
+            summaryTxt, resource.misc, resource.summary)
+
+        return {'summaryTxt': summaryTxt}
+
+    def populate_more_tab_summary(self, text_widget, misc, summary):
+        """
+        args:
+            text_widget: tkinter text widget obj
+            misc: str
+            summary: str
+        """
+
+        text_widget['state'] = 'normal'
+        text_widget.delete('1.0', END)
+        text_widget.insert(END, f'Misc:\n{misc}\n\n')
+        text_widget.insert(END, f'Summary:\n{summary}\n')
+        text_widget['state'] = 'disable'
 
     def populate_resource_data_widget(self, widget, resource):
         """
@@ -1399,8 +1414,11 @@ class CartView(Frame):
 
         # update display
         resdataTxt = self.tracker[ntb_id]['resource']['resdataTxt']
+        summaryTxt = self.tracker[ntb_id]['more_res']['summaryTxt']
         resource_rec = get_record(Resource, did=resource_id)
         self.populate_resource_data_widget(resdataTxt, resource_rec)
+        self.populate_more_tab_summary(
+            summaryTxt, resource_rec.misc, resource_rec.summary)
 
     def delete_resource(self, ntb):
         msg = 'Are you sure you want to delete order?'
