@@ -55,6 +55,14 @@ def get_html(system_id, keyword):
 
 
 def has_resource(system_id, keyword):
+    """
+    Scrapes html page of OPAC of the keyword search
+    args:
+        system_id: int, datastore system did
+        keyword: str, ISBN or UPC
+    returns: bool, False if no matches found or True if dup present
+    """
+
     html = get_html(system_id, keyword)
     if html is not None:
         soup = BeautifulSoup(html, 'html.parser')
