@@ -1015,17 +1015,29 @@ class CartView(Frame):
         # provide description data
         if resource.dup_catalog is None:
             catalogImg = self.notcheckedImg
-        elif resource.dup_babel:
+            res_dup_msg = 'catalog dups\nnot checked'
+        elif resource.dup_catalog:
+            res_dup_msg = 'found catalog duplicate'
             catalogImg = self.foundImg
         else:
+            res_dup_msg = 'no dups in catalog'
             catalogImg = self.notfoundImg
+
+        if resource.isbn:
+            keyword = resource.isbn
+        elif resource.upc:
+            keyword = resource.upc
+        else:
+            keyword = None
+            res_dup_msg = 'unable to search catalog'
 
         catalogBtn = Button(
             resourceFrm,
             image=catalogImg,
-            command=lambda: self.show_in_catalog(resource.isbn))
+            command=lambda: self.show_in_catalog(keyword))
         catalogBtn.grid(
             row=0, column=0, sticky='nw', padx=2, pady=5)
+        self.createToolTip(catalogBtn, res_dup_msg)
 
         if resource.dup_babel:
             babeldupBtn = Button(
@@ -1033,12 +1045,13 @@ class CartView(Frame):
                 image=self.babeldupImg)
             babeldupBtn.grid(
                 row=1, column=0, sticky='nw', padx=2, pady=5)
+            self.createToolTip(babeldupBtn, 'previously ordered')
 
         # display Text widget
         resdataTxt = Text(
             resourceFrm,
             # width=65,
-            height=7,
+            height=8,
             background='SystemButtonFace',
             borderwidth=0)
         resdataTxt.grid(
@@ -1073,7 +1086,14 @@ class CartView(Frame):
 
     def show_in_catalog(self, keyword):
         if keyword:
-            open_url(f'{BPL_SEARCH_URL}{keyword}')
+            if self.system.get() == 1:
+                url = BPL_SEARCH_URL
+            elif self.system.get() == 2:
+                url = NYPL_SEARCH_URL
+            else:
+                url = None
+            if url:
+                open_url(f'{url}{keyword}')
 
     def create_order_frame(self, parent, order):
         # Comboboxes and entries
