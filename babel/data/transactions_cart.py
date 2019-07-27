@@ -554,25 +554,47 @@ def convert_price2datastore(price_str):
     return price
 
 
-def babel_resource_match(session, system_id, library_id, **kwargs):
+def babel_resource_match(session, system_id, library_id, isbn=None, upc=None):
     """Finds ordered previously resources"""
+    isbn_matches = 0
+    if isbn is not None:
+        isbn_matches = (session.query(
+            Cart, Order, Resource)
+            .join(Order, Cart.did == Order.cart_id)
+            .join(Resource, Order.did == Resource.order_id)
+            .filter(Cart.system_id == system_id)
+            .filter(Cart.library_id == library_id)
+            .filter(Resource.isbn == isbn).count())
 
-    babel_rec_count = (session.query(
-        Cart, Order, Resource)
-        .join(Order, Cart.did == Order.cart_id)
-        .join(Resource, Order.did == Resource.order_id)
-        .filter(Cart.system_id == system_id)
-        .filter(Cart.library_id == library_id)
-        .filter(**kwargs).count())
+    upc_matches = 0
+    if upc is not None:
+        upc_matches = (session.query(
+            Cart, Order, Resource)
+            .join(Order, Cart.did == Order.cart_id)
+            .join(Resource, Order.did == Resource.order_id)
+            .filter(Cart.system_id == system_id)
+            .filter(Cart.library_id == library_id)
+            .filter(Resource.upc == upc).count())
 
-    if babel_rec_count > 1:
+    if isbn_matches > 1:
+        return True
+    elif upc_matches > 1:
         return True
     else:
         return False
 
 
-def find_matches(cart_id):
+def find_matches(cart_id, progbar=None, status_var=None):
     with session_scope() as session:
+
+        if status_var:
+            status_var.set('Searching...')
+
+        if progbar:
+            count = count_records(session, Order, cart_id=cart_id)
+            progbar['value'] = 0
+            progbar['maximum'] = count
+
         cart_rec = retrieve_record(session, Cart, did=cart_id)
         ord_recs = retrieve_records(session, Order, cart_id=cart_id)
         for rec in ord_recs:
@@ -582,7 +604,7 @@ def find_matches(cart_id):
                     session,
                     cart_rec.system_id,
                     cart_rec.library_id,
-                    isbn=rec.resouce.isbn)
+                    isbn=rec.resource.isbn)
                 keyword = rec.resource.isbn
             elif rec.resource.upc:
                 babel_dup = babel_resource_match(upc=rec.resouce.upc)
@@ -603,3 +625,9 @@ def find_matches(cart_id):
                 dup_sierra=sierra_dup,
                 dup_babel=babel_dup,
                 dup_timestamp=datetime.now())
+
+            if progbar:
+                progbar['value'] += 1
+
+    if status_var:
+        status_var.set('Search completed.')
