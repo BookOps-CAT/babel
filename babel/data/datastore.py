@@ -306,6 +306,9 @@ class Resource(Base):
     price_disc = Column(Float(asdecimal=True), default=0.0, nullable=False)
     desc_url = Column(String(length=500, collation='utf8_bin'))
     misc = Column(String(250))
+    dup_babel = Column(Boolean)
+    dup_catalog = Column(Boolean)
+    dup_timestamp = Column(DateTime)
 
     order = relationship(
         'Order',
@@ -362,9 +365,6 @@ class Order(Base):
     poPerLine = Column(String(50))
     note = Column(String(50))
     comment = Column(String(150))
-    dup_babel = Column(Boolean)
-    dup_sierra = Column(Boolean)
-    dup_timestamp = Column(DateTime)
 
     resource = relationship(
         'Resource',

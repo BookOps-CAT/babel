@@ -30,7 +30,10 @@ create_datastore(
 
 
 ## Icon Credits
-Icons by [Everaldo / Yellowicon](http://www.everaldo.com) used under [GNU Lesser General Public License](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License).
+Icons by 
+* [Everaldo / Yellowicon](http://www.everaldo.com) used under [GNU Lesser General Public License](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License).
+* [Daniele De Santis](https://www.danieledesantis.net/) used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
+* [Icon Archive](http://www.iconarchive.com) used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Presentations
 

@@ -600,34 +600,34 @@ def find_matches(cart_id, progbar=None, status_var=None):
         for rec in ord_recs:
             keyword = None
             if rec.resource.isbn:
+                keyword = rec.resource.isbn
                 babel_dup = babel_resource_match(
                     session,
                     cart_rec.system_id,
                     cart_rec.library_id,
-                    isbn=rec.resource.isbn)
-                keyword = rec.resource.isbn
+                    isbn=keyword)
             elif rec.resource.upc:
-                babel_dup = babel_resource_match(upc=rec.resouce.upc)
                 keyword = rec.resource.upc
+                babel_dup = babel_resource_match(upc=keyword)
             else:
-                sierra_dup = False
+                catalog_dup = False
                 babel_dup = False
 
-            if keyword:
-                sierra_dup = catalog_match(cart_rec.system_id, keyword)
+            catalog_dup = catalog_match(cart_rec.system_id, keyword)
 
             mlogger.debug(
-                f'Found following order matches: catalog={sierra_dup}, '
+                f'Found following order matches: catalog={catalog_dup}, '
                 f'babel={babel_dup}')
 
             update_record(
-                session, Order, rec.did,
-                dup_sierra=sierra_dup,
+                session, Resource, rec.resource.did,
+                dup_catalog=catalog_dup,
                 dup_babel=babel_dup,
                 dup_timestamp=datetime.now())
 
             if progbar:
                 progbar['value'] += 1
+                progbar.update()
 
     if status_var:
         status_var.set('Search completed.')

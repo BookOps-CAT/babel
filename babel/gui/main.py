@@ -181,10 +181,14 @@ class Base(Tk):
         deleteImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-reload-iconS.png')
         editImgS = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/App-develop-iconS.png')
+        img = Image.open('./icons/playstation-triangle-icon.png')
         notFoundImg = ImageTk.PhotoImage(img)
-        img = Image.open('./icons/App-konqueror-iconS.png')
+        img = Image.open('./icons/playstation-circle-icon.png')
         foundImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/playstation-cross-icon.png')
+        notcheckedImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Letter-C-icon.png')
+        babeldupImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-edit-add-iconS.png')
         addImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-remove-iconS.png')
@@ -230,6 +234,8 @@ class Base(Tk):
                 'sierra': sierraImg,
                 'notfound': notFoundImg,
                 'found': foundImg,
+                'notchecked': notcheckedImg,
+                'babeldup': babeldupImg,
                 'removeS': removeImgS,
                 'valid': validationImg,
                 'fundM': fundImgM}}

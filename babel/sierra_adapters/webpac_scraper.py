@@ -11,8 +11,8 @@ from requests.exceptions import RequestException, Timeout
 from errors import BabelError
 
 
-BPL_URL = 'https://iii.brooklynpubliclibrary.org'
-NYPL_URL = 'https://catalog.nypl.org'
+BPL_SEARCH_URL = 'https://iii.brooklynpubliclibrary.org/search/i'
+NYPL_SEARCH_URL = 'https://catalog.nypl.org/search/i'
 
 TIME_OUT = 10  # seconds
 
@@ -30,9 +30,9 @@ def get_html(system_id, keyword):
     """
 
     if system_id == 1:
-        url = f'{BPL_URL}/search/i{keyword}'
+        url = f'{BPL_SEARCH_URL}{keyword}'
     elif system_id == 2:
-        url = f'{NYPL_URL}/search/i{keyword}'
+        url = f'{NYPL_SEARCH_URL}{keyword}'
 
     if keyword:
         headers = {'user-agent': 'BookOps/Babel'}
@@ -40,14 +40,14 @@ def get_html(system_id, keyword):
         try:
             response = requests.get(url, headers=headers, timeout=TIME_OUT)
             mlogger.debug(
-                f'WebScraper request: {response.url}, '
+                f'WebPAC scraper request: {response.url}, '
                 f'response code: {response.status_code}')
 
             if response.status_code == requests.codes.ok:
                 return response.content
 
         except Timeout:
-            mlogger.error('Webscraper timed out.')
+            mlogger.error('WebPAC scraper timed out.')
             raise BabelError(
                 'Request for a page timed out. Terminating.')
         except RequestException:

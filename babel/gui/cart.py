@@ -8,7 +8,7 @@ from tkinter import messagebox
 from errors import BabelError
 from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     assign_blanketPO_to_cart,
-                                    assign_wlo_to_cart,
+                                    assign_wlo_to_cart, find_matches,
                                     determine_needs_validation,
                                     get_last_cart,
                                     get_orders_by_id,
@@ -27,6 +27,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
 from gui.fonts import RFONT, RBFONT, LFONT
 from gui.utils import ToolTip, BusyManager, get_id_from_index, open_url
 from gui.top_resource import EditResourceWidget
+from sierra_adapters.webpac_scraper import BPL_SEARCH_URL, NYPL_SEARCH_URL
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -89,9 +90,9 @@ class CartView(Frame):
         # icons
         copyImg = self.app_data['img']['copy']
         editImg = self.app_data['img']['edit']
-        deleteImg = self.app_data['img']['delete']
+        self.deleteImg = self.app_data['img']['delete']
         helpImg = self.app_data['img']['help']
-        saveImg = self.app_data['img']['save']
+        self.saveImg = self.app_data['img']['save']
         previousImg = self.app_data['img']['previous']
         nextImg = self.app_data['img']['next']
         startImg = self.app_data['img']['start']
@@ -105,6 +106,8 @@ class CartView(Frame):
         self.addImgS = self.app_data['img']['addS']
         self.foundImg = self.app_data['img']['found']
         self.notfoundImg = self.app_data['img']['notfound']
+        self.notcheckedImg = self.app_data['img']['notchecked']
+        self.babeldupImg = self.app_data['img']['babeldup']
         self.copyImgS = self.app_data['img']['copyS']
         self.saveImgS = self.app_data['img']['saveS']
 
@@ -127,16 +130,14 @@ class CartView(Frame):
             self.actionFrm,
             image=editImg,
             command=self.rename_cart)
-        # self.editBtn.image = editImg
         self.editBtn.grid(
             row=0, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.editBtn, 'edit cart name')
 
         self.saveBtn = Button(
             self.actionFrm,
-            image=saveImg,
+            image=self.saveImg,
             command=self.save_cart)
-        # self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=1, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.saveBtn, 'save cart')
@@ -145,7 +146,6 @@ class CartView(Frame):
             self.actionFrm,
             image=fundImgM,
             command=self.show_fund_widget)
-        # self.fundBtn.image = fundImgM
         self.fundBtn.grid(
             row=2, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.fundBtn, 'apply funds')
@@ -154,7 +154,6 @@ class CartView(Frame):
             self.actionFrm,
             image=validationImg,
             command=self.validation_report)
-        # self.validBtn.image = saveImg
         self.validBtn.grid(
             row=3, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.validBtn, 'validate cart')
@@ -163,16 +162,14 @@ class CartView(Frame):
             self.actionFrm,
             image=copyImg,
             command=self.copy_cart)
-        # self.copyBtn.image = copyImg
         self.copyBtn.grid(
             row=4, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.copyBtn, 'copy entire cart')
 
         self.deleteBtn = Button(
             self.actionFrm,
-            image=deleteImg,
+            image=self.deleteImg,
             command=self.delete_cart)
-        # self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
             row=5, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.deleteBtn, 'delete cart')
@@ -180,8 +177,7 @@ class CartView(Frame):
         self.sierraBtn = Button(
             self.actionFrm,
             image=sierraImg,
-            command=self.search_sierra)
-        # self.sierraBtn.image = sierraImg
+            command=self.find_duplicates_widget)
         self.sierraBtn.grid(
             row=6, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.sierraBtn, 'search Sierra')
@@ -190,7 +186,6 @@ class CartView(Frame):
             self.actionFrm,
             image=helpImg,
             command=self.help)
-        # self.helpBtn.image = helpImg
         self.helpBtn.grid(
             row=7, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
@@ -653,8 +648,55 @@ class CartView(Frame):
             delete_data_by_did(Cart, self.cart_id.get())
             self.controller.show_frame('CartsView')
 
-    def search_sierra(self):
-        pass
+    def run_duplicate_search(self, top, progbar, status_var):
+        self.cur_manager.busy()
+        try:
+            find_matches(self.cart_id.get(), progbar, status_var)
+            self.cur_manager.notbusy()
+        except BabelError as e:
+            self.cur_manager.notbusy()
+            messagebox.showerror('Web scraping error', e, parent=top)
+        finally:
+            # update display
+            self.display_selected_orders(self.selected_order_ids)
+
+    def find_duplicates_widget(self):
+        top = Toplevel(self)
+        top.title('Duplicates search')
+
+        status = StringVar()
+        status.set('Click check button to begin.')
+
+        frm = Frame(top)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=10, pady=10)
+        frm.columnconfigure(0, minsize=120)
+        frm.columnconfigure(1, minsize=120)
+
+        statusLbl = Label(
+            frm, textvariable=status)
+        statusLbl.grid(
+            row=0, column=0, columnspan=2, sticky='snew', padx=5, pady=5)
+        progbar = Progressbar(
+            frm,
+            mode='determinate',
+            orient=HORIZONTAL)
+        progbar.grid(
+            row=1, column=0, columnspan=2, sticky='snew', pady=5)
+
+        startBtn = Button(
+            frm,
+            image=self.saveImg,
+            command=lambda: self.run_duplicate_search(top, progbar, status))
+        startBtn.grid(
+            row=2, column=0, sticky='sne', padx=10, pady=10)
+
+        cancelBtn = Button(
+            frm,
+            image=self.deleteImg,
+            command=top.destroy)
+        cancelBtn.grid(
+            row=2, column=1, sticky='snw', padx=10, pady=10)
 
     def help(self):
         # link to Github wiki with documentation here
@@ -788,8 +830,6 @@ class CartView(Frame):
         gridFrm = LabelFrame(mainTab, text='grid')
         gridFrm.grid(
             row=1, column=1, sticky='snew', padx=10)
-        # mlogger.debug('New gridFrm ({}, child of mainTab {})'.format(
-            # gridFrm.winfo_id(), mainTab.winfo_id()))
 
         gridCbx = Combobox(
             gridFrm,
@@ -804,7 +844,6 @@ class CartView(Frame):
             command=lambda: self.apply_grid_template(ntb.winfo_id()))
         applyBtn.grid(
             row=0, column=5, sticky='snw', padx=5, pady=2)
-        # applyBtn.image = self.saveImgS
 
         copyBtn = Button(
             gridFrm,
@@ -974,13 +1013,26 @@ class CartView(Frame):
         resourceFrm.columnconfigure(3, minsize=710)
 
         # provide description data
-        sierraBtn = Button(
+        if resource.dup_catalog is None:
+            catalogImg = self.notcheckedImg
+        elif resource.dup_babel:
+            catalogImg = self.foundImg
+        else:
+            catalogImg = self.notfoundImg
+
+        catalogBtn = Button(
             resourceFrm,
-            image=self.notfoundImg,
-            command=lambda: self.sierra_check(parent))
-        sierraBtn.image = self.notfoundImg
-        sierraBtn.grid(
+            image=catalogImg,
+            command=lambda: self.show_in_catalog(resource.isbn))
+        catalogBtn.grid(
             row=0, column=0, sticky='nw', padx=2, pady=5)
+
+        if resource.dup_babel:
+            babeldupBtn = Button(
+                resourceFrm,
+                image=self.babeldupImg)
+            babeldupBtn.grid(
+                row=1, column=0, sticky='nw', padx=2, pady=5)
 
         # display Text widget
         resdataTxt = Text(
@@ -990,7 +1042,8 @@ class CartView(Frame):
             background='SystemButtonFace',
             borderwidth=0)
         resdataTxt.grid(
-            row=0, column=1, columnspan=3, sticky='snew', padx=5, pady=5)
+            row=0, column=1, rowspan=10, columnspan=3,
+            sticky='snew', padx=10, pady=5)
 
         self.populate_resource_data_widget(resdataTxt, resource)
 
@@ -1006,18 +1059,21 @@ class CartView(Frame):
             resourceFrm,
             image=self.deleteImgS,
             command=lambda: self.delete_resource(parent.master))
-        # deleteBtn.imgage = self.deleteImgS
         deleteBtn.grid(
             row=0, column=5, sticky='ne', padx=2, pady=5)
 
         tracker = {
             'resource_id': resource.did,
             'resourcefrm': resourceFrm,
-            'sierraBtn': sierraBtn,
+            'catalogBtn': catalogBtn,
             'resdataTxt': resdataTxt
         }
 
         return tracker
+
+    def show_in_catalog(self, keyword):
+        if keyword:
+            open_url(f'{BPL_SEARCH_URL}{keyword}')
 
     def create_order_frame(self, parent, order):
         # Comboboxes and entries
@@ -1403,9 +1459,6 @@ class CartView(Frame):
         parent.destroy()
         # mlogger.debug('locs after removal: {}'.format(
         #     [l['loc_id'] for l in self.tracker[ntb_id]['grid']['locs']]))
-
-    def sierra_check(self, ntb):
-        find_matches(self.cart_id.get())
 
     def edit_resource(self, ntb_id):
         resource_id = self.tracker[ntb_id]['resource']['resource_id']
