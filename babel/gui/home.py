@@ -4,7 +4,7 @@ from tkinter.ttk import *
 from PIL import Image, ImageTk
 
 
-# from gui.utils import BusyManager, ToolTip
+from gui.search import SearchView
 
 
 class HomeView(Frame):
@@ -65,7 +65,7 @@ class HomeView(Frame):
             image=searchImg,
             compound=TOP,
             text='Search',
-            command=None)
+            command=lambda: SearchView(self, **self.app_data))
         self.searchBtn.image = searchImg
         self.searchBtn.grid(
             row=1, column=3, sticky='sw', padx=20, pady=10)

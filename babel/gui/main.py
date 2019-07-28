@@ -16,6 +16,7 @@ from gui.grids import GridView
 from gui.ingest import ImportView
 from gui.carts import CartsView
 from gui.cart import CartView
+from gui.search import SearchView
 from paths import USER_DATA
 
 
@@ -99,9 +100,6 @@ class Base(Tk):
             label='Reports',
             command=None)
         navig_menu.add_command(
-            label='Search',
-            command=None)
-        navig_menu.add_command(
             label='Grids',
             command=lambda: self.show_frame('GridView'))
         navig_menu.add_command(
@@ -117,6 +115,9 @@ class Base(Tk):
         navig_menu.add_separator()
         navig_menu.add_command(label='Exit', command=self.quit)
         menubar.add_cascade(label='Menu', menu=navig_menu)
+
+        menubar.add_command(
+            label='Search', command=lambda: SearchView(self, **self.app_data))
 
         help_menu = Menu(menubar, tearoff=0)
         help_menu.add_command(label='Help index', command=None)
