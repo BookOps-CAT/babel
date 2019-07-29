@@ -104,6 +104,7 @@ class SearchView:
             command=self.basic_search)
         bsearchBtn.grid(
             row=0, column=2, sticky='new', padx=5, pady=10)
+        self.createToolTip(bsearchBtn, 'run search')
 
         # advanced search frame
         afrm = LabelFrame(self.top, text='Advanced search')
@@ -135,6 +136,7 @@ class SearchView:
             command=self.advanced_search)
         asearchBtn.grid(
             row=0, column=5, sticky='snew', padx=5, pady=10)
+        self.createToolTip(asearchBtn, 'run search')
 
         con1Cbx = Combobox(
             afrm,
@@ -353,9 +355,27 @@ class SearchView:
         self.createToolTip(dateendEnt, date_format_msg)
 
     def basic_search(self):
-        pass
+        if self.identifier.get() and self.identifier_type.get():
+            kwargs = dict()
+            if self.identifier_type.get() == 'bib #':
+                model = Order
+                kwargs['bid'] = self.identifier.get().strip()
+            elif self.identifier_type.get() == 'order #':
+                model = Order
+                kwargs['oid'] = self.identifier.get().strip()
+            elif self.identifier_type.get() == 'wlo #':
+                model = Order
+                kwargs['wlo'] = self.identifier.get().strip()
+        else:
+            messagebox.showwarning(
+                'Missing input',
+                "Please enter identifier and it's type.",
+                parent=self.top)
 
     def advanced_search(self):
+        pass
+
+    def results_widget(self):
         pass
 
     def get_comboboxes_values(self):
