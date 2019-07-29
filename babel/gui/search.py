@@ -12,6 +12,7 @@ from errors import BabelError
 from gui.data_retriever import get_names, get_codes
 from gui.fonts import RFONT
 from gui.utils import BusyManager, ToolTip
+from data.transactions_search import get_data_by_identifier
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -63,7 +64,7 @@ class SearchView:
             'blanketPO',
             'ISBN',
             'order #',
-            'other no.',
+            'other #',
             'UPC',
             'wlo #'
         ]
@@ -94,7 +95,8 @@ class SearchView:
             font=RFONT,
             state='readonly',
             width=10,
-            values=id_values)
+            values=id_values,
+            textvariable=self.identifier_type)
         idtypeCbx.grid(
             row=0, column=1, sticky='new', padx=5, pady=15)
 
@@ -356,16 +358,10 @@ class SearchView:
 
     def basic_search(self):
         if self.identifier.get() and self.identifier_type.get():
-            kwargs = dict()
-            if self.identifier_type.get() == 'bib #':
-                model = Order
-                kwargs['bid'] = self.identifier.get().strip()
-            elif self.identifier_type.get() == 'order #':
-                model = Order
-                kwargs['oid'] = self.identifier.get().strip()
-            elif self.identifier_type.get() == 'wlo #':
-                model = Order
-                kwargs['wlo'] = self.identifier.get().strip()
+            data = get_data_by_identifier(
+                self.identifier.get(),
+                self.identifier_type.get())
+
         else:
             messagebox.showwarning(
                 'Missing input',
