@@ -318,57 +318,63 @@ class CartsView(Frame):
 
         # display basic info
         summary = self.generate_cart_summary(self.selected_cart_id.get())
-        self.cartdataTxt.insert(END, summary)
+        if summary:
+            self.cartdataTxt.insert(END, summary)
 
-        self.cartdataTxt['state'] = 'disable'
-        self.cur_manager.notbusy()
+            self.cartdataTxt['state'] = 'disable'
+            self.cur_manager.notbusy()
+        else:
+            self.cur_manager.notbusy()
 
     def generate_cart_summary(self, cart_id):
         cart_rec = get_record(Cart, did=cart_id)
-        owner = self.profile_idx[cart_rec.user_id]
-        try:
-            library = get_record(Library, did=cart_rec.library_id).name
-        except AttributeError:
-            library = ''
+        if cart_rec:
+            owner = self.profile_idx[cart_rec.user_id]
+            try:
+                library = get_record(Library, did=cart_rec.library_id).name
+            except AttributeError:
+                library = ''
 
-        stat_rec = get_record(Status, did=cart_rec.status_id)
+            stat_rec = get_record(Status, did=cart_rec.status_id)
 
-        lines = []
-        lines.append(f'cart: {cart_rec.name}')
-        lines.append(f'status: {stat_rec.name}')
-        lines.append(f'owner: {owner}')
-        lines.append(
-            f'created: {cart_rec.created} | updated: {cart_rec.updated}')
-        lines.append(f'library: {library}')
-        lines.append(f'blanketPO: {cart_rec.blanketPO}')
-
-        # cart_details data
-        details = summarize_cart(cart_id)
-        lines.append(f'languages: {details["langs"]}')
-        lines.append(f'vendors: {details["vendors"]}')
-        lines.append(f'material types: {details["mattypes"]}')
-        lines.append(f'audiences: {details["audns"]}')
-
-        lines.append(f'funds:')
-        for fund, values in details["funds"].items():
+            lines = []
+            lines.append(f'cart: {cart_rec.name}')
+            lines.append(f'status: {stat_rec.name}')
+            lines.append(f'owner: {owner}')
             lines.append(
-                f'\t{fund}: ${values["total_cost"]:.2f}, '
-                f'copies: {values["copies"]}, titles: {values["titles"]}')
+                f'created: {cart_rec.created} | updated: {cart_rec.updated}')
+            lines.append(f'library: {library}')
+            lines.append(f'blanketPO: {cart_rec.blanketPO}')
 
-        return '\n'.join(lines)
+            # cart_details data
+            details = summarize_cart(cart_id)
+            lines.append(f'languages: {details["langs"]}')
+            lines.append(f'vendors: {details["vendors"]}')
+            lines.append(f'material types: {details["mattypes"]}')
+            lines.append(f'audiences: {details["audns"]}')
+
+            lines.append(f'funds:')
+            for fund, values in details["funds"].items():
+                lines.append(
+                    f'\t{fund}: ${values["total_cost"]:.2f}, '
+                    f'copies: {values["copies"]}, titles: {values["titles"]}')
+
+            return '\n'.join(lines)
 
     def edit_data(self):
-        # figure out profile cart belongs to first
-        self.profile.set(self.selected_cart_owner.get())
-        self.active_id.set(self.selected_cart_id.get())
-        self.controller.show_frame('CartView')
+        if self.selected_cart_id.get():
+            # figure out profile cart belongs to first
+            self.profile.set(self.selected_cart_owner.get())
+            self.active_id.set(self.selected_cart_id.get())
+            self.controller.show_frame('CartView')
 
     def copy_data(self):
-        ccw = CopyCartWidget(
-            self, self.selected_cart_id.get(),
-            self.selected_cart_name.get(), **self.app_data)
-        self.wait_window(ccw.top)
-        self.observer()
+        if self.selected_cart_id.get():
+            ccw = CopyCartWidget(
+                self, self.selected_cart_id.get(),
+                self.selected_cart_name.get(), **self.app_data)
+            self.wait_window(ccw.top)
+            self.observer()
 
     def delete_data(self):
         if self.selected_cart_id.get():
@@ -380,6 +386,8 @@ class CartsView(Frame):
                 delete_data_by_did(Cart, self.selected_cart_id.get())
                 curItem = self.cartTrv.focus()
                 self.cartTrv.delete(curItem)
+                self.selected_cart_id.set(0)
+                self.selected_cart_name.set('')
                 self.cur_manager.notbusy()
 
     def link_ids(self):
@@ -499,9 +507,7 @@ class CartsView(Frame):
         okBtn = Button(
             btnFrm,
             image=self.saveImg,
-            command=lambda: export_orders_to_marc_file(
-                self.dst_fh.get(), self.saving_status,
-                cart_rec, progbar) if self.dst_fh.get() else None)
+            command=lambda: self.launch_save(top, cart_rec, progbar))
         okBtn.grid(
             row=4, column=1, sticky='snew', padx=25, pady=10)
 
@@ -512,19 +518,34 @@ class CartsView(Frame):
         cancelBtn.grid(
             row=4, column=2, sticky='snew', padx=25, pady=10)
 
+    def launch_save(self, top, cart_rec, progbar):
+        if self.dst_fh.get():
+            try:
+                self.cur_manager.busy()
+                export_orders_to_marc_file(
+                    self.dst_fh.get(), self.saving_status,
+                    cart_rec, progbar)
+                self.cur_manager.notbusy()
+
+            except BabelError as e:
+                self.cur_manager.notbusy()
+                messagebox.showerror(
+                    'Saving Error',
+                    'Unable to create MARC file.\n'
+                    'Run cart validation to find and correct any problems.\n'
+                    f'Error: {e}',
+                    parent=top)
+
     def create_marc_file(self):
         cart_rec = get_record(Cart, did=self.selected_cart_id.get())
-        status = get_record(Status, did=cart_rec.status_id)
-        if status.name == 'finalized':
-            try:
+        if cart_rec:
+            status = get_record(Status, did=cart_rec.status_id)
+            if status.name == 'finalized':
                 self.create_to_marc_widget(cart_rec)
-            except BabelError as e:
-                messagebox.showerror(
-                    'Saving error', e)
-        else:
-            msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
-                'Please change cart status to proceed.'
-            messagebox.showwarning('Output to MARC file', msg)
+            else:
+                msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
+                    'Please change cart status to proceed.'
+                messagebox.showwarning('Output to MARC file', msg)
 
     def create_to_sheet_widget(self, cart_rec, system, cart_data):
 
@@ -585,36 +606,38 @@ class CartsView(Frame):
             row=4, column=2, sticky='snew', padx=25, pady=10)
 
     def create_order_sheet(self):
-        cart_rec = get_record(Cart, did=self.selected_cart_id.get())
-        status = get_record(Status, did=cart_rec.status_id)
+        if self.selected_cart_id.get():
+            cart_rec = get_record(Cart, did=self.selected_cart_id.get())
+            status = get_record(Status, did=cart_rec.status_id)
 
-        if cart_rec.system_id == 1:
-            systemLbl = 'Brooklyn Public Library'
-        else:
-            systemLbl = 'New York Public Library'
+            if cart_rec.system_id == 1:
+                systemLbl = 'Brooklyn Public Library'
+            else:
+                systemLbl = 'New York Public Library'
 
-        if status.name == 'finalized':
+            if status.name == 'finalized':
 
-            cart_data = []
-            try:
-                cart_data = get_cart_data_for_order_sheet(
-                    self.selected_cart_id.get())
-            except BabelError as e:
-                messagebox.showerror(
-                    'Retrieval Error',
-                    'Unable to retrieve records from database.\n'
-                    f'Error: {e}')
-
-            if cart_data:
+                cart_data = []
                 try:
-                    self.create_to_sheet_widget(cart_rec, systemLbl, cart_data)
+                    cart_data = get_cart_data_for_order_sheet(
+                        self.selected_cart_id.get())
                 except BabelError as e:
                     messagebox.showerror(
-                        'Saving error', e)
-        else:
-            msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
-                'Please change cart status to proceed.'
-            messagebox.showwarning('Output to spreadsheet', msg)
+                        'Retrieval Error',
+                        'Unable to retrieve records from database.\n'
+                        f'Error: {e}')
+
+                if cart_data:
+                    try:
+                        self.create_to_sheet_widget(
+                            cart_rec, systemLbl, cart_data)
+                    except BabelError as e:
+                        messagebox.showerror(
+                            'Saving error', e)
+            else:
+                msg = f'Cart "{cart_rec.name}" is not finalized.\n' \
+                    'Please change cart status to proceed.'
+                messagebox.showwarning('Output to spreadsheet', msg)
 
     def selectItem(self, a):
         curItem = self.cartTrv.focus()
