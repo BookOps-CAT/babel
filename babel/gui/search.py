@@ -369,7 +369,6 @@ class SearchView:
         self.profile_names = get_names(User)
 
     def onValidateDate(self, i, d, P):
-        print(i, d, P)
         valid = True
         if d == '1':
             if i == '0':
