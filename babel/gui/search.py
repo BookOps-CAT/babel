@@ -9,9 +9,9 @@ from tkinter import messagebox
 from data.datastore import (System, Library, User, Lang, Audn,
                             MatType, Vendor, Fund)
 from errors import BabelError
-from gui.data_retriever import convert4display, get_names
+from gui.data_retriever import get_names, get_codes
 from gui.fonts import RFONT
-from gui.utils import BusyManager
+from gui.utils import BusyManager, ToolTip
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -45,6 +45,7 @@ class SearchView:
         self.lang = StringVar()
         self.mattype = StringVar()
         self.vendor = StringVar()
+        self.fund = StringVar()
         self.created_start = StringVar()
         self.created_end = StringVar()
         self.con1 = StringVar()
@@ -54,6 +55,8 @@ class SearchView:
         self.con5 = StringVar()
         self.con6 = StringVar()
         self.con7 = StringVar()
+        self.con8 = StringVar()
+        self.con9 = StringVar()
 
         id_values = [
             'bib #',
@@ -68,6 +71,11 @@ class SearchView:
         search_types = ['keyword', 'phrase']
         conjunctions = ['and', 'or', 'not']
         self.get_comboboxes_values()
+        date_format_msg = 'format: YYYY-MM-DD'
+
+        # register validators
+        self.vldt = (self.top.register(self.onValidateDate),
+                     '%i', '%d', '%P')
 
         # basic search frame
         bfrm = LabelFrame(self.top, text='Basic search')
@@ -275,8 +283,31 @@ class SearchView:
         con7Cbx.grid(
             row=7, column=0, sticky='new', padx=5, pady=2)
 
-        Label(afrm, text='profile:').grid(
+        Label(afrm, text='fund:').grid(
             row=7, column=1, sticky='new', padx=5, pady=2)
+
+        fundCbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=10,
+            state='readonly',
+            textvariable=self.fund,
+            values=self.fund_codes)
+        fundCbx.grid(
+            row=7, column=2, sticky='new', padx=5, pady=2)
+
+        con8Cbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=3,
+            state='readonly',
+            textvariable=self.con8,
+            values=conjunctions)
+        con8Cbx.grid(
+            row=8, column=0, sticky='new', padx=5, pady=2)
+
+        Label(afrm, text='profile:').grid(
+            row=8, column=1, sticky='new', padx=5, pady=2)
 
         profileCbx = Combobox(
             afrm,
@@ -286,7 +317,40 @@ class SearchView:
             textvariable=self.profile,
             values=self.profile_names)
         profileCbx.grid(
-            row=7, column=2, sticky='new', padx=5, pady=2)
+            row=8, column=2, sticky='new', padx=5, pady=2)
+
+        con9Cbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=3,
+            state='readonly',
+            textvariable=self.con9,
+            values=conjunctions)
+        con9Cbx.grid(
+            row=9, column=0, sticky='new', padx=5, pady=2)
+
+        Label(afrm, text='date:').grid(
+            row=9, column=1, sticky='new', padx=5, pady=2)
+
+        datestartEnt = Entry(
+            afrm,
+            font=RFONT,
+            width=10,
+            textvariable=self.created_start,
+            validate="key", validatecommand=self.vldt)
+        datestartEnt.grid(
+            row=9, column=2, sticky='new', padx=5, pady=2)
+        self.createToolTip(datestartEnt, date_format_msg)
+
+        dateendEnt = Entry(
+            afrm,
+            font=RFONT,
+            width=14,
+            textvariable=self.created_end,
+            validate="key", validatecommand=self.vldt)
+        dateendEnt.grid(
+            row=9, column=3, sticky='new', padx=5, pady=2)
+        self.createToolTip(dateendEnt, date_format_msg)
 
     def basic_search(self):
         pass
@@ -301,4 +365,42 @@ class SearchView:
         self.vendor_names = get_names(Vendor)
         self.audn_names = get_names(Audn)
         self.mattype_names = get_names(MatType)
+        self.fund_codes = get_codes(Fund)
         self.profile_names = get_names(User)
+
+    def onValidateDate(self, i, d, P):
+        print(i, d, P)
+        valid = True
+        if d == '1':
+            if i == '0':
+                if P != '2':
+                    valid = False
+            if i in ('1235689'):
+                if not P[int(i)].isdigit():
+                    valid = False
+
+            if i in ('47'):
+                if P[int(i)] != '-':
+                    valid = False
+
+            if i == '5':
+                if int(P[5]) > 1:
+                    valid = False
+
+            if i == '8':
+                if int(P[8]) > 3:
+                    valid = False
+
+        return valid
+
+    def createToolTip(self, widget, text):
+        toolTip = ToolTip(widget)
+
+        def enter(event):
+            toolTip.showtip(text)
+
+        def leave(event):
+            toolTip.hidetip()
+
+        widget.bind('<Enter>', enter)
+        widget.bind('<Leave>', leave)
