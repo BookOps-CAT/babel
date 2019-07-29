@@ -6,8 +6,10 @@ from tkinter.ttk import *
 from tkinter import messagebox
 
 
+from data.datastore import (System, Library, User, Lang, Audn,
+                            MatType, Vendor, Fund)
 from errors import BabelError
-from gui.data_retriever import convert4display
+from gui.data_retriever import convert4display, get_names
 from gui.fonts import RFONT
 from gui.utils import BusyManager
 
@@ -36,17 +38,22 @@ class SearchView:
         self.identifier_type = StringVar()
         self.title = StringVar()
         self.title_type = StringVar()
-        self.cart = StringVar()
-        self.cart_type = StringVar()
         self.system = StringVar()
         self.library = StringVar()
         self.profile = StringVar()
-        self.audience = StringVar()
-        self.language = StringVar()
+        self.audn = StringVar()
+        self.lang = StringVar()
         self.mattype = StringVar()
         self.vendor = StringVar()
         self.created_start = StringVar()
         self.created_end = StringVar()
+        self.con1 = StringVar()
+        self.con2 = StringVar()
+        self.con3 = StringVar()
+        self.con4 = StringVar()
+        self.con5 = StringVar()
+        self.con6 = StringVar()
+        self.con7 = StringVar()
 
         id_values = [
             'bib #',
@@ -60,11 +67,12 @@ class SearchView:
 
         search_types = ['keyword', 'phrase']
         conjunctions = ['and', 'or', 'not']
+        self.get_comboboxes_values()
 
         # basic search frame
         bfrm = LabelFrame(self.top, text='Basic search')
         bfrm.grid(
-            row=0, column=0, sticky='snew', padx=15, pady=15)
+            row=0, column=0, sticky='snew', padx=25, pady=25)
 
         idEnt = Entry(
             bfrm,
@@ -92,7 +100,7 @@ class SearchView:
         # advanced search frame
         afrm = LabelFrame(self.top, text='Advanced search')
         afrm.grid(
-            row=1, column=0, sticky='snew', padx=15, pady=15)
+            row=1, column=0, sticky='snew', padx=25, pady=25)
 
         Label(afrm, text='title:').grid(
             row=0, column=1, sticky='new', padx=5, pady=15)
@@ -124,33 +132,173 @@ class SearchView:
             afrm,
             font=RFONT,
             state='readonly',
-            width=4,
+            width=3,
+            textvariable=self.con1,
             values=conjunctions)
         con1Cbx.grid(
-            row=1, column=0, sticky='new', padx=5, pady=15)
+            row=1, column=0, sticky='new', padx=5, pady=2)
 
-        Label(afrm, text='cart:').grid(
-            row=1, column=1, sticky='new', padx=5, pady=15)
+        Label(afrm, text='system:').grid(
+            row=1, column=1, sticky='new', padx=5, pady=2)
 
-        cartEnt = Entry(
-            afrm,
-            font=RFONT,
-            textvariable=self.cart)
-        cartEnt.grid(
-            row=1, column=2, columnspan=2, sticky='new', padx=5, pady=15)
-
-        carttypeCbx = Combobox(
+        systemCbx = Combobox(
             afrm,
             font=RFONT,
             state='readonly',
             width=10,
-            values=search_types)
-        carttypeCbx.grid(
-            row=1, column=4, sticky='new', padx=5, pady=15)
+            values=self.system_names)
+        systemCbx.grid(
+            row=1, column=2, sticky='new', padx=5, pady=2)
+
+        con2Cbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=3,
+            state='readonly',
+            textvariable=self.con2,
+            values=conjunctions)
+        con2Cbx.grid(
+            row=2, column=0, sticky='new', padx=5, pady=2)
+
+        Label(afrm, text='library:').grid(
+            row=2, column=1, sticky='new', padx=5, pady=2)
+
+        libraryCbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=10,
+            textvariable=self.library,
+            values=self.library_names,
+            state='readonly')
+        libraryCbx.grid(
+            row=2, column=2, sticky='new', padx=5, pady=2)
+
+        con3Cbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=3,
+            state='readonly',
+            textvariable=self.con3,
+            values=conjunctions)
+        con3Cbx.grid(
+            row=3, column=0, sticky='new', padx=5, pady=2)
+
+        Label(afrm, text='language:').grid(
+            row=3, column=1, sticky='new', padx=5, pady=2)
+
+        langCbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=10,
+            textvariable=self.lang,
+            values=self.lang_names,
+            state='readonly')
+        langCbx.grid(
+            row=3, column=2, sticky='new', padx=5, pady=2)
+
+        con4Cbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=3,
+            state='readonly',
+            textvariable=self.con4,
+            values=conjunctions)
+        con4Cbx.grid(
+            row=4, column=0, sticky='new', padx=5, pady=2)
+
+        Label(afrm, text='vendor:').grid(
+            row=4, column=1, sticky='new', padx=5, pady=2)
+
+        vendorCbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=10,
+            state='readonly',
+            textvariable=self.vendor,
+            values=self.vendor_names)
+        vendorCbx.grid(
+            row=4, column=2, sticky='new', padx=5, pady=2)
+
+        con5Cbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=3,
+            state='readonly',
+            textvariable=self.con5,
+            values=conjunctions)
+        con5Cbx.grid(
+            row=5, column=0, sticky='new', padx=5, pady=2)
+
+        Label(afrm, text='audience:').grid(
+            row=5, column=1, sticky='new', padx=5, pady=2)
+
+        audnCbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=10,
+            state='readonly',
+            textvariable=self.audn,
+            values=self.audn_names)
+        audnCbx.grid(
+            row=5, column=2, sticky='new', padx=5, pady=2)
+
+        con6Cbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=3,
+            state='readonly',
+            textvariable=self.con6,
+            values=conjunctions)
+        con6Cbx.grid(
+            row=6, column=0, sticky='new', padx=5, pady=2)
+
+        Label(afrm, text='mat. type:').grid(
+            row=6, column=1, sticky='new', padx=5, pady=2)
+
+        mattypeCbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=10,
+            state='readonly',
+            textvariable=self.mattype,
+            values=self.mattype_names)
+        mattypeCbx.grid(
+            row=6, column=2, sticky='new', padx=5, pady=2)
+
+        con7Cbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=3,
+            state='readonly',
+            textvariable=self.con7,
+            values=conjunctions)
+        con7Cbx.grid(
+            row=7, column=0, sticky='new', padx=5, pady=2)
+
+        Label(afrm, text='profile:').grid(
+            row=7, column=1, sticky='new', padx=5, pady=2)
+
+        profileCbx = Combobox(
+            afrm,
+            font=RFONT,
+            width=10,
+            state='readonly',
+            textvariable=self.profile,
+            values=self.profile_names)
+        profileCbx.grid(
+            row=7, column=2, sticky='new', padx=5, pady=2)
 
     def basic_search(self):
         pass
 
-
     def advanced_search(self):
         pass
+
+    def get_comboboxes_values(self):
+        self.system_names = get_names(System)
+        self.library_names = get_names(Library)
+        self.lang_names = get_names(Lang)
+        self.vendor_names = get_names(Vendor)
+        self.audn_names = get_names(Audn)
+        self.mattype_names = get_names(MatType)
+        self.profile_names = get_names(User)
