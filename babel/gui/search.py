@@ -28,7 +28,7 @@ class SearchView:
         self.app_data = app_data
 
         self.top = Toplevel(master=self.parent)
-        self.top.title('Search')
+        self.top.title('Search carts')
         self.cur_manager = BusyManager(self.top)
 
         # icons
@@ -358,10 +358,18 @@ class SearchView:
 
     def basic_search(self):
         if self.identifier.get() and self.identifier_type.get():
-            data = get_data_by_identifier(
-                self.identifier.get(),
-                self.identifier_type.get())
-
+            self.cur_manager.busy()
+            try:
+                data = get_data_by_identifier(
+                    self.identifier.get(),
+                    self.identifier_type.get())
+                self.cur_manager.notbusy()
+                self.results_widget(data)
+            except BabelError as e:
+                self.cur_manager.notbusy()
+                messagebox.showerror(
+                    'Search error',
+                    e, parent=self.top)
         else:
             messagebox.showwarning(
                 'Missing input',
@@ -371,8 +379,25 @@ class SearchView:
     def advanced_search(self):
         pass
 
-    def results_widget(self):
-        pass
+    def results_widget(self, data):
+        self.restop = Toplevel(master=self.top)
+        self.top.title('Search carts restults')
+
+        frm = Frame(self.restop)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=20, pady=20)
+
+        scrollbar = Scrollbar(frm, orient=VERTICAL)
+        scrollbar.grid(row=0, column=0, rowspan=5, sticky='snw')
+
+        resultsTxt = Text(
+            frm,
+            wrap='word',
+            height=20,
+            yscrollcommand=scrollbar.set)
+        resultsTxt.grid(
+            row=0, column=1, rowspan=5, sticky="snew", padx=10)
+        scrollbar['command'] = resultsTxt.yview
 
     def get_comboboxes_values(self):
         self.system_names = get_names(System)
