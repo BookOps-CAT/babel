@@ -616,6 +616,10 @@ class FundView(Frame):
 
     def observer(self, *args):
         if self.activeW.get() == 'FundView':
+            self.record = None
+            self.fund_code.set('')
+            self.fund_desc.set('')
+            enable_widgets(self.detFrm.winfo_children())
             self.all_branches.set(0)
 
             # pull data from data store only

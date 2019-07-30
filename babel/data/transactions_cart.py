@@ -459,7 +459,7 @@ def validate_cart_data(cart_id):
             session, Cart,
             did=cart_id)
         if cart_rec.system_id == 2:
-            if not cart_rec.library_id:
+            if not cart_rec.library_id or cart_rec.library_id == 3:
                 iss_count += 1
                 issues[0] = 'NYPL carts must specify library'
 

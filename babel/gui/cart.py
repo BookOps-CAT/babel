@@ -431,6 +431,8 @@ class CartView(Frame):
                     elif self.library.get() == 'research':
                         library_id = 2
                     kwargs['library_id'] = library_id
+                elif self.system.get() == 1:
+                    kwargs['library_id'] == 3
                 rec = get_record(Status, name=self.status.get())
                 kwargs['status_id'] = rec.did
                 kwargs['updated'] = datetime.now()

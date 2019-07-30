@@ -12,7 +12,7 @@ from errors import BabelError
 from gui.data_retriever import get_names, get_codes
 from gui.fonts import RFONT, RBFONT
 from gui.utils import BusyManager, ToolTip
-from data.transactions_search import get_data_by_identifier
+from data.transactions_search import get_data_by_identifier, complex_search
 
 
 mlogger = logging.getLogger('babel_logger')
@@ -39,6 +39,7 @@ class SearchView:
         self.identifier_type = StringVar()
         self.title = StringVar()
         self.title_type = StringVar()
+        self.title_type.set('keyword')
         self.system = StringVar()
         self.library = StringVar()
         self.profile = StringVar()
@@ -70,7 +71,7 @@ class SearchView:
         ]
 
         search_types = ['keyword', 'phrase']
-        conjunctions = ['and', 'or', 'not']
+        conjunctions = ['AND', 'OR', 'NOT', '']
         self.get_comboboxes_values()
         date_format_msg = 'format: YYYY-MM-DD'
 
@@ -144,7 +145,7 @@ class SearchView:
             afrm,
             font=RFONT,
             state='readonly',
-            width=3,
+            width=4,
             textvariable=self.con1,
             values=conjunctions)
         con1Cbx.grid(
@@ -165,7 +166,7 @@ class SearchView:
         con2Cbx = Combobox(
             afrm,
             font=RFONT,
-            width=3,
+            width=4,
             state='readonly',
             textvariable=self.con2,
             values=conjunctions)
@@ -188,7 +189,7 @@ class SearchView:
         con3Cbx = Combobox(
             afrm,
             font=RFONT,
-            width=3,
+            width=4,
             state='readonly',
             textvariable=self.con3,
             values=conjunctions)
@@ -211,7 +212,7 @@ class SearchView:
         con4Cbx = Combobox(
             afrm,
             font=RFONT,
-            width=3,
+            width=4,
             state='readonly',
             textvariable=self.con4,
             values=conjunctions)
@@ -234,7 +235,7 @@ class SearchView:
         con5Cbx = Combobox(
             afrm,
             font=RFONT,
-            width=3,
+            width=4,
             state='readonly',
             textvariable=self.con5,
             values=conjunctions)
@@ -257,7 +258,7 @@ class SearchView:
         con6Cbx = Combobox(
             afrm,
             font=RFONT,
-            width=3,
+            width=4,
             state='readonly',
             textvariable=self.con6,
             values=conjunctions)
@@ -280,7 +281,7 @@ class SearchView:
         con7Cbx = Combobox(
             afrm,
             font=RFONT,
-            width=3,
+            width=4,
             state='readonly',
             textvariable=self.con7,
             values=conjunctions)
@@ -303,7 +304,7 @@ class SearchView:
         con8Cbx = Combobox(
             afrm,
             font=RFONT,
-            width=3,
+            width=4,
             state='readonly',
             textvariable=self.con8,
             values=conjunctions)
@@ -326,10 +327,10 @@ class SearchView:
         con9Cbx = Combobox(
             afrm,
             font=RFONT,
-            width=3,
+            width=4,
             state='readonly',
             textvariable=self.con9,
-            values=conjunctions)
+            values=(conjunctions[0], conjunctions[3]))
         con9Cbx.grid(
             row=9, column=0, sticky='new', padx=5, pady=2)
 
@@ -377,7 +378,39 @@ class SearchView:
                 parent=self.top)
 
     def advanced_search(self):
-        pass
+        if self.title.get() or \
+                (self.created_start.get() and
+                    self.created_end.get() and
+                    self.con9.get()):
+
+            conditions = dict(
+                title=(self.title.get(), self.title_type.get()),
+                system=(self.con1.get(), self.system.get()),
+                library=(self.con2.get(), self.library.get()),
+                lang=(self.con3.get(), self.lang.get()),
+                vendor=(self.con4.get(), self.vendor.get()),
+                audn=(self.con5.get(), self.audn.get()),
+                mattype=(self.con6.get(), self.mattype.get()),
+                fund=(self.con7.get(), self.fund.get()),
+                profile=(self.con8.get(), self.profile.get()),
+                date=(
+                    self.con9.get(),
+                    self.created_start.get(), self.created_end.get()))
+            try:
+                data = complex_search(conditions)
+            except BabelError as e:
+                messagebox.showerror(
+                    'Search error',
+                    'Unable to retrieve records.\n'
+                    f'Error: {e}',
+                    parent=self.top)
+
+        else:
+            messagebox.showwarning(
+                'Search warning',
+                'Your search must be narrowed down.\n'
+                'Please select additional filters.',
+                parent=self.top)
 
     def results_widget(self, data):
         self.restop = Toplevel(master=self.top)

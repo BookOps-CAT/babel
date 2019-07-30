@@ -119,7 +119,7 @@ def insert_fund(**kwargs):
         for k, v in kwargs.items():
             if not v:
                 if k == 'libraries':
-                    kwargs[k] = []
+                    kwargs[k] = ['']
                 elif k == 'audns':
                     kwargs[k] = []
                 elif k == 'branches':
@@ -163,8 +163,8 @@ def insert_fund(**kwargs):
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
         mlogger.error(
-            f'Unhandled error in add Fund.'
-            'Traceback: {tb}')
+            'Unhandled error in add Fund.'
+            f'Traceback: {tb}')
         raise BabelError(exc)
 
 
@@ -218,6 +218,6 @@ def update_fund(**kwargs):
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
         mlogger.error(
-            f'Unhandled error in Fund update.'
-            'Traceback: {tb}')
+            'Unhandled error in Fund update.'
+            f'Traceback: {tb}')
         raise BabelError(exc)

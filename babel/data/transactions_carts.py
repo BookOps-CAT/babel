@@ -79,7 +79,9 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
             if cart_rec.system_id == 1:
                 oclc_code = 'BKL'
                 selector_code = selector.bpl_code
-                library_code = None
+                lib_rec = retrieve_record(
+                    session, Library, did=cart_rec.library_id)
+                library_code = lib_rec.code
             elif cart_rec.system_id == 2:
                 oclc_code = 'NYP'
                 selector_code = selector.nyp_code

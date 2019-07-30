@@ -44,8 +44,8 @@ class System(Base):
 class Library(Base):
     __tablename__ = 'library'
     did = Column(Integer, primary_key=True, autoincrement=False)
-    code = Column(String(1), nullable=False, unique=True)
-    name = Column(String(8), nullable=False, unique=True)
+    code = Column(String(1), unique=True)
+    name = Column(String(8), unique=True)
 
     def __repr__(self):
         state = inspect(self)
@@ -336,7 +336,7 @@ class Cart(Base):
         default=1)
     user_id = Column(Integer, ForeignKey('user.did'), nullable=False)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
-    library_id = Column(Integer, ForeignKey('library.did'))
+    library_id = Column(Integer, ForeignKey('library.did'), nullable=False)
     blanketPO = Column(String(25), unique=True, nullable=True)
 
     orders = relationship(

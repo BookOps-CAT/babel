@@ -330,12 +330,9 @@ class CartsView(Frame):
         cart_rec = get_record(Cart, did=cart_id)
         if cart_rec:
             owner = self.profile_idx[cart_rec.user_id]
-            try:
-                library = get_record(Library, did=cart_rec.library_id).name
-            except AttributeError:
-                library = ''
-
-            stat_rec = get_record(Status, did=cart_rec.status_id)
+            library = get_record(Library, did=cart_rec.library_id).name
+            if library is None:
+                library == ''
 
             lines = []
             lines.append(f'cart: {cart_rec.name}')

@@ -1,4 +1,5 @@
 # supports searches in Babel search widget
+from datetime import date
 from functools import lru_cache
 import logging
 import sys
@@ -159,17 +160,15 @@ def get_status_name(session, status_id):
 
 @lru_cache(maxsize=2)
 def get_library_name(session, library_id):
-    name = None
-    if library_id is not None:
-        stmn = text("""
-            SELECT name FROM library
-            WHERE did=:library_id
-            """)
-        stmn = stmn.bindparams(library_id=library_id)
-        instances = session.execute(stmn)
-        for i in instances:
-            name = i.name
-            break
+    stmn = text("""
+        SELECT name FROM library
+        WHERE did=:library_id
+        """)
+    stmn = stmn.bindparams(library_id=library_id)
+    instances = session.execute(stmn)
+    for i in instances:
+        name = i.name
+        break
     return name
 
 
@@ -290,3 +289,30 @@ def get_data_by_identifier(keyword, keyword_type):
             'Unhandled error during Basic search.'
             f'Traceback: {tb}')
         raise BabelError('Unable to retrieve records.')
+
+
+def complex_search(conditions):
+    """
+    args:
+        condictions: dict, key=element name, value=tuple(con, value)
+    """
+
+    kwargs = dict()
+    for k, v in conditions.items():
+        if v[0]:
+            kwargs[k] = v
+
+
+    if selector_id is not None:
+        criteria.append(Selector.id == selector_id)
+
+    instances = session.query(
+        Cart,
+        Order,
+        Resource).\
+        join(Order, Cart.did == Order.cart_id).\
+        join(Resource, Order.did == Resource.order_id).\
+        filter(and_(*criteria)).\
+        filter(func.date(Cart.created).between(date1, date2)).\
+        all()
+
