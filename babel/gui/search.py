@@ -10,7 +10,7 @@ from data.datastore import (System, Library, User, Lang, Audn,
                             MatType, Vendor, Fund)
 from errors import BabelError
 from gui.data_retriever import get_names, get_codes
-from gui.fonts import RFONT
+from gui.fonts import RFONT, RBFONT
 from gui.utils import BusyManager, ToolTip
 from data.transactions_search import get_data_by_identifier
 
@@ -393,14 +393,80 @@ class SearchView:
         resultsTxt = Text(
             frm,
             wrap='word',
-            height=20,
-            state=('disabled'),
+            height=30,
+            width=120,
             background='SystemButtonFace',
             borderwidth=0,
             yscrollcommand=scrollbar.set)
         resultsTxt.grid(
             row=0, column=1, rowspan=5, sticky="snew", padx=10)
         scrollbar['command'] = resultsTxt.yview
+
+        self.populate_results(resultsTxt, data)
+
+    def populate_results(self, widget, data):
+        widget['state'] = 'normal'
+
+        widget.insert('1.0', f'found {len(data)} hit(s).\n\n')
+        widget.tag_add('res_info', '1.0', '1.end')
+
+        ln = 3
+        headers = []
+        lib_info = []
+        for d in data:
+            widget.insert(
+                f'{ln}.0', f"{d['title']} / {d['author']}\n")
+            headers.append(ln)
+            ln += 1
+
+            widget.insert(
+                f'{ln}.0',
+                f"ISBN:{d['isbn']} | UPC:{d['upc']} | other #:{d['other_no']}\n")
+            ln += 1
+
+            widget.insert(
+                f'{ln}.0',
+                f"system:{d['system']} | library: {d['library']}\n")
+            lib_info.append(ln)
+            ln += 1
+
+            widget.insert(
+                f'{ln}.0',
+                f"wlo:{d['wlo']} | order #:{d['oid']} | bib #:{d['bid']}\n")
+            ln += 1
+
+            widget.insert(
+                f'{ln}.0',
+                f"cart:{d['cart']} | status:{d['status']} | created:{d['created']}\n")
+            ln += 1
+
+            widget.insert(
+                f'{ln}.0',
+                f"vendor:{d['vendor']} | language:{d['lang']}\n")
+            ln += 1
+
+            widget.insert(
+                f'{ln}.0',
+                f"audience:{d['audn_name']} | mat.type:{d['mattype']} | PO:{d['po']}\n")
+            ln += 1
+
+            widget.insert(
+                f'{ln}.0',
+                f"locations: {d['locs']}\n\n")
+            ln += 2
+
+        for h in headers:
+            widget.tag_add('header', f'{h}.0', f'{h}.end')
+
+        for li in lib_info:
+            widget.tag_add('lib_info', f'{li}.7', f'{li}.10')
+            widget.tag_add('lib_info', f'{li}.22', f'{li}.end')
+
+        widget.tag_config('res_info', font=RBFONT, foreground='tomato2')
+        widget.tag_config('header', font=RFONT, foreground='tomato2')
+        widget.tag_config('lib_info', font=RFONT)
+
+        widget['state'] = 'disable'
 
     def get_comboboxes_values(self):
         self.system_names = get_names(System)

@@ -1,6 +1,7 @@
 # supports searches in Babel search widget
 from functools import lru_cache
 import logging
+import sys
 
 from sqlalchemy.sql import text
 
@@ -224,7 +225,7 @@ def get_data_by_identifier(keyword, keyword_type):
                 cart = cart_rec.name
                 system = get_system_name(session, cart_rec.system_id)
                 library = get_library_name(session, cart_rec.library_id)
-                status = get_status_name(session, cart_rec.system_id)
+                status = get_status_name(session, cart_rec.status_id)
                 created = cart_rec.created
                 blanketPO = cart_rec.blanketPO
 
