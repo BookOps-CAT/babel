@@ -394,6 +394,9 @@ class SearchView:
             frm,
             wrap='word',
             height=20,
+            state=('disabled'),
+            background='SystemButtonFace',
+            borderwidth=0,
             yscrollcommand=scrollbar.set)
         resultsTxt.grid(
             row=0, column=1, rowspan=5, sticky="snew", padx=10)
