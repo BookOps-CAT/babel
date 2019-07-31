@@ -13,7 +13,8 @@ from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     get_last_cart,
                                     get_orders_by_id,
                                     save_displayed_order_data,
-                                    save_new_dist_and_grid, validate_cart_data)
+                                    save_new_dist_and_grid, validate_cart_data,
+                                    tabulate_funds)
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status, Library)
@@ -90,6 +91,7 @@ class CartView(Frame):
         self.disp_end = 0
         self.disp_number = 5
         self.orders_displayed = StringVar()
+        self.funds_tally = StringVar()
 
         # icons
         copyImg = self.app_data['img']['copy']
@@ -342,15 +344,21 @@ class CartView(Frame):
         self.applyBtn.grid(
             row=15, column=1, sticky='snw', pady=10)
 
+
+        self.fundLbl = Label(
+            self.globdataFrm, textvariable=self.funds_tally)
+        self.fundLbl.grid(
+            row=16, column=0, columnspan=3, sticky='snew', padx=5, pady=5)
+
         self.dispLbl = Label(
             self.globdataFrm, textvariable=self.orders_displayed,
             anchor=CENTER)
         self.dispLbl.grid(
-            row=16, column=0, columnspan=3, sticky='snew', padx=5, pady=5)
+            row=17, column=0, columnspan=3, sticky='snew', padx=5, pady=5)
 
         self.navFrm = Frame(self.globdataFrm)
         self.navFrm.grid(
-            row=17, column=1, sticky='snew', padx=10, pady=10)
+            row=18, column=1, sticky='snew', padx=10, pady=10)
 
         self.startBtn = Button(
             self.navFrm,
@@ -478,6 +486,8 @@ class CartView(Frame):
                 self.cartEnt['state'] = 'disable'
                 self.libCbx['state'] = 'disable'
                 self.statusCbx['state'] = 'disable'
+
+            self.update_funds_tally()
 
         except BabelError as e:
             messagebox.showerror('Database error', e)
@@ -1508,6 +1518,10 @@ class CartView(Frame):
             self.order_ids.remove(order_id)
             ntb.destroy()
 
+    def update_funds_tally(self):
+        tally = tabulate_funds(self.cart_id.get())
+        self.funds_tally.set('|'.join(tally))
+
     def reset(self):
         mlogger.debug('Reseting CartView variables.')
         self.order_ids = []
@@ -1679,6 +1693,7 @@ class CartView(Frame):
                         self.disp_end,
                         len(self.order_ids)))
                 self.display_selected_orders(self.selected_order_ids)
+                self.update_funds_tally()
 
     def preview(self):
         self.preview_frame = Frame(

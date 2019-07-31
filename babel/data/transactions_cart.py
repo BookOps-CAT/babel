@@ -16,7 +16,9 @@ from data.datastore import (session_scope, Audn, Branch, Cart, DistSet,
                             Wlos)
 from data.datastore_worker import (count_records, insert_or_ignore, insert,
                                    retrieve_last_record, retrieve_record,
-                                   retrieve_records, update_record)
+                                   retrieve_records, update_record,
+                                   retrieve_cart_details_view_stmn)
+from data.transactions_carts import get_cart_details_as_dataframe
 from data.wlo_generator import wlo_pool
 from gui.data_retriever import (get_record, get_records)
 from gui.utils import get_id_from_index
@@ -634,3 +636,21 @@ def find_matches(cart_id, progbar=None, status_var=None):
 
     if status_var:
         status_var.set('Search completed.')
+
+
+def tabulate_funds(cart_id):
+    """
+    Calculates amount alocated per fund in the cart
+    args:
+        cart_id: int, datastore cart did
+    returns:
+        tally: list of tuples(code, amount)
+    """
+    tally = []
+    df = get_cart_details_as_dataframe(cart_id)
+    for fund, value in df.groupby('fund'):
+        amount = (value['price'] * value['qty']).sum()
+        amount = f'{amount:.2f}'
+        tally.append(f'{fund}:${amount}')
+
+    return tally
