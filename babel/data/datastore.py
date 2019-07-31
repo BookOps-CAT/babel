@@ -335,7 +335,7 @@ class Cart(Base):
         default=1)
     user_id = Column(Integer, ForeignKey('user.did'), nullable=False)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
-    library_id = Column(Integer, ForeignKey('library.did'), nullable=False)
+    library_id = Column(Integer, ForeignKey('library.did'))
     blanketPO = Column(String(25), unique=True, nullable=True)
 
     orders = relationship(
