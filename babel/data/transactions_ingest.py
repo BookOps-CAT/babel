@@ -105,6 +105,7 @@ def create_cart(
                     series=d.series,
                     publisher=d.publisher,
                     pub_date=d.pub_date,
+                    pub_place=d.pub_place,
                     summary=d.summary,
                     isbn=d.isbn,
                     upc=d.upc,
