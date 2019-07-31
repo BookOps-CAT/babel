@@ -15,8 +15,6 @@ BPL_ORDERS = {
 
 NYPL_ORDERS = {
     'acqType': 'p',
-    'orderCode2': 'c',
-    'orderCode3': 'f',
     'currency': '1',
     'orderType': 'f',
     'volumes': '1',
@@ -53,6 +51,11 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
         MARCmatType = 'a'
     else:
         MARCmatType = 'a'
+
+    if order.lang == 'eng':
+        order_code3 = 'd'
+    else:
+        order_code3 = 'f'
 
     record.leader = '00000n%sm a2200000u  4500' % MARCmatType
 
@@ -168,22 +171,27 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     subfields = []
     if oclc_code == 'BKL':
         # subfield_A = ['a', BPL_ORDERS['acqType']]  # set by load table
+        subfield_C = ['c', selector_code]
+        subfield_D = ['d', order.audn]
         subfield_M = ['m', BPL_ORDERS['status']]
         subfield_N = ['n', BPL_ORDERS['tloc']]
-        subfield_C = ['c', selector_code]
         subfield_Z = ['z', BPL_ORDERS['currency']]
-        subfield_D = ['d', order.audn]
         subfields.extend(subfield_C)
-        subfields.extend(subfield_D)
+
     elif oclc_code == 'NYP':
         # subfield_A = ['a', NYPL_ORDERS['acqType']]  # set by load table
+        subfield_D = ['d', library_code]
+        subfield_E = ['e', order_code3]
+        subfield_F = ['f', order.audn]
         subfield_M = ['m', NYPL_ORDERS['status']]
         subfield_N = ['n', NYPL_ORDERS['tloc']]
-        subfield_Z = ['z', NYPL_ORDERS['currency']]
         subfield_Y = ['y', NYPL_ORDERS['volumes']]
-        subfield_E = ['e', NYPL_ORDERS['orderCode3']]
-        subfields.extend(subfield_Y)
+        subfield_Z = ['z', NYPL_ORDERS['currency']]
         subfields.extend(subfield_E)
+        subfields.extend(subfield_F)
+        subfields.extend(subfield_Y)
+
+    subfield_G = ['g', order.mat_ord]
     subfield_O = ['o', order.copies]
     subfield_Q = ['q', order.order_date]
     subfield_S = ['s', f'{order.resource.price_disc:.2f}']
@@ -191,8 +199,9 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     subfield_U = ['u', order.funds]
     subfield_V = ['v', order.vendor]
     subfield_W = ['w', order.lang]
-    subfield_G = ['g', order.mat_ord]
 
+    subfields.extend(subfield_D)
+    subfields.extend(subfield_G)
     subfields.extend(subfield_M)
     subfields.extend(subfield_N)
     subfields.extend(subfield_O)
@@ -202,7 +211,6 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     subfields.extend(subfield_U)
     subfields.extend(subfield_V)
     subfields.extend(subfield_W)
-    subfields.extend(subfield_G)
     subfields.extend(subfield_Z)
 
     tags.append(Field(tag='960',
