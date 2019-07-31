@@ -331,8 +331,6 @@ class CartsView(Frame):
         if cart_rec:
             owner = self.profile_idx[cart_rec.user_id]
             library = get_record(Library, did=cart_rec.library_id).name
-            if library is None:
-                library == ''
 
             lines = []
             lines.append(f'cart: {cart_rec.name}')

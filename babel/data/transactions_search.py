@@ -297,22 +297,7 @@ def complex_search(conditions):
         condictions: dict, key=element name, value=tuple(con, value)
     """
 
-    kwargs = dict()
-    for k, v in conditions.items():
-        if v[0]:
-            kwargs[k] = v
+    # will tackle in next iteration
+    pass
 
-
-    if selector_id is not None:
-        criteria.append(Selector.id == selector_id)
-
-    instances = session.query(
-        Cart,
-        Order,
-        Resource).\
-        join(Order, Cart.did == Order.cart_id).\
-        join(Resource, Order.did == Resource.order_id).\
-        filter(and_(*criteria)).\
-        filter(func.date(Cart.created).between(date1, date2)).\
-        all()
 

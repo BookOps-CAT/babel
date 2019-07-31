@@ -379,6 +379,7 @@ class FundView(Frame):
         mlogger.debug('audnOutLst index matches: {}'.format(audn_idx))
         self.add_condition(
             'audnLst', self.audnOutLst, self.audnInLst, audn_idx)
+
         # libLst
         library_idx = self.get_listbox_indices(
             self.libOutLst, fund_data['libraries'])
@@ -386,6 +387,8 @@ class FundView(Frame):
             library_idx))
         self.add_condition(
             'libLst', self.libOutLst, self.libInLst, library_idx)
+        if self.system.get() == 1:
+            disable_widgets(self.libraryFrm.winfo_children())
 
         # mattypeOutLst
         mattype_idx = self.get_listbox_indices(
@@ -413,10 +416,14 @@ class FundView(Frame):
         else:
             msg = 'Please select system first.'
             messagebox.showwarning('Input Error', msg)
+        if self.system.get() == 1:
+            disable_widgets(self.libraryFrm.winfo_children())
 
     def edit_data(self):
         if self.record:
             enable_widgets(self.detFrm.winfo_children())
+            if self.system.get() == 1:
+                disable_widgets(self.libraryFrm.winfo_children())
 
     def delete_data(self):
         if self.record:
@@ -440,12 +447,16 @@ class FundView(Frame):
         if not missing:
             self.cur_manager.busy()
             try:
+                if self.system.get() == 1:
+                    libraries = ['branches']
+                else:
+                    libraries = self.libInLst.get(0, END)
                 kwargs = dict(
                     system_id=self.system.get(),
                     code=self.fund_code.get().strip(),
                     describ=self.fund_desc.get().strip(),
                     branches=self.branchInLst.get(0, END),
-                    libraries=self.libInLst.get(0, END),
+                    libraries=libraries,
                     audns=self.audnInLst.get(0, END),
                     matTypes=self.mattypeInLst.get(0, END))
 
@@ -551,15 +562,12 @@ class FundView(Frame):
 
     def display_library(self):
         mlogger.debug('Displaying library.')
+        enable_widgets(self.libraryFrm.winfo_children())
         self.libOutLst.delete(0, END)
         self.libInLst.delete(0, END)
-        if self.system.get() == 1:
-            disable_widgets(self.libraryFrm.winfo_children())
-        if self.system.get() == 2:
-            enable_widgets(self.libraryFrm.winfo_children())
-            libraries = get_names(Library)
-            for library in libraries:
-                self.libOutLst.insert(END, library)
+        libraries = get_names(Library)
+        for library in libraries:
+            self.libOutLst.insert(END, library)
 
     def display_audiences(self):
         mlogger.debug('Displaying audiences.')

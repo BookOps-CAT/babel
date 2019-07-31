@@ -214,8 +214,7 @@ class CartView(Frame):
             self.globdataFrm,
             textvariable=self.library,
             font=RFONT,
-            state='readonly',
-            values=['branches', 'research'])
+            state='readonly')
         self.libCbx.grid(
             row=2, column=1, columnspan=2, sticky='snew', padx=5, pady=2)
 
@@ -432,7 +431,7 @@ class CartView(Frame):
                         library_id = 2
                     kwargs['library_id'] = library_id
                 elif self.system.get() == 1:
-                    kwargs['library_id'] == 3
+                    kwargs['library_id'] == 1
                 rec = get_record(Status, name=self.status.get())
                 kwargs['status_id'] = rec.did
                 kwargs['updated'] = datetime.now()
@@ -1618,10 +1617,15 @@ class CartView(Frame):
                 # populate values in global checkboxes
 
                 if self.system.get() == 1:
-                    self.library.set('')
+                    self.library.set('branches')
                     self.libCbx['state'] = 'disable'
                 elif self.system.get() == 2:
                     self.libCbx['state'] = '!disable'
+
+                # library
+                self.library_idx = create_name_index(Library)
+                values = (sorted(self.library_idx.values()))
+                self.libCbx['values'] = values
 
                 # langs
                 self.lang_idx = create_name_index(Lang)

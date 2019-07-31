@@ -458,7 +458,10 @@ def validate_cart_data(cart_id):
         cart_rec = retrieve_record(
             session, Cart,
             did=cart_id)
-        if cart_rec.system_id == 2:
+        if cart_rec.system_id == 1 and cart_rec.library_id != 1:
+            iss_count += 1
+            issues[0] = "BPL cart library parameter must be set to 'branches'"
+        elif cart_rec.system_id == 2:
             if not cart_rec.library_id or cart_rec.library_id == 3:
                 iss_count += 1
                 issues[0] = 'NYPL carts must specify library'
