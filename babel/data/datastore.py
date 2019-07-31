@@ -644,14 +644,13 @@ def create_datastore(
     session.execute(stmn)
 
     # enter last wlo number
+
     print('inserting first wlo number')
-    stmn = text("""
-    INSERT INTO wlo (did)
-        VALUES ("wlo0000000001");
-        """)
-    # timestamp = datetime.now()
-    # stmn = stmn.bindparams(timestamp=timestamp)
-    session.execute(stmn)
+    wlos = insert_or_ignore(
+        session, Wlos, did='wlo0000000001',
+        timestamp=datetime.now())
+    print(f'{wlos} inserted')
+    session.commit()
 
     session.close()
 
