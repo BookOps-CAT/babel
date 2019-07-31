@@ -382,35 +382,40 @@ class SearchView:
                 (self.created_start.get() and
                     self.created_end.get() and
                     self.con9.get()):
-
-            conditions = dict(
-                title=(self.title.get(), self.title_type.get()),
-                system=(self.con1.get(), self.system.get()),
-                library=(self.con2.get(), self.library.get()),
-                lang=(self.con3.get(), self.lang.get()),
-                vendor=(self.con4.get(), self.vendor.get()),
-                audn=(self.con5.get(), self.audn.get()),
-                mattype=(self.con6.get(), self.mattype.get()),
-                fund=(self.con7.get(), self.fund.get()),
-                profile=(self.con8.get(), self.profile.get()),
-                date=(
-                    self.con9.get(),
-                    self.created_start.get(), self.created_end.get()))
-            try:
-                data = complex_search(conditions)
-            except BabelError as e:
-                messagebox.showerror(
-                    'Search error',
-                    'Unable to retrieve records.\n'
-                    f'Error: {e}',
-                    parent=self.top)
-
-        else:
             messagebox.showwarning(
-                'Search warning',
-                'Your search must be narrowed down.\n'
-                'Please select additional filters.',
+                'Under contruction',
+                'Advanced search will be released in the next iteration\n'
+                'of Babel app.',
                 parent=self.top)
+
+        #     conditions = dict(
+        #         title=(self.title.get(), self.title_type.get()),
+        #         system=(self.con1.get(), self.system.get()),
+        #         library=(self.con2.get(), self.library.get()),
+        #         lang=(self.con3.get(), self.lang.get()),
+        #         vendor=(self.con4.get(), self.vendor.get()),
+        #         audn=(self.con5.get(), self.audn.get()),
+        #         mattype=(self.con6.get(), self.mattype.get()),
+        #         fund=(self.con7.get(), self.fund.get()),
+        #         profile=(self.con8.get(), self.profile.get()),
+        #         date=(
+        #             self.con9.get(),
+        #             self.created_start.get(), self.created_end.get()))
+        #     try:
+        #         data = complex_search(conditions)
+        #     except BabelError as e:
+        #         messagebox.showerror(
+        #             'Search error',
+        #             'Unable to retrieve records.\n'
+        #             f'Error: {e}',
+        #             parent=self.top)
+
+        # else:
+        #     messagebox.showwarning(
+        #         'Search warning',
+        #         'Your search must be narrowed down.\n'
+        #         'Please select additional filters.',
+        #         parent=self.top)
 
     def results_widget(self, data):
         self.restop = Toplevel(master=self.top)

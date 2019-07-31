@@ -78,7 +78,7 @@ def get_vendor_code(session, vendor_id, system):
                 SELECT bpl_code FROM vendor
                 WHERE did=:vendor_id
                 """)
-        elif system == 'NYPL':
+        elif system == 'NYP':
             stmn = text("""
                 SELECT nyp_code FROM vendor
                 WHERE did=:vendor_id
@@ -88,7 +88,7 @@ def get_vendor_code(session, vendor_id, system):
         for i in instances:
             if system == 'BPL':
                 code = i.bpl_code
-            elif system == 'NYPL':
+            elif system == 'NYP':
                 code = i.nyp_code
             break
         return code
@@ -299,5 +299,3 @@ def complex_search(conditions):
 
     # will tackle in next iteration
     pass
-
-
