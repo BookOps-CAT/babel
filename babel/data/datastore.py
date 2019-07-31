@@ -6,10 +6,10 @@ from contextlib import contextmanager
 from datetime import datetime
 
 from sqlalchemy import (Boolean, DateTime, Float, Column, ForeignKey,
-                        Integer, String, Index, UniqueConstraint)
+                        Integer, String, UniqueConstraint)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import relationship, sessionmaker, load_only, subqueryload
+from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import text
@@ -458,7 +458,8 @@ class Wlos(Base):
     __tablename__ = 'wlo'
 
     did = Column(String(13), primary_key=True, autoincrement=False)
-    date = Column(DateTime, nullable=False, default=datetime.now())
+    timestamp = Column(
+        DateTime(timezone=True), nullable=False, default=datetime.now())
 
     def __repr__(self):
         state = inspect(self)
@@ -644,10 +645,11 @@ def create_datastore(
     # enter last wlo number
     print('inserting first wlo number')
     stmn = text("""
-    INSERT INTO wlo (did, `date`)
-        VALUES ('wlo0000000001', `date`=:date_today);
+    INSERT INTO wlo (did)
+        VALUES ("wlo0000000001");
         """)
-    stmn = stmn.bindparams(date_today=datetime.now())
+    # timestamp = datetime.now()
+    # stmn = stmn.bindparams(timestamp=timestamp)
     session.execute(stmn)
 
     session.close()

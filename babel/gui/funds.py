@@ -32,7 +32,7 @@ class FundView(Frame):
         self.activeW.trace('w', self.observer)
         self.profile = app_data['profile']
         self.system = app_data['system']
-        self.system.trace('w', self.system_observer)
+        self.system.trace('w', self.observer)
         list_height = int((self.winfo_screenheight() - 100) / 25)
 
         # local variables
@@ -427,7 +427,10 @@ class FundView(Frame):
 
     def delete_data(self):
         if self.record:
-            delete_data(self.record)
+            msg = f'Are you sure you want to delete "{self.record.code}" fund?'
+            if messagebox.askokcancel('Deletion', msg):
+                delete_data(self.record)
+                self.observer()
 
     def insert_or_update_data(self):
         missing = []
@@ -462,7 +465,7 @@ class FundView(Frame):
 
                 if not self.record:
                     try:
-                        insert_fund(**kwargs)
+                        self.record = insert_fund(**kwargs)
                     except BabelError as e:
                         messagebox.showerror('Save Error', e)
                 else:
@@ -605,22 +608,6 @@ class FundView(Frame):
                 self.branchInLst.delete(0, END)
                 self.branchOutLst.delete(0, END)
                 self.display_branches()
-
-    def system_observer(self, *args):
-        if self.activeW.get() == 'FundView':
-            self.record = None
-            self.fund_code.set('')
-            self.fund_desc.set('')
-            enable_widgets(self.detFrm.winfo_children())
-            self.display_funds()
-            self.all_branches.set(0)
-            self.display_branches()
-            self.display_audiences()
-            self.display_mattypes()
-
-            # enable/disable widgets for library
-            self.display_library()
-            disable_widgets(self.detFrm.winfo_children())
 
     def observer(self, *args):
         if self.activeW.get() == 'FundView':
