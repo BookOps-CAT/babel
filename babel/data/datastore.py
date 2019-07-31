@@ -44,6 +44,7 @@ class System(Base):
 class Library(Base):
     __tablename__ = 'library'
     did = Column(Integer, primary_key=True, autoincrement=False)
+    code = Column(String(1), unique=True, nullable=False)
     name = Column(String(8), unique=True, nullable=False)
 
     def __repr__(self):
@@ -572,7 +573,7 @@ def create_datastore(
 
     for item in LIBRARY:
         insert_or_ignore(
-            session, Library, did=item[0], name=item[1])
+            session, Library, did=item[0], code=item[1], name=item[2])
 
     for item in AUDN:
         insert_or_ignore(session, Audn, code=item[0], name=item[1])

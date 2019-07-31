@@ -16,7 +16,7 @@ from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     save_new_dist_and_grid, validate_cart_data)
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
-                            Branch, Status)
+                            Branch, Status, Library)
 from gui.carts import CopyCartWidget
 from gui.data_retriever import (get_names, save_data, get_record,
                                 convert4display,
@@ -431,7 +431,7 @@ class CartView(Frame):
                         library_id = 2
                     kwargs['library_id'] = library_id
                 elif self.system.get() == 1:
-                    kwargs['library_id'] == 1
+                    kwargs['library_id'] = 1
                 rec = get_record(Status, name=self.status.get())
                 kwargs['status_id'] = rec.did
                 kwargs['updated'] = datetime.now()

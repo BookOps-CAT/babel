@@ -9,8 +9,8 @@ SYSTEM = [
 ]
 
 LIBRARY = [
-    (1, 'branches'),
-    (2, 'research'),
+    (1, 'c', 'branches'),
+    (2, 'r', 'research'),
 ]
 
 AUDN = [
