@@ -26,7 +26,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 create_name_index)
 from gui.fonts import RFONT, RBFONT, LFONT
 from gui.utils import ToolTip, BusyManager, get_id_from_index, open_url
-from gui.top_resource import EditResourceWidget
+from gui.edit_resource import EditResourceWidget
 from sierra_adapters.webpac_scraper import BPL_SEARCH_URL, NYPL_SEARCH_URL
 
 
