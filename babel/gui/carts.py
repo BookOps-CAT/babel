@@ -391,19 +391,25 @@ class CartsView(Frame):
 
     def link_ids(self):
         source_fh = self.ask_for_source()
-        try:
-            self.cur_manager.busy()
-            add_sierra_ids_to_orders(source_fh, self.system.get())
-            self.cur_manager.notbusy()
-            messagebox.showinfo(
-                'Linking IDs',
-                'Sierra bib and order numbers linked successfully.')
+        if source_fh:
+            try:
+                self.cur_manager.busy()
+                add_sierra_ids_to_orders(source_fh, self.system.get())
+                self.cur_manager.notbusy()
+                messagebox.showinfo(
+                    'Linking IDs',
+                    'Sierra bib and order numbers linked successfully.')
 
-        except BabelError as e:
-            self.cur_manager.notbusy()
-            messagebox.showerror(
-                'Sierra IDs Error',
-                f'Unable to link Sierra IDs. Error: {e}')
+            except FileNotFoundError as e:
+                self.cur_manager.notbusy()
+                messagebox.showerror(
+                    'File error',
+                    f'File not found. {e}')
+            except BabelError as e:
+                self.cur_manager.notbusy()
+                messagebox.showerror(
+                    'Sierra IDs Error',
+                    f'Unable to link Sierra IDs. {e}')
 
     def help(self):
         open_url('https://github.com/BookOps-CAT/babel/wiki/Carts')
