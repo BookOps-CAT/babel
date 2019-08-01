@@ -708,4 +708,7 @@ def tabulate_funds(cart_id):
         amount = f'{amount:.2f}'
         tally.append(f'{fund}:${amount}')
 
+    with session_scope() as session:
+        update_record(session, Cart, did=cart_id, updated=datetime.now())
+
     return tally
