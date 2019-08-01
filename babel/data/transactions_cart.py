@@ -253,25 +253,33 @@ def save_displayed_order_data(tracker_values):
 def apply_fund_to_cart(system_id, cart_id, fund_codes):
 
     try:
-
-        ord_recs = get_records(
-            Order, cart_id=cart_id)
-
         with session_scope() as session:
+            cart_rec = retrieve_record(session, Cart, did=cart_id)
+            ord_recs = retrieve_records(
+                session, Order, cart_id=cart_id)
+
             for code in fund_codes:
-                fund_rec = get_record(
+                fund_rec = retrieve_record(
+                    session,
                     Fund,
                     code=code,
                     system_id=system_id)
+
                 fund_audn_ids = [a.audn_id for a in fund_rec.audns]
                 mlogger.debug('Fund {} permitted audns: {}'.format(
                     code, fund_audn_ids))
+
                 fund_mat_ids = [m.matType_id for m in fund_rec.matTypes]
                 mlogger.debug('Fund {} permitted mats: {}'.format(
                     code, fund_mat_ids))
+
                 fund_branch_ids = [b.branch_id for b in fund_rec.branches]
                 mlogger.debug('Fund {} permitted branches: {}'.format(
                     code, fund_branch_ids))
+
+                fund_library_ids = [l.library_id for l in fund_rec.libraries]
+                mlogger.debug('Fund {} permitted libraries: {}'.format(
+                    code, fund_library_ids))
 
                 for orec in ord_recs:
                     audn_match = False
@@ -279,27 +287,31 @@ def apply_fund_to_cart(system_id, cart_id, fund_codes):
 
                     if orec.audn_id in fund_audn_ids:
                         audn_match = True
-                        mlogger.debug('OrdRec-Fund audn {} match'.format(
-                            orec.audn_id))
 
                     if orec.matType_id in fund_mat_ids:
                         mat_match = True
-                        mlogger.debug('OrdRec-Fund mat {} match'.format(
-                            orec.matType_id))
+
+                    if cart_rec.library_id in fund_library_ids:
+                        library_match = True
 
                     for oloc in orec.locations:
                         if oloc.branch_id in fund_branch_ids:
                             mlogger.debug('OrdRec-Fund branch {} match'.format(
                                 oloc.branch_id))
-                            if audn_match and mat_match:
+                            if audn_match and library_match and mat_match:
                                 # update
                                 mlogger.debug(
-                                    'Full match. Updating OrderLocation.')
+                                    'Complete match. Updating OrderLocation.')
                                 update_record(
                                     session,
                                     OrderLocation,
                                     oloc.did,
                                     fund_id=fund_rec.did)
+                            else:
+                                mlogger.debug(
+                                    'Incomplete match: lib={}, audn={}, '
+                                    'mat={}.'.format(
+                                        library_match, audn_match, mat_match))
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
