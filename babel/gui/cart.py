@@ -1510,6 +1510,7 @@ class CartView(Frame):
         self.populate_resource_data_widget(resdataTxt, resource_rec)
         self.populate_more_tab_summary(
             summaryTxt, resource_rec.misc, resource_rec.summary)
+        self.update_funds_tally()
 
     def delete_resource(self, ntb):
         msg = 'Are you sure you want to delete order?'
@@ -1520,6 +1521,7 @@ class CartView(Frame):
             self.tracker.pop(ntb.winfo_id(), None)
             self.order_ids.remove(order_id)
             ntb.destroy()
+            self.update_funds_tally()
 
     def update_funds_tally(self):
         tally = tabulate_funds(self.cart_id.get())
