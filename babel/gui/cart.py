@@ -344,9 +344,10 @@ class CartView(Frame):
         self.applyBtn.grid(
             row=15, column=1, sticky='snw', pady=10)
 
-
         self.fundLbl = Label(
-            self.globdataFrm, textvariable=self.funds_tally)
+            self.globdataFrm,
+            textvariable=self.funds_tally,
+            anchor=CENTER)
         self.fundLbl.grid(
             row=16, column=0, columnspan=3, sticky='snew', padx=5, pady=5)
 
@@ -547,6 +548,7 @@ class CartView(Frame):
                 'Funds error',
                 f'Unable to apply funds correctly. Error: {e}')
         else:
+            self.update_funds_tally()
             self.cur_manager.notbusy()
 
         # update display
@@ -743,6 +745,7 @@ class CartView(Frame):
 
         self.redo_preview_frame()
         self.display_selected_orders(self.selected_order_ids)
+        self.update_funds_tally()
 
     def nav_start(self):
         self.cur_manager.busy()
@@ -1520,7 +1523,7 @@ class CartView(Frame):
 
     def update_funds_tally(self):
         tally = tabulate_funds(self.cart_id.get())
-        self.funds_tally.set('|'.join(tally))
+        self.funds_tally.set(' | '.join(tally))
 
     def reset(self):
         mlogger.debug('Reseting CartView variables.')
@@ -1542,6 +1545,7 @@ class CartView(Frame):
         self.noteChb_var.set(0)
         self.priceChb_var.set(0)
         self.discountChb_var.set(0)
+        self.funds_tally.set('')
 
     def template_observer(self, *args):
         try:
