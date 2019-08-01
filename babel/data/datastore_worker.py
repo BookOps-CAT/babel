@@ -30,9 +30,25 @@ def retrieve_record(session, model, **kwargs):
     return instance
 
 
+def retrieve_first_record(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).first()
+    return instance
+
+
 def retrieve_first_n(session, model, n, **kwargs):
     instances = session.query(model).filter_by(**kwargs).limit(n).all()
     return instances
+
+
+def retrieve_last_record_filtered(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).order_by(
+        model.did.desc()).first()
+    return instance
+
+
+def retrieve_last_record(session, model):
+    instance = session.query(model).order_by(model.did.desc()).first()
+    return instance
 
 
 def retrieve_records(session, model, **kwargs):
@@ -55,11 +71,6 @@ def update_record(session, model, did, **kwargs):
 def delete_record(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).one()
     session.delete(instance)
-
-
-def retrieve_last_record(session, model):
-    instance = session.query(model).order_by(model.did.desc()).first()
-    return instance
 
 
 def retrieve_cart_order_ids(session, cart_id):

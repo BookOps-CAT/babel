@@ -15,7 +15,8 @@ from data.datastore_worker import (count_records, get_cart_data_view_records,
                                    insert,
                                    retrieve_record, retrieve_records,
                                    retrieve_cart_details_view_stmn,
-                                   update_record)
+                                   update_record, retrieve_first_record,
+                                   retrieve_last_record_filtered)
 from errors import BabelError
 from logging_settings import format_traceback
 from gui.utils import get_id_from_index
@@ -330,3 +331,12 @@ def add_sierra_ids_to_orders(source_fh, system_id):
             'Unhandled error on linking IDs.'
             f'Traceback: {tb}')
         raise BabelError(exc)
+
+
+def get_cart_id_ranges(cart_id):
+    with session_scope() as session:
+        first_ord = retrieve_first_record(session, Order, cart_id=cart_id)
+        last_ord = retrieve_last_record_filtered(
+            session, Order, cart_id=cart_id)
+
+        return ((first_ord.wlo, last_ord.wlo), (first_ord.oid, last_ord.oid))

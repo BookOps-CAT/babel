@@ -12,7 +12,8 @@ from data.transactions_carts import (add_sierra_ids_to_orders,
                                      create_cart_copy,
                                      export_orders_to_marc_file,
                                      get_cart_data_for_order_sheet,
-                                     get_carts_data)
+                                     get_carts_data,
+                                     get_cart_id_ranges)
 from gui.data_retriever import get_record, delete_data_by_did
 from gui.fonts import RFONT
 from gui.utils import BusyManager, ToolTip, open_url
@@ -336,6 +337,7 @@ class CartsView(Frame):
                 library = None
 
             stat_rec = get_record(Status, did=cart_rec.status_id)
+            wlo_range, oid_range = get_cart_id_ranges(cart_id)
             lines = []
             lines.append(f'cart: {cart_rec.name}')
             lines.append(f'status: {stat_rec.name}')
@@ -344,6 +346,8 @@ class CartsView(Frame):
                 f'created: {cart_rec.created} | updated: {cart_rec.updated}')
             lines.append(f'library: {library}')
             lines.append(f'blanketPO: {cart_rec.blanketPO}')
+            lines.append(f'wlo range: {wlo_range[0]} - {wlo_range[1]}')
+            lines.append(f'order # range: {oid_range[0]} = {oid_range[1]}')
 
             # cart_details data
             details = summarize_cart(cart_id)
