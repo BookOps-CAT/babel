@@ -320,6 +320,8 @@ class GridView(Frame):
                 }
                 try:
                     save_data(DistSet, **kwargs)
+                    # update gui
+                    self.distr_record = get_record(DistSet, **kwargs)
                 except BabelError as e:
                     messagebox.showerror(
                         'Database error',
