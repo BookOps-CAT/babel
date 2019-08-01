@@ -614,7 +614,7 @@ def create_datastore(
     stmn = """
     CREATE VIEW carts_meta AS
         SELECT cart.did AS cart_id, cart.name AS cart_name,
-               cart.updated AS cart_date, cart.system_id AS system_id,
+               cart.created AS cart_date, cart.system_id AS system_id,
                status.name AS cart_status, user.name AS cart_owner
         FROM cart
             JOIN status ON status.did = cart.status_id
