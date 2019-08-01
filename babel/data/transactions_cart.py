@@ -250,6 +250,26 @@ def save_displayed_order_data(tracker_values):
         raise BabelError(exc)
 
 
+def valid_fund_ids(fund_rec):
+    fund_audn_ids = [a.audn_id for a in fund_rec.audns]
+    mlogger.debug(
+        f'Fund {fund_rec.code} permitted audns: {fund_audn_ids}')
+
+    fund_mat_ids = [m.matType_id for m in fund_rec.matTypes]
+    mlogger.debug(
+        f'Fund {fund_rec.code} permitted mats: {fund_mat_ids}')
+
+    fund_branch_ids = [b.branch_id for b in fund_rec.branches]
+    mlogger.debug(
+        f'Fund {fund_rec.code} permitted branches: {fund_branch_ids}')
+
+    fund_library_ids = [l.library_id for l in fund_rec.libraries]
+    mlogger.debug(
+        f'Fund {fund_rec.code} permitted libraries: {fund_library_ids}')
+
+    return (fund_audn_ids, fund_mat_ids, fund_branch_ids, fund_library_ids)
+
+
 def apply_fund_to_cart(system_id, cart_id, fund_codes):
 
     try:
@@ -265,37 +285,24 @@ def apply_fund_to_cart(system_id, cart_id, fund_codes):
                     code=code,
                     system_id=system_id)
 
-                fund_audn_ids = [a.audn_id for a in fund_rec.audns]
-                mlogger.debug('Fund {} permitted audns: {}'.format(
-                    code, fund_audn_ids))
-
-                fund_mat_ids = [m.matType_id for m in fund_rec.matTypes]
-                mlogger.debug('Fund {} permitted mats: {}'.format(
-                    code, fund_mat_ids))
-
-                fund_branch_ids = [b.branch_id for b in fund_rec.branches]
-                mlogger.debug('Fund {} permitted branches: {}'.format(
-                    code, fund_branch_ids))
-
-                fund_library_ids = [l.library_id for l in fund_rec.libraries]
-                mlogger.debug('Fund {} permitted libraries: {}'.format(
-                    code, fund_library_ids))
+                fund_audn, fund_mat, fund_branch, fund_lib = valid_fund_ids(
+                    fund_rec)
 
                 for orec in ord_recs:
                     audn_match = False
                     mat_match = False
 
-                    if orec.audn_id in fund_audn_ids:
+                    if orec.audn_id in fund_audn:
                         audn_match = True
 
-                    if orec.matType_id in fund_mat_ids:
+                    if orec.matType_id in fund_mat:
                         mat_match = True
 
-                    if cart_rec.library_id in fund_library_ids:
+                    if cart_rec.library_id in fund_lib:
                         library_match = True
 
                     for oloc in orec.locations:
-                        if oloc.branch_id in fund_branch_ids:
+                        if oloc.branch_id in fund_branch:
                             mlogger.debug('OrdRec-Fund branch {} match'.format(
                                 oloc.branch_id))
                             if audn_match and library_match and mat_match:
@@ -465,6 +472,30 @@ def assign_blanketPO_to_cart(cart_id):
         raise BabelError(exc)
 
 
+def validate_fund(session, fund_id, system_id, library_id,
+                  audn_id, mattype_id, branch_id):
+    valid = True
+    params = [library_id, audn_id, mattype_id, branch_id]
+    for p in params:
+        if p is None:
+            return True
+
+    fund_rec = retrieve_record(session, Fund, did=fund_id)
+
+    fund_audn, fund_mat, fund_branch, fund_lib = valid_fund_ids(
+        fund_rec)
+    if library_id not in fund_lib:
+        valid = False
+    if audn_id not in fund_audn:
+        valid = False
+    if mattype_id not in fund_mat:
+        valid = False
+    if branch_id not in fund_branch:
+        valid = False
+
+    return valid
+
+
 def validate_cart_data(cart_id):
     issues = OrderedDict()
     iss_count = 0
@@ -524,6 +555,18 @@ def validate_cart_data(cart_id):
                     if not l.fund_id:
                         iss_count += 1
                         loc_issues.append('fund')
+                    else:
+                        # verify fund here
+                        valid_fund = validate_fund(
+                            session,
+                            l.fund_id,
+                            cart_rec.system_id,
+                            cart_rec.library_id,
+                            o.audn_id,
+                            o.matType_id,
+                            l.branch_id)
+                        if not valid_fund:
+                            loc_issues.append('(incorrect) fund')
 
                     if loc_issues:
                         grid_issues[m] = loc_issues
