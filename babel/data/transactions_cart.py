@@ -55,12 +55,12 @@ def save_new_dist_and_grid(
                     system_id=system_id,
                     user_id=profile_id,
                     name=dist)
-                mlogger.debug(f'dist_rec: {dist_rec}')
+                mlogger.debug(f'Dist_rec: {dist_rec}')
 
                 # check if given grid already exists
                 grid_rec = retrieve_record(
                     session, DistGrid, name=grid, distset_id=dist_rec.did)
-                mlogger.debug(f'grid_rec: {grid_rec}')
+                mlogger.debug(f'Grid_rec: {grid_rec}')
 
                 # determine new gridLocations
                 locations = []
