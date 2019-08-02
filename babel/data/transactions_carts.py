@@ -308,6 +308,50 @@ def create_cart_copy(cart_id, system, user, profile_idx, cart_name, status):
         raise BabelError(exc)
 
 
+def determine_carts_linked(sierra_ids):
+    """
+    Determines if all orders in relevant cart have corresponding
+    Sierra order and bib number and updates cart linked status
+    args:
+        sierra_ids: list of list(wlo, oid, bid)
+    """
+
+    mlogger.debug('Updating carts linked status.')
+    wlos = sorted([w[0] for x in sierra_ids])
+
+    # determine time period when wlos were assigned
+    with session_scope() as session:
+        first_wlo_rec = retrieve_record(
+            session, Wlos, did=wlos[0])
+        start_time = first_wlo_rec.timestamp
+        last_wlo_rec = retrieve_record(
+            session, Wlos, did=wlos[-1])
+        end_time = last_wlo_rec.timestamp
+
+        # find carts updated during that period
+        cart_recs = session.query(Cart).filter_by(
+            Cart.updated >= start_time).filter_by(
+            Cart_updated <= end_time).filter_by(
+            Cart_status_id=2).all()
+
+        for cart in cart_recs:
+            # check if all orders have oid
+            linked = True
+            for o in cart.orders:
+                if o.oid is None:
+                    mlogger.debug(
+                        'Order did={o.did} missing oid.')
+                    linked = False
+
+            if linked:
+                mlogger.debug(
+                    f'Cart {cart.name} (did={cart.did}) linked.')
+                update_record(session, Cart, cart.did, linked=True)
+            else:
+                mlogger.debug(
+                    f'Cart {cart.name} (did={cart.did}) not linked.')
+
+
 def add_sierra_ids_to_orders(source_fh, system_id):
     mlogger.debug(f'Linking IDs initiated system_id-{system_id}.')
     sids = get_sierra_ids(source_fh, system_id)
@@ -322,6 +366,9 @@ def add_sierra_ids_to_orders(source_fh, system_id):
                     mlogger.debug(
                         f'Record updated: order_id={ord_rec.did}, '
                         f'wlo={wlo}, oid={oid}, bid={bid}')
+
+            # check which carts are linked
+            determine_carts_linked(sids)
 
         mlogger.debug('Linking completed.')
     except Exception as exc:

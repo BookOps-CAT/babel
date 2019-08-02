@@ -334,6 +334,7 @@ class Cart(Base):
     status_id = Column(
         Integer, ForeignKey('status.did'), nullable=False,
         default=1)
+    linked = Column(Boolean, nullable=False, default=False)
     user_id = Column(Integer, ForeignKey('user.did'), nullable=False)
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
     library_id = Column(Integer, ForeignKey('library.did'))
@@ -615,7 +616,8 @@ def create_datastore(
     CREATE VIEW carts_meta AS
         SELECT cart.did AS cart_id, cart.name AS cart_name,
                cart.created AS cart_date, cart.system_id AS system_id,
-               status.name AS cart_status, user.name AS cart_owner
+               status.name AS cart_status, user.name AS cart_owner,
+               cart.linked AS linked
         FROM cart
             JOIN status ON status.did = cart.status_id
             JOIN user ON user.did = cart.user_id
