@@ -202,6 +202,8 @@ class Base(Tk):
         loadImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-ark-iconM.png')
         importImg = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/ChainLink-LINK-icon.png')
+        linkImgS = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -226,6 +228,7 @@ class Base(Tk):
                 'marc': marcImg,
                 'sheet': sheetImg,
                 'link': linkImg,
+                'linkS': linkImgS,
                 'load': loadImg,
                 'import': importImg,
                 'previous': previousImg,

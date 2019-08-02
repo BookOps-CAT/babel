@@ -88,7 +88,8 @@ def get_cart_data_view_records(
         session, system_id, user='All users', status=''):
     if user == 'All users' and status:
         stmn = text("""
-            SELECT cart_id, cart_name, cart_date, system_id, cart_status, cart_owner
+            SELECT cart_id, cart_name, cart_date,
+                   system_id, cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_status=:status
         """)
@@ -96,21 +97,24 @@ def get_cart_data_view_records(
 
     elif user == 'All users' and not status:
         stmn = text("""
-            SELECT cart_id, cart_name, cart_date, system_id, cart_status, cart_owner
+            SELECT cart_id, cart_name, cart_date, system_id,
+                   cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id
         """)
         stmn = stmn.bindparams(system_id=system_id)
     elif user != 'All users' and not status:
         stmn = text("""
-            SELECT cart_id, cart_name, cart_date, system_id, cart_status, cart_owner
+            SELECT cart_id, cart_name, cart_date, system_id,
+                   cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_owner=:user
         """)
         stmn = stmn.bindparams(system_id=system_id, user=user)
     else:
         stmn = text("""
-            SELECT cart_id, cart_name, cart_date, system_id, cart_status, cart_owner
+            SELECT cart_id, cart_name, cart_date, system_id,
+                   cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_owner=:user AND cart_status=:status
         """)

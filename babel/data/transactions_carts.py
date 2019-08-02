@@ -42,7 +42,8 @@ def get_carts_data(
                     r.cart_name,
                     f'{r.cart_date:%y-%m-%d %H:%M}',
                     r.cart_status,
-                    r.cart_owner))
+                    r.cart_owner,
+                    r.linked))
         return data
 
     except Exception as exc:
