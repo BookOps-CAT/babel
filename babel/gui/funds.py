@@ -56,6 +56,10 @@ class FundView(Frame):
         addSImg = self.app_data['img']['addS']
         removeSImg = self.app_data['img']['removeS']
 
+        # register validation
+        self.vlfu = (self.register(self.onValidateFund),
+                     '%d', '%i', '%P')
+
         # tables list
         Label(self, text='Funds:').grid(
             row=0, column=0, sticky='nw')
@@ -78,7 +82,6 @@ class FundView(Frame):
             self,
             image=addImg,
             command=self.add_data)
-        # self.addBtn.image = addImg
         self.addBtn.grid(
             row=1, column=5, sticky='sw', padx=10, pady=10)
 
@@ -86,7 +89,6 @@ class FundView(Frame):
             self,
             image=editImg,
             command=self.edit_data)
-        # self.editBtn.image = editImg
         self.editBtn.grid(
             row=2, column=5, sticky='sw', padx=10, pady=5)
 
@@ -94,7 +96,6 @@ class FundView(Frame):
             self,
             image=deleteImg,
             command=self.delete_data)
-        # self.deleteBtn.image = deleteImg
         self.deleteBtn.grid(
             row=3, column=5, sticky='sw', padx=10, pady=5)
 
@@ -102,7 +103,6 @@ class FundView(Frame):
             self,
             image=saveImg,
             command=self.insert_or_update_data)
-        # self.saveBtn.image = saveImg
         self.saveBtn.grid(
             row=4, column=5, sticky='sw', padx=10, pady=5)
 
@@ -110,7 +110,6 @@ class FundView(Frame):
             self,
             image=helpImg,
             command=self.help)
-        # self.helpBtn.image = helpImg
         self.helpBtn.grid(
             row=5, column=5, sticky='sw', padx=10, pady=5)
 
@@ -129,7 +128,8 @@ class FundView(Frame):
         self.fundcodeEnt = Entry(
             self.editFrm,
             font=RFONT,
-            textvariable=self.fund_code)
+            textvariable=self.fund_code,
+            validate="key", validatecommand=self.vlfu)
         self.fundcodeEnt.grid(
             row=1, column=0, columnspan=3, sticky='snew', pady=5)
         Label(self.editFrm, text='Description').grid(
@@ -181,7 +181,6 @@ class FundView(Frame):
                 'branchLst',
                 self.branchOutLst, self.branchInLst,
                 self.branchOutLst.curselection()))
-        # self.branchInBtn.image = addSImg
         self.branchInBtn.grid(
             row=1, column=2, sticky='sw', padx=2, pady=2)
 
@@ -192,7 +191,6 @@ class FundView(Frame):
                 'branchLst',
                 self.branchOutLst, self.branchInLst,
                 self.branchInLst.curselection()))
-        # self.branchOutBtn.image = removeSImg
         self.branchOutBtn.grid(
             row=2, column=2, sticky='sw', padx=2, pady=2)
 
@@ -625,3 +623,13 @@ class FundView(Frame):
                 self.display_branches()
                 self.display_library()
             disable_widgets(self.detFrm.winfo_children())
+
+    def onValidateFund(self, d, i, P):
+        valid = True
+        if d == '1':
+            ch = P[int(i)]
+            if not ch.isalpha() and not ch.isdigit():
+                valid = False
+        if len(P) > 15:
+            valid = False
+        return valid
