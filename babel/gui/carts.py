@@ -176,6 +176,7 @@ class CartsView(Frame):
         marcImg = self.app_data['img']['marc']
         sheetImg = self.app_data['img']['sheet']
         linkImg = self.app_data['img']['link']
+        self.linkImgS = self.app_data['img']['linkS']
 
         list_height = int((self.winfo_screenheight() - 100) / 25)
 
@@ -188,12 +189,12 @@ class CartsView(Frame):
 
         # carts treeview
         columns = (
-            'cart_id', 'cart', 'date', 'status', 'owner')
+            '#', 'cart', 'date', 'status', 'owner', 'link')
 
         self.cartTrv = Treeview(
             self,
             columns=columns,
-            displaycolumns=columns[1:],
+            displaycolumns=columns,
             show='headings',
             height=list_height)
 
@@ -205,10 +206,12 @@ class CartsView(Frame):
                 command=lambda _col=col: self.treeview_sort_column(
                     self.cartTrv, _col, False))
 
+        self.cartTrv.column('#', width=5, anchor='center')
         self.cartTrv.column('cart', width=200)
         self.cartTrv.column('date', width=120, anchor='center')
         self.cartTrv.column('status', width=100, anchor='center')
         self.cartTrv.column('owner', width=100, anchor='center')
+        self.cartTrv.column('link', width=6, anchor='center')
         self.cartTrv.grid(
             row=1, column=0, rowspan=20, sticky='snew')
 
@@ -516,7 +519,7 @@ class CartsView(Frame):
         okBtn = Button(
             btnFrm,
             image=self.saveImg,
-            command=lambda: self.launch_save(top, cart_rec, progbar))
+            command=lambda: self.launch_save2marc(top, cart_rec, progbar))
         okBtn.grid(
             row=4, column=1, sticky='snew', padx=25, pady=10)
 
@@ -527,7 +530,7 @@ class CartsView(Frame):
         cancelBtn.grid(
             row=4, column=2, sticky='snew', padx=25, pady=10)
 
-    def launch_save(self, top, cart_rec, progbar):
+    def launch_save2marc(self, top, cart_rec, progbar):
         if self.dst_fh.get():
             try:
                 self.cur_manager.busy()
@@ -689,6 +692,11 @@ class CartsView(Frame):
                     'Retrieval error', e)
 
             for cart in carts:
+                # determine if linked and insert appropriate letter
+                if cart[-1]:
+                    cart[-1] = 'L'
+                else:
+                    cart[-1] = ''
                 self.cartTrv.insert(
                     '', END, values=cart)
 

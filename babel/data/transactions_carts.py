@@ -37,13 +37,13 @@ def get_carts_data(
                 session,
                 system_id, user, status)
             for r in recs:
-                data.append((
+                data.append([
                     r.cart_id,
                     r.cart_name,
                     f'{r.cart_date:%y-%m-%d %H:%M}',
                     r.cart_status,
                     r.cart_owner,
-                    r.linked))
+                    r.linked])
         return data
 
     except Exception as exc:
