@@ -20,7 +20,6 @@ from data.datastore_worker import (count_records, insert_or_ignore, insert,
                                    retrieve_cart_details_view_stmn)
 from data.transactions_carts import get_cart_details_as_dataframe
 from data.wlo_generator import wlo_pool
-from gui.data_retriever import (get_record, get_records)
 from gui.utils import get_id_from_index
 from logging_settings import format_traceback
 from sierra_adapters.webpac_scraper import catalog_match
@@ -335,6 +334,11 @@ def apply_globals_to_cart(cart_id, widgets):
         with session_scope() as session:
             # order data
             okwargs = get_ids_for_order_boxes_values(widgets)
+            # locations
+            dist_id, grid_name = widgets['globgrid']
+            grid_rec = retrieve_record(
+                session, DistGrid, distset_id=dist_id, name=grid_name)
+            mlogger.debug(f'Applying globally grid {grid_rec}')
 
             # resource data
             rkwargs = {}
@@ -360,6 +364,15 @@ def apply_globals_to_cart(cart_id, widgets):
                 session, Order, cart_id=cart_id)
 
             for rec in ord_recs:
+                olocs = []
+                for l in grid_rec.gridlocations:
+                    olocs.append(
+                        OrderLocation(
+                            order_id=rec.did,
+                            branch_id=l.branch_id,
+                            shelfcode_id=l.shelfcode_id,
+                            qty=l.qty))
+                okwargs['locations'] = olocs
                 update_record(
                     session, Order, rec.did, **okwargs)
 

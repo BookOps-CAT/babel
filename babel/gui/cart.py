@@ -739,7 +739,7 @@ class CartView(Frame):
 
         # update all order records even ones not displayed
         widgets = {
-            'globgridCbx': self.globgridCbx,
+            'globgrid': [self.dist_id.get(), self.glob_grid_template.get()],
             'langCbx': self.langCbx,
             'vendorCbx': self.vendorCbx,
             'mattypeCbx': self.mattypeCbx,
@@ -755,8 +755,15 @@ class CartView(Frame):
             widgets['discEnt'] = self.discEnt
 
         self.cur_manager.busy()
-        apply_globals_to_cart(self.cart_id.get(), widgets)
-        self.cur_manager.notbusy()
+        try:
+            apply_globals_to_cart(self.cart_id.get(), widgets)
+            self.cur_manager.notbusy()
+        except BabelError as e:
+            self.cur_manager.notbusy()
+            messagebox.showerror(
+                'Database error',
+                'Something went wrong when applying global values.\n'
+                f'Error: {e}')
 
         self.redo_preview_frame()
         self.display_selected_orders(self.selected_order_ids)
