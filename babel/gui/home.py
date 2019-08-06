@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import messagebox
 
 from PIL import Image, ImageTk
 
@@ -52,7 +53,7 @@ class HomeView(Frame):
             image=reportsImg,
             compound=TOP,
             text='Reports',
-            command=lambda: controller.show_frame('CartView'))
+            command=self.temp_reports_msg)
         self.reportsBtn.image = reportsImg
         self.reportsBtn.grid(
             row=1, column=2, sticky='sw', padx=20, pady=10)
@@ -117,10 +118,16 @@ class HomeView(Frame):
             image=settingsImg,
             compound=TOP,
             text='Settings',
-            command=None)
+            command=lambda: controller.show_frame('SettingsView'))
         self.settingsBtn.image = settingsImg
         self.settingsBtn.grid(
             row=2, column=3, sticky='sw', padx=20, pady=10)
+
+    def temp_reports_msg(self):
+        messagebox.showinfo(
+            'Under construction',
+            'Reports feature will be available in the next\n'
+            'iteration of Babel app.')
 
     def observer(self, *args):
         if self.activeW.get() == 'MainView':

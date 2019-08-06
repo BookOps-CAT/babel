@@ -17,6 +17,8 @@ from gui.ingest import ImportView
 from gui.carts import CartsView
 from gui.cart import CartView
 from gui.search import SearchView
+from gui.settings import SettingsView
+from gui.utils import open_url
 from paths import USER_DATA
 
 
@@ -110,7 +112,7 @@ class Base(Tk):
             command=lambda: self.show_frame('TableView'))
         navig_menu.add_command(
             label='Settings',
-            command=None)
+            command=lambda: self.show_frame('SettingsView'))
 
         navig_menu.add_separator()
         navig_menu.add_command(label='Exit', command=self.quit)
@@ -120,11 +122,11 @@ class Base(Tk):
             label='Search', command=lambda: SearchView(self, **self.app_data))
 
         help_menu = Menu(menubar, tearoff=0)
-        help_menu.add_command(label='Help index', command=None)
+        help_menu.add_command(label='Help index', command=self.open_help)
         help_menu.add_command(label='Updates', command=None)
         help_menu.add_separator()
         help_menu.add_command(label='About',
-                              command=None)
+                              command=self.open_about)
         menubar.add_cascade(label='Help', menu=help_menu)
 
         self.config(menu=menubar)
@@ -247,7 +249,7 @@ class Base(Tk):
         # spawn Babel frames
         self.frames = {}
         for F in (FundView, GridView, HomeView, ReportView, TableView,
-                  ImportView, CartsView, CartView):
+                  ImportView, CartsView, CartView, SettingsView):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
                       **self.app_data)
@@ -259,6 +261,12 @@ class Base(Tk):
 
         # lift to the top main window
         self.show_frame('HomeView')
+
+    def open_help(self):
+        open_url('https://github.com/BookOps-CAT/babel/wiki')
+
+    def open_about(self):
+        open_url('https://github.com/BookOps-CAT/babel')
 
     def show_frame(self, page_name):
         """show frame for the given page name"""
