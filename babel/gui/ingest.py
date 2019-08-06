@@ -389,50 +389,54 @@ class ImportView(Frame):
                 tmask = self.template_mask()
                 mlogger.debug(
                     'Applying template mask: {}'.format(tmask))
-            sheet_reader = SheetReader(self.fh)
-            max_row = sheet_reader.max_row
-            max_column = sheet_reader.max_column
-            rowLst = Listbox(
-                self.preview_frame, font=LFONT,
-                width=3,
-                height=max_row + 1)
-            rowLst.grid(
-                row=1, column=1, sticky='nsw')
-
-            if self.record:
-                rowLst.insert(END, '')
-
-            for row in range(max_row + 1):
-                rowLst.insert(END, row)
-            if self.record:
-                rowLst.itemconfig(
-                    self.record.header_row + 1, {'bg': 'SteelBlue1'})
-            c = 0
-            r = 0
-            for column in range(max_column):
-                colLst = Listbox(
+            try:
+                sheet_reader = SheetReader(self.fh)
+                max_row = sheet_reader.max_row
+                max_column = sheet_reader.max_column
+                rowLst = Listbox(
                     self.preview_frame, font=LFONT,
-                    width=15,
+                    width=3,
                     height=max_row + 1)
-                colLst.grid(
-                    row=1, column=c + 2, sticky='nsw')
+                rowLst.grid(
+                    row=1, column=1, sticky='nsw')
+
                 if self.record:
-                    if column in tmask:
-                        colLst['bg'] = 'SlateGray1'
-                        colLst.insert(END, tmask[column])
-                    else:
-                        colLst.insert(END, '')
-                colLst.insert(END, str(c))
-                for row in sheet_reader:
-                    if row[r] is None:
-                        colLst.insert(END, '')
-                    else:
-                        colLst.insert(END, row[r])
+                    rowLst.insert(END, '')
+
+                for row in range(max_row + 1):
+                    rowLst.insert(END, row)
                 if self.record:
-                    colLst.itemconfig(
+                    rowLst.itemconfig(
                         self.record.header_row + 1, {'bg': 'SteelBlue1'})
-                r += 1
-                c += 1
+                c = 0
+                r = 0
+                for column in range(max_column):
+                    colLst = Listbox(
+                        self.preview_frame, font=LFONT,
+                        width=15,
+                        height=max_row + 1)
+                    colLst.grid(
+                        row=1, column=c + 2, sticky='nsw')
+                    if self.record:
+                        if column in tmask:
+                            colLst['bg'] = 'SlateGray1'
+                            colLst.insert(END, tmask[column])
+                        else:
+                            colLst.insert(END, '')
+                    colLst.insert(END, str(c))
+                    for row in sheet_reader:
+                        if row[r] is None:
+                            colLst.insert(END, '')
+                        else:
+                            colLst.insert(END, row[r])
+                    if self.record:
+                        colLst.itemconfig(
+                            self.record.header_row + 1, {'bg': 'SteelBlue1'})
+                    r += 1
+                    c += 1
+
+            except BabelError as e:
+                mlogger.error(f'Sheet load error: {e}')
 
     def template_mask(self):
         tmask = {}

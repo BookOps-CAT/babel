@@ -38,11 +38,15 @@ class SheetReader:
         self.max_column = 1
         for row in self.ws.rows:
             self.max_row += 1
-            max_column = len(row)
+            stripped_row = [x for x in row if x.value is not None]
+            max_column = len(stripped_row)
             if max_column > self.max_column:
                 self.max_column = max_column
         self.range = 'A1:' + str(
             get_column_letter(self.max_column)) + str(self.max_row)
+
+        mlogger.debug(
+            f'Loaded sheet {file}: data range detected: {self.range}')
 
     def __iter__(self):
         for row in self.ws[self.range]:
@@ -131,11 +135,11 @@ class ResourceDataReader:
         try:
             self.min_row = header_row + 1
         except TypeError:
-            raise AttributeError(
+            raise BabelError(
                 'Header row number is a required argument')
 
         if title_col is None:
-            raise AttributeError(
+            raise BabelError(
                 'Title column number is a required argument')
 
         wb = load_workbook(
