@@ -259,7 +259,7 @@ class Fund(Base):
         UniqueConstraint('code', 'system_id', name='uix_fund'), )
 
     did = Column(Integer, primary_key=True)
-    code = Column(String(25))
+    code = Column(String(15))
     system_id = Column(Integer, ForeignKey('system.did'), nullable=False)
     describ = Column(String(100))
 
