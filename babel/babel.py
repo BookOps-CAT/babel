@@ -3,6 +3,8 @@
 import logging
 import logging.config
 import logging.handlers
+import keyring
+from keyring.backends.Windows import WinVaultKeyring
 from tkinter.ttk import Style
 import shelve
 
@@ -27,6 +29,9 @@ if __name__ == '__main__':
     logging.config.dictConfig(DEV_LOGGING)
     logger = logging.getLogger('babel_logger')
     error_logger = LogglyAdapter(logger, None)
+
+    # set the backend for credentials
+    keyring.set_keyring(WinVaultKeyring())
 
     # determine version, wonder if this will work after packaging
     # into frozen binaries?
