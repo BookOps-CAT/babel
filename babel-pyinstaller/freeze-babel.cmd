@@ -1,36 +1,7 @@
 REM Babel Pyinstaller command to produce Windows executable files
 pyinstaller --onedir ^
     --windowed --clean ^
+    --additional-hooks-dir=. ^
     --icon=".\icons\babel.ico" ^
-    --add-binary="./icons/Action-edit-add-iconM.png;icons" ^
-    --add-binary="./icons/Action-reload-iconM.png;icons" ^
-    --add-binary="./icons/Action-cancel-iconM.png;icons" ^
-    --add-binary="./icons/Action-ok-iconM.png;icons" ^
-    --add-binary="./icons/Action-ok-iconS.png;icons" ^
-    --add-binary="./icons/Action-button-info-iconM.png;icons" ^
-    --add-binary="./icons/Action-arrow-blue-double-down-iconM.png;icons" ^
-    --add-binary="./icons/Action-arrow-blue-double-down-iconS.png;icons" ^
-    --add-binary="./icons/Action-viewmag-iconM.png;icons" ^
-    --add-binary="./icons/Action-viewmag-iconS.png;icons" ^
-    --add-binary="./icons/App-floppy-iconM.png;icons" ^
-    --add-binary="./icons/App-spreadsheet-iconM.png;icons" ^
-    --add-binary="./icons/App-proxy-iconM.png;icons" ^
-    --add-binary="./icons/Action-arrow-blue-left-iconS.png;icons" ^
-    --add-binary="./icons/Action-arrow-blue-right-iconS.png;icons" ^
-    --add-binary="./icons/Action-arrow-blue-double-left-iconS.png;icons" ^
-    --add-binary="./icons/Action-arrow-blue-double-right-iconS.png;icons" ^
-    --add-binary="./icons/App-browser-iconM.png;icons" ^
-    --add-binary="./icons/Action-cancel-iconS.png;icons" ^
-    --add-binary="./icons/Action-reload-iconS.png;icons" ^
-    --add-binary="./icons/playstation-triangle-icon.png;icons" ^
-    --add-binary="./icons/playstation-circle-icon.png;icons" ^
-    --add-binary="./icons/playstation-cross-icon.png;icons" ^
-    --add-binary="./icons/Letter-C-icon.png;icons" ^
-    --add-binary="./icons/Action-edit-add-iconS.png;icons" ^
-    --add-binary="./icons/Action-remove-iconS.png;icons" ^
-    --add-binary="./icons/App-web-iconM.png;icons" ^
-    --add-binary="./icons/App-kgoldrunner-gold-iconM.png;icons" ^
-    --add-binary="./icons/Action-viewmag-iconM.png;icons" ^
-    --add-binary="./icons/App-ark-iconM.png;icons" ^
-    --add-binary="./icons/ChainLink-LINK-icon.png;icons" ^
+    --add-data="./icons;icons" ^
     babel.py

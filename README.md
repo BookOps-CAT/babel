@@ -13,8 +13,8 @@ At the moment we do not plan to create a universal application that could be use
 
 
 ## Database Localhost Installation
-Babel is configured to work with MySQL database. 
-Follow [MySQL Installer instruction](https://dev.mysql.com/doc/refman/8.0/en/windows-installation.html) to install server on a localhost. Then use create_datastore method to setup database with all required tables. 
+Babel is configured to work with MySQL database.
+Follow [MySQL Installer instruction](https://dev.mysql.com/doc/refman/8.0/en/windows-installation.html) to install server on a localhost. Then use create_datastore method to setup database with all required tables.
 
 localhost example:
 ```python
@@ -27,9 +27,17 @@ create_datastore(
     port='3306')
 ```
 
+## Stand-alone executable under Windows and deployment
+1. Update version
+2. Change logging from development to production (babel.py) - make sure loggly token is added
+3. Activate Babel2Env
+4. Run freeze-babel.cmd shell script from the main babel folder
+...
+
+
 
 ## Icon Credits
-Icons by 
+Icons by
 * [Everaldo / Yellowicon](http://www.everaldo.com) used under [GNU Lesser General Public License](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License).
 * [Daniele De Santis](https://www.danieledesantis.net/) used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
 * [Icon Archive](http://www.iconarchive.com) used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
