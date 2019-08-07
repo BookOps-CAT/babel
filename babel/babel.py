@@ -51,21 +51,3 @@ if __name__ == '__main__':
         app.mainloop()
     else:
         print('Babel datastore setup should launch here.')
-        # first time launch, show db details form
-        # setup_root = tk.Tk()
-        # setup_root.title("Database connection details")
-        # setup_app = DBSetup(setup_root)
-        # setup_root.mainloop()
-
-
-
-    # s.configure(
-    #     '.',
-    #     background='white')
-    # s.configure('TFrame', background='white')
-    # s.map('Regular.TButton', background=[('active', 'white')])
-    # s.configure('Flat.TEntry', borderwidth=0)
-    # s.configure('Bold.TLabel', font=('Helvetica', 12, 'bold'))
-    # s.configure('Small.TLabel', font=('Helvetica', 8))
-    # s.configure('Medium.Treeview', font=('Helvetica', 9))
-

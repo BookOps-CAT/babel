@@ -12,8 +12,8 @@ from data.transactions_ingest import create_cart, create_resource_reader
 from gui.data_retriever import (get_names, save_data, get_record,
                                 convert4display, delete_data)
 from gui.fonts import RFONT, LFONT
-from gui.utils import (ToolTip, get_id_from_index, disable_widgets,
-                       enable_widgets, open_url)
+from gui.utils import (BusyManager, ToolTip, get_id_from_index,
+                       disable_widgets, enable_widgets, open_url)
 from paths import USER_DATA, MY_DOCS
 from ingest.xlsx import SheetReader
 from logging_settings import format_traceback
@@ -37,6 +37,7 @@ class ImportView(Frame):
         self.profile = app_data['profile']
         self.profile.trace('w', self.profile_observer)
         self.profile_idx = app_data['profile_idx']
+        self.cur_manager = BusyManager(self)
         # list_height = int((self.winfo_screenheight() - 100) / 25)
 
         # variables
@@ -384,6 +385,7 @@ class ImportView(Frame):
         # clear and recreate frame
         self.reset_preview()
         if self.fh:
+            self.cur_manager.busy()
             # provide template layout
             if self.record:
                 tmask = self.template_mask()
@@ -434,9 +436,14 @@ class ImportView(Frame):
                             self.record.header_row + 1, {'bg': 'SteelBlue1'})
                     r += 1
                     c += 1
-
             except BabelError as e:
+                self.cur_manager.notbusy()
                 mlogger.error(f'Sheet load error: {e}')
+                messagebox.showerror(
+                    'Loading sheet error',
+                    f'Error: {e}')
+            else:
+                self.cur_manager.notbusy()
 
     def template_mask(self):
         tmask = {}
