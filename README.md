@@ -28,11 +28,11 @@ create_datastore(
 ```
 
 ## Stand-alone executable under Windows and deployment
-1. Update version
+1. Update version (version.txt)
 2. Change logging from development to production (babel.py) - make sure loggly token is added
 3. Activate Babel2Env
 4. Run freeze-babel.cmd shell script from the main babel folder
-...
+
 
 
 

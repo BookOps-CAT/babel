@@ -1,4 +1,5 @@
 # Used by pyinstaller to expose hidden imports
+# works only for keyring < 12.0.0
 
 import entrypoints
 

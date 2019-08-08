@@ -1,5 +1,6 @@
 # unique Babel wlo number generator
 
+
 def wlo_pool(last_wlo_number, quantity):
     """
     unique Babel wlo id generator

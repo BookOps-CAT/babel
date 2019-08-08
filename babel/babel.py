@@ -15,7 +15,7 @@ from paths import USER_DATA
 
 def determine_version():
     about = {}
-    with open('__version__.py') as f:
+    with open('version.txt') as f:
         exec(f.read(), about)
     return about['__version__']
 

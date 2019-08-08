@@ -164,10 +164,6 @@ class SettingsView(Frame):
         self.chrencCbx.grid(
             row=7, column=1, sticky='snew', padx=10, pady=4)
 
-    # def get_access(self):
-    #     # pull creds from encoded file
-    #     pass
-
     def edit_access(self):
         self.hostEnt['state'] = '!disable'
         self.portEnt['state'] = '!disable'
