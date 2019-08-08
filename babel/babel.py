@@ -55,4 +55,5 @@ if __name__ == '__main__':
         app.title('Babel v.{}'.format(version))
         app.mainloop()
     else:
-        print('Babel datastore setup should launch here.')
+        # widget displaying error msg?
+        pass
