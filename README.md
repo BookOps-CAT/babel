@@ -27,14 +27,15 @@ create_datastore(
     port='3306')
 ```
 
-## Stand-alone executable under Windows and deployment
-1. Update version (version.txt)
+## Stand-alone executable under Windows (initial & updates)
+1. Update version (version.txt) if needed
 2. Change logging from development to production (babel.py) - make sure loggly token is added
-3. Activate Babel2Env
+3. Activate virtual environment
 4. Run freeze-babel.cmd shell script from the main babel folder
-
-
-
+5. Zip dist folder and drop in appropriate locations on the shared drive (copy version.txt and put it along side zipped file)
+6. Run Babel Windows installer
+7. Add MySQL creds during installation
+8. Launch babel to verify all is fine
 
 ## Icon Credits
 Icons by
