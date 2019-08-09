@@ -4,8 +4,8 @@ pyinstaller --clean --windowed ^
     --additional-hooks-dir=. ^
     --hidden-import="win32timezone" ^
     --hidden-import="pymysql" ^
-    --icon=".\icons\babel.ico" ^
+    --icon=".\icons\babel2.ico" ^
     --add-data="./icons;icons" ^
     --add-data="version.txt;." ^
+    --version-file=win_info.txt ^
     babel.py
-
