@@ -6,11 +6,12 @@ import os
 import sys
 
 from pandas import read_sql
+from sqlalchemy.sql.expression import between
 
 
 from data.datastore import (session_scope, Audn, Branch, Cart, Fund, Order,
-                            OrderLocation, Lang, Library, MatType, Resource,
-                            ShelfCode, User, Vendor)
+                            Lang, Library, MatType, Resource,
+                            ShelfCode, User, Vendor, Wlos)
 from data.datastore_worker import (count_records, get_cart_data_view_records,
                                    insert,
                                    retrieve_record, retrieve_records,
@@ -318,7 +319,7 @@ def determine_carts_linked(sierra_ids):
     """
 
     mlogger.debug('Updating carts linked status.')
-    wlos = sorted([w[0] for x in sierra_ids])
+    wlos = sorted([x[0] for x in sierra_ids])
 
     # determine time period when wlos were assigned
     with session_scope() as session:
@@ -330,10 +331,10 @@ def determine_carts_linked(sierra_ids):
         end_time = last_wlo_rec.timestamp
 
         # find carts updated during that period
-        cart_recs = session.query(Cart).filter_by(
-            Cart.updated >= start_time).filter_by(
-            Cart_updated <= end_time).filter_by(
-            Cart_status_id=2).all()
+        cart_recs = session.query(Cart).filter(
+            Cart.updated >= start_time).filter(
+            Cart.updated <= end_time).filter(
+            Cart.status_id == 2).all()
 
         for cart in cart_recs:
             # check if all orders have oid
