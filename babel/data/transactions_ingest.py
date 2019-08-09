@@ -79,11 +79,17 @@ def create_cart(
                         cart_name = cart_name[:end]
                     cart_name = f'{cart_name}({n})'
 
+            if system_id == 1:
+                library_id = 1
+            else:
+                library_id = None
+
             cart_rec = insert(
                 session, Cart,
                 name=cart_name,
                 created=datetime.now(),
                 updated=datetime.now(),
+                library_id=library_id,
                 system_id=system_id,
                 user_id=profile_id)
 

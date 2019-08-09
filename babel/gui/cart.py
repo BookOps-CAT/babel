@@ -574,8 +574,10 @@ class CartView(Frame):
         self.fundTop.destroy()
 
     def validation_report(self, final=False):
+        self.cur_manager.busy()
         issues_count, issues = validate_cart_data(
             self.cart_id.get())
+        self.cur_manager.notbusy()
 
         if issues_count == 0:
             self.cart_valid = True
