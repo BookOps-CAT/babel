@@ -1,5 +1,7 @@
 import logging
+import os
 from tkinter import *
+from tkinter import messagebox
 from tkinter.ttk import *
 import shelve
 
@@ -18,11 +20,23 @@ from gui.carts import CartsView
 from gui.cart import CartView
 from gui.search import SearchView
 from gui.settings import SettingsView
+from gui.update import UpdateWidget
 from gui.utils import open_url
 from paths import USER_DATA
 
 
 mlogger = logging.getLogger('babel_logger')
+
+
+def determine_version(directory):
+    version_fh = os.path.join(directory, 'version.txt')
+    about = {}
+    try:
+        with open(version_fh, 'r') as f:
+            exec(f.read(), about)
+        return about['__version__']
+    except FileNotFoundError:
+        return None
 
 
 class Base(Tk):
@@ -31,7 +45,7 @@ class Base(Tk):
         Tk.__init__(self, *args, **kwargs)
 
         # use in prod
-        w, h = self.winfo_screenwidth() - 100, self.winfo_screenheight() - 100
+        w, h = self.winfo_screenwidth() - 600, self.winfo_screenheight() - 100
         self.geometry("%dx%d+80+0" % (w, h))
 
         # container where frames are stacked
@@ -123,7 +137,7 @@ class Base(Tk):
 
         help_menu = Menu(menubar, tearoff=0)
         help_menu.add_command(label='Help index', command=self.open_help)
-        help_menu.add_command(label='Updates', command=None)
+        help_menu.add_command(label='Updates', command=self.check_for_updates)
         help_menu.add_separator()
         help_menu.add_command(label='About',
                               command=self.open_about)
@@ -261,6 +275,30 @@ class Base(Tk):
 
         # lift to the top main window
         self.show_frame('HomeView')
+
+    def check_for_updates(self):
+        # determine version, wonder if this will work after packaging
+        # into frozen binaries?
+        local_version = determine_version(os.getcwd())
+
+        # check if newer available
+        update_prompt = False
+        user_data = shelve.open(USER_DATA)
+        if 'update_dir' in user_data:
+            remote_version = determine_version(user_data['update_dir'])
+            if local_version != remote_version:
+                update_prompt = True
+            else:
+                messagebox.showinfo(
+                    'Updates',
+                    'Babel is up-to-date!\n')
+        else:
+            remote_version = None
+            update_prompt = True
+
+        if update_prompt:
+            update_widget = UpdateWidget(self, remote_version)
+            self.wait_window(update_widget.top)
 
     def open_help(self):
         open_url('https://github.com/BookOps-CAT/babel/wiki')

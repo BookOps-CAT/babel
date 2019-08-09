@@ -11,28 +11,9 @@ import keyring
 from keyring.backends.Windows import WinVaultKeyring
 
 
-from gui.main import Base
-from gui.updater import Updater
+from gui.main import Base, determine_version
 from logging_settings import DEV_LOGGING, LogglyAdapter, format_traceback
 from paths import USER_DATA
-
-
-def determine_version(directory):
-    version_fh = os.path.join(directory, 'version.txt')
-    about = {}
-    with open(version_fh, 'r') as f:
-        exec(f.read(), about)
-    return about['__version__']
-
-
-def launch_updater():
-    app = Updater()
-    s = Style()
-    s.theme_use('xpnative')
-    s.configure('.', font=('device', 12))
-    # app.iconbitmap('./icons/babel.ico')
-    app.title('Babel Updater')
-    app.mainloop()
 
 
 if __name__ == '__main__':
@@ -48,21 +29,7 @@ if __name__ == '__main__':
     # set the backend for credentials
     keyring.set_keyring(WinVaultKeyring())
 
-    # determine version, wonder if this will work after packaging
-    # into frozen binaries?
-    local_version = determine_version(os.getcwd())
-
-    # check if newer available
     user_data = shelve.open(USER_DATA)
-    if 'update_dir' in user_data:
-        update_dir = user_data['update_dir']
-        remote_version = determine_version(update_dir)
-        if local_version != remote_version:
-            launch_updater()
-    else:
-        update_dir = None
-        launch_updater()
-
     # determine if babelstore is connected and if not
     # launch setup
     if 'db_config' in user_data:
@@ -72,6 +39,7 @@ if __name__ == '__main__':
     user_data.close()
 
     if datastore_linked:
+        local_version = determine_version(os.getcwd())
         app = Base()
         s = Style()
         s.theme_use('xpnative')
