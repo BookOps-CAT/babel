@@ -111,4 +111,4 @@ class UpdateWidget:
             user_data = shelve.open(USER_DATA)
             user_data['update_dir'] = os.path.dirname(fh)
             user_data.close()
-            # self.launch_update()
+            self.launch_update()
