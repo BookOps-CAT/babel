@@ -14,7 +14,7 @@ from ingest.xlsx import ResourceDataReader
 from logging_settings import format_traceback
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 def create_resource_reader(template_record, sheet_fh):

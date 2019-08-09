@@ -14,7 +14,7 @@ from data.datastore_worker import retrieve_record
 from logging_settings import format_traceback
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 @lru_cache(maxsize=2)

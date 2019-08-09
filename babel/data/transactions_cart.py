@@ -21,11 +21,11 @@ from data.datastore_worker import (count_records, insert_or_ignore, insert,
 from data.transactions_carts import get_cart_details_as_dataframe
 from data.wlo_generator import wlo_pool
 from gui.utils import get_id_from_index
-from logging_settings import format_traceback
+from logging_settings import format_traceback, LogglyAdapter
 from sierra_adapters.webpac_scraper import catalog_match
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 def save_new_dist_and_grid(

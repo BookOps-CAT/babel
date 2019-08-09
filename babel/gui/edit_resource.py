@@ -15,7 +15,7 @@ from gui.fonts import RFONT
 from gui.utils import BusyManager
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 class EditResourceWidget:

@@ -15,7 +15,7 @@ from gui.utils import (BusyManager, disable_widgets, enable_widgets,
                        open_url)
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 class FundView(Frame):

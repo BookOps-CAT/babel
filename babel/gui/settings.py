@@ -13,7 +13,7 @@ from gui.utils import ToolTip, disable_widgets, open_url
 from paths import USER_DATA
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 class SettingsView(Frame):

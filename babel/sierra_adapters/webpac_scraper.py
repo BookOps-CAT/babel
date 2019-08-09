@@ -17,7 +17,7 @@ NYPL_SEARCH_URL = 'https://catalog.nypl.org/search/i'
 TIME_OUT = 10  # seconds
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 def get_html(system_id, keyword):

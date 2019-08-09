@@ -13,7 +13,7 @@ from logging_settings import format_traceback
 from paths import USER_DATA, MY_DOCS, APP_DIR
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 class UpdateWidget:

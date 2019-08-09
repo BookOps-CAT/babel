@@ -18,7 +18,7 @@ from paths import USER_DATA, MY_DOCS
 from ingest.xlsx import SheetReader
 from logging_settings import format_traceback
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 class ImportView(Frame):

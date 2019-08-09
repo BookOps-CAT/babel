@@ -21,7 +21,7 @@ from data.datastore_worker import (get_column_values, retrieve_record,
 from errors import BabelError
 from logging_settings import format_traceback
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 def convert4display(record):

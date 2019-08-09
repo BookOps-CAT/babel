@@ -31,7 +31,7 @@ from gui.edit_resource import EditResourceWidget
 from sierra_adapters.webpac_scraper import BPL_SEARCH_URL, NYPL_SEARCH_URL
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 class CartView(Frame):

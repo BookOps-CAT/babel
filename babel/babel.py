@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     # set up application logger
     logging.config.dictConfig(DEV_LOGGING)
-    logger = logging.getLogger('babel_logger')
+    logger = logging.getLogger('babel')
     error_logger = LogglyAdapter(logger, None)
 
     # set the backend for credentials

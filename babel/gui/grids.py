@@ -20,7 +20,7 @@ from gui.utils import (disable_widgets, enable_widgets, get_id_from_index,
 from paths import USER_DATA
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 class GridView(Frame):

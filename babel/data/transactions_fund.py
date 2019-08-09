@@ -12,7 +12,7 @@ from gui.data_retriever import (get_record, )
 from logging_settings import format_traceback
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 def create_fund_joiner_objs(session, **kwargs):

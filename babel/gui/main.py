@@ -25,7 +25,7 @@ from gui.utils import open_url
 from paths import USER_DATA
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 def determine_version(directory):

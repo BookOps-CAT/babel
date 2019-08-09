@@ -25,7 +25,7 @@ from ingest.sierra_exports import get_sierra_ids
 from marc.marc21 import make_bib
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 def get_carts_data(

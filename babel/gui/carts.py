@@ -22,7 +22,7 @@ from paths import USER_DATA, MY_DOCS
 from reports.carts import summarize_cart
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 class CopyCartWidget:

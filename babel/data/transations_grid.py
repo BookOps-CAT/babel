@@ -14,7 +14,7 @@ from gui.utils import get_id_from_index
 from logging_settings import format_traceback
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 def save_grid_data(**kwargs):

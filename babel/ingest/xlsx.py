@@ -18,7 +18,7 @@ from data.validators import (shorten4datastore, value2string, normalize_date,
 from logging_settings import format_traceback
 
 
-mlogger = logging.getLogger('babel_logger')
+mlogger = logging.getLogger('babel')
 
 
 FONT_BOLD = Font(bold=True)
