@@ -208,9 +208,9 @@ class CartsView(Frame):
 
         self.cartTrv.column('#', width=5, anchor='center')
         self.cartTrv.column('cart', width=200)
-        self.cartTrv.column('date', width=120, anchor='center')
+        self.cartTrv.column('date', width=130, anchor='center')
         self.cartTrv.column('status', width=100, anchor='center')
-        self.cartTrv.column('owner', width=100, anchor='center')
+        self.cartTrv.column('owner', width=120, anchor='center')
         self.cartTrv.column('link', width=6, anchor='center')
         self.cartTrv.grid(
             row=1, column=0, rowspan=20, sticky='snew')

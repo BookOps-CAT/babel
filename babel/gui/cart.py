@@ -859,7 +859,7 @@ class CartView(Frame):
 
         ntb = Notebook(
             parent,
-            width=830)
+            width=1000)
 
         # main tab
         mainTab = Frame(ntb)

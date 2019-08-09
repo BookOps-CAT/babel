@@ -374,7 +374,7 @@ class ImportView(Frame):
         self.preview_base = Canvas(
             self.sheetPreviewFrm, bg='gray',
             height=450,  # find a way to adjust based on preview frm size
-            # width=800,
+            width=900,
             xscrollcommand=self.xscrollbar.set,
             yscrollcommand=self.yscrollbar.set)
         self.preview_base.grid(
