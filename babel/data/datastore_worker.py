@@ -78,6 +78,7 @@ def retrieve_cart_order_ids(session, cart_id):
         SELECT `order`.did
         FROM `order`
         WHERE cart_id=:cart_id
+        ORDER BY `order`.did
         """)
     stmn = stmn.bindparams(cart_id=cart_id)
     instances = session.execute(stmn)
