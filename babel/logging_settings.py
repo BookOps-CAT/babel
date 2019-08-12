@@ -24,7 +24,7 @@ PROD_LOGGING = {
             'url': 'https://logs-01.loggly.com/inputs/[token]/tag/python',
         },
         'file': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.RotatingFileHandler',
             'filename': PROD_LOG_PATH,
             'formatter': 'brief',

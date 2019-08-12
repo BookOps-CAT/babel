@@ -16,9 +16,10 @@ from gui.utils import (BusyManager, ToolTip, get_id_from_index,
                        disable_widgets, enable_widgets, open_url)
 from paths import USER_DATA, MY_DOCS
 from ingest.xlsx import SheetReader
-from logging_settings import format_traceback
+from logging_settings import format_traceback, LogglyAdapter
 
-mlogger = logging.getLogger('babel')
+
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class ImportView(Frame):

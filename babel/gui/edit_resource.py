@@ -13,9 +13,10 @@ from gui.data_retriever import (convert4display,
                                 get_record)
 from gui.fonts import RFONT
 from gui.utils import BusyManager
+from logging_settings import LogglyAdapter
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class EditResourceWidget:

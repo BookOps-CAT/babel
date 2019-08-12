@@ -9,11 +9,11 @@ from tkinter.ttk import *
 
 from PIL import Image, ImageTk
 
-from logging_settings import format_traceback
+from logging_settings import format_traceback, LogglyAdapter
 from paths import USER_DATA, MY_DOCS, APP_DIR
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class UpdateWidget:

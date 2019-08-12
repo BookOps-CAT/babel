@@ -13,9 +13,10 @@ from gui.data_retriever import get_names, get_codes
 from gui.fonts import RFONT, RBFONT
 from gui.utils import BusyManager, ToolTip
 from data.transactions_search import get_data_by_identifier, complex_search
+from logging_settings import LogglyAdapter
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class SearchView:

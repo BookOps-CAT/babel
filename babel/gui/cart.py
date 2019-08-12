@@ -28,10 +28,11 @@ from gui.data_retriever import (get_names, save_data, get_record,
 from gui.fonts import RFONT, RBFONT, LFONT
 from gui.utils import ToolTip, BusyManager, get_id_from_index, open_url
 from gui.edit_resource import EditResourceWidget
+from logging_settings import LogglyAdapter
 from sierra_adapters.webpac_scraper import BPL_SEARCH_URL, NYPL_SEARCH_URL
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class CartView(Frame):

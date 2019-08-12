@@ -22,10 +22,12 @@ from gui.search import SearchView
 from gui.settings import SettingsView
 from gui.update import UpdateWidget
 from gui.utils import open_url
+from logging_settings import LogglyAdapter
 from paths import USER_DATA
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
+
 
 
 def determine_version(directory):

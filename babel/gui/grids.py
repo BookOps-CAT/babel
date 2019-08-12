@@ -17,10 +17,11 @@ from gui.data_retriever import (get_names, get_record,
 from gui.fonts import RFONT
 from gui.utils import (disable_widgets, enable_widgets, get_id_from_index,
                        ToolTip, open_url)
+from logging_settings import LogglyAdapter
 from paths import USER_DATA
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class GridView(Frame):

@@ -18,11 +18,12 @@ from gui.data_retriever import get_record, delete_data_by_did
 from gui.fonts import RFONT
 from gui.utils import BusyManager, ToolTip, open_url
 from ingest.xlsx import save2spreadsheet
+from logging_settings import LogglyAdapter
 from paths import USER_DATA, MY_DOCS
 from reports.carts import summarize_cart
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class CopyCartWidget:

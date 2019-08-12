@@ -10,10 +10,11 @@ from data.datastore import DB_DIALECT, DB_DRIVER, DB_CHARSET
 from errors import BabelError
 from gui.fonts import RFONT
 from gui.utils import ToolTip, disable_widgets, open_url
+from logging_settings import LogglyAdapter
 from paths import USER_DATA
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class SettingsView(Frame):

@@ -13,9 +13,10 @@ from gui.data_retriever import (get_codes, get_names, get_record,
 from gui.fonts import RFONT
 from gui.utils import (BusyManager, disable_widgets, enable_widgets,
                        open_url)
+from logging_settings import LogglyAdapter
 
 
-mlogger = logging.getLogger('babel')
+mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
 class FundView(Frame):
