@@ -31,7 +31,7 @@ def retrieve_record(session, model, **kwargs):
 
 
 def retrieve_first_record(session, model, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).first()
+    instance = session.query(model).filter_by(**kwargs).order_by(model.did).first()
     return instance
 
 
