@@ -1,7 +1,6 @@
 import os
 import shelve
 import shutil
-import sys
 from tkinter import *
 from tkinter import messagebox, filedialog
 from tkinter.ttk import *
@@ -12,15 +11,90 @@ import keyring
 from keyring.backends.Windows import WinVaultKeyring
 from PIL import Image, ImageTk
 
-p = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, p + '\\' + p.split('\\')[-1])
-sys.path.insert(0, p)
+
+APP_DIR = 'C:\\Babel2'
+APP_DATA_DIR = os.path.join(os.environ['LOCALAPPDATA'], 'Babel')
+PROD_LOG_PATH = os.path.join(APP_DATA_DIR, 'log/babellog.out')
+MY_DOCS = os.path.expanduser(os.sep.join(["~", "Documents"]))
+USER_DATA = os.path.join(APP_DATA_DIR, 'user_data')
 
 
-from babel import paths
-from babel.errors import BabelError
-from babel.gui.utils import BusyManager
-from babel.credentials import store_in_vault
+class SetupError(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+
+class BusyManager:
+    """cursor manager"""
+
+    def __init__(self, widget):
+        self.toplevel = widget.winfo_toplevel()
+        self.widgets = {}
+
+    def busy(self, widget=None):
+        if widget is None:
+            w = self.toplevel
+        else:
+            w = widget
+
+        if str(w) not in self.widgets:
+            try:
+                # attach cursor to this widget
+                cursor = w.cget("cursor")
+                if cursor != "watch":
+                    self.widgets[str(w)] = (w, cursor)
+                    w.config(cursor="watch")
+            except TclError:
+                pass
+
+        for w in w.children.values():
+            self.busy(w)
+
+    def notbusy(self):
+        # restore cursors
+        for w, cursor in self.widgets.values():
+            try:
+                w.config(cursor=cursor)
+            except TclError:
+                pass
+        self.widgets = {}
+
+
+def get_from_vault(application, user):
+    """
+    gets password for appliction/user from Windows Credential Locker
+    args:
+        application: string, name of applicaiton
+        user: string, name of user
+    returns:
+        password: string
+    """
+
+    password = keyring.get_password(application, user)
+    return password
+
+
+def store_in_vault(application, user, password):
+    """
+    stores credentials in Windows Credential Locker
+    args:
+        applicaiton: string,  name of application
+        user: string, name of user
+        password: string
+    """
+
+    # check if credentials already stored and if so
+    # delete and store updated ones
+    try:
+        if not get_from_vault(application, user):
+            keyring.set_password(application, user, password)
+        else:
+            keyring.delete_password(application, user)
+            keyring.set_password(application, user, password)
+    except PasswordSetError as e:
+        raise SetupError(e)
+    except PasswordDeleteError as e:
+        raise SetupError(e)
 
 
 def prep_space(new_install=False):
@@ -33,32 +107,32 @@ def prep_space(new_install=False):
 
     # clean up previous installation files & folders
     try:
-        shutil.rmtree(paths.APP_DIR)
+        shutil.rmtree(APP_DIR)
     except FileNotFoundError:
         pass
     except PermissionError as e:
-        raise BabelError(e)
+        raise SetupError(e)
 
     try:
         if new_install:
-            shutil.rmtree(paths.APP_DATA_DIR)
+            shutil.rmtree(APP_DATA_DIR)
     except FileNotFoundError:
         pass
     except PermissionError as e:
-        raise BabelError(e)
+        raise SetupError(e)
 
     # recreate
     try:
-        os.mkdir(paths.APP_DIR)
+        os.mkdir(APP_DIR)
     except PermissionError as e:
-        raise BabelError(e)
+        raise SetupError(e)
 
     try:
         if new_install:
-            os.mkdir(paths.APP_DATA_DIR)
-            os.mkdir(os.path.dirname(paths.PROD_LOG_PATH))
+            os.mkdir(APP_DATA_DIR)
+            os.mkdir(os.path.dirname(PROD_LOG_PATH))
     except PermissionError as e:
-        raise BabelError(e)
+        raise SetupError(e)
 
 
 def unpack(zipfile, status_var=None):
@@ -74,12 +148,12 @@ def unpack(zipfile, status_var=None):
         with ZipFile(zipfile, 'r') as zip:
             if status_var is not None:
                 status_var.set('Upacking')
-            zip.extractall(paths.APP_DIR)
+            zip.extractall(APP_DIR)
             if status_var is not None:
                 status_var.set('Unpacking complete.')
 
     except Exception as e:
-        raise BabelError(e)
+        raise SetupError(e)
 
 
 class Installer(Tk):
@@ -106,7 +180,7 @@ class Installer(Tk):
         infoFrm.grid(
             row=0, column=0, sticky='snew', padx=10, pady=10)
 
-        img = Image.open('App-download-manager-icon.png')
+        img = Image.open('updater.png')
         logo = ImageTk.PhotoImage(img)
         logoImg = Label(
             infoFrm, image=logo)
@@ -223,7 +297,7 @@ class Installer(Tk):
                 prep_space(new_install=True)
                 unpack(self.zipfile.get(), self.status)
 
-                user_data = shelve.open(paths.USER_DATA)
+                user_data = shelve.open(USER_DATA)
                 user_data['update_dir'] = self.update_dir.get()
                 db_config = dict(
                     db_name=self.db_name.get().strip(),
@@ -244,14 +318,14 @@ class Installer(Tk):
                     'Babel setup',
                     'Installation successful.')
 
-            except BabelError as e:
+            except SetupError as e:
                 self.cur_manager.notbusy()
                 messagebox.showerror(
                     'Setup error',
                     f'Unable to complete. Error: {e}')
 
     def find_zipfile(self):
-        fh = filedialog.askopenfilename(initialdir=paths.MY_DOCS)
+        fh = filedialog.askopenfilename(initialdir=MY_DOCS)
         if fh:
             self.zipfile.set(fh)
             self.update_dir.set(os.path.dirname(self.zipfile.get()))
@@ -259,8 +333,6 @@ class Installer(Tk):
 
 
 if __name__ == '__main__':
-    zip_name = 'babel2.zip'
-    app_version = 'version.txt'
 
     # set the backend for credentials
     keyring.set_keyring(WinVaultKeyring())
