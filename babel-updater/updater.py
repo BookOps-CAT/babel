@@ -23,7 +23,7 @@ def run_update(src_directory, dst_directory):
             pass
 
         # delete content of the main folder except updater.exe
-        entries = [f for f in os.listdir('.') if 'updater' not in f]
+        entries = [f for f in os.listdir(dst_directory) if 'updater' not in f]
         for f in entries:
             if os.path.isdir(f):
                 shutil.rmtree(f)
