@@ -29,7 +29,6 @@ from paths import USER_DATA
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
-
 def determine_version(directory):
     version_fh = os.path.join(directory, 'version.txt')
     about = {}

@@ -90,13 +90,13 @@ class UpdateWidget:
         user_data.close()
 
         if update_dir:
-
             try:
-
-                args = '{} "{}" "{}"'.format(
-                    'updater.exe', update_dir, APP_DIR)
+                args = '"{}" "{}" "{}"'.format(
+                    os.path.join(APP_DIR, 'updater.exe'),
+                    update_dir,
+                    APP_DIR)
                 CREATE_NO_WINDOW = 0x08000000
-                subprocess.call(args, creationflags=CREATE_NO_WINDOW)
+                subprocess.run(args, creationflags=CREATE_NO_WINDOW)
 
             except Exception as exc:
                 _, _, exc_traceback = sys.exc_info()
