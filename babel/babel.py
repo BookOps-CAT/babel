@@ -6,13 +6,13 @@ import os
 from tkinter.ttk import Style
 import shelve
 
-import logging.handlers
+import loggly.handlers
 import keyring
 from keyring.backends.Windows import WinVaultKeyring
 
 
 from gui.main import Base, determine_version
-from logging_settings import DEV_LOGGING
+from logging_settings import DEV_LOGGING, PROD_LOGGING
 from paths import USER_DATA
 
 
@@ -20,9 +20,8 @@ from paths import USER_DATA
 # here app will not be verifying if they exist
 
 # set up application logger
-logging.config.dictConfig(DEV_LOGGING)
+logging.config.dictConfig(PROD_LOGGING)
 logger = logging.getLogger('babel')
-# error_logger = LogglyAdapter(logger, None)
 
 # set the backend for credentials
 keyring.set_keyring(WinVaultKeyring())

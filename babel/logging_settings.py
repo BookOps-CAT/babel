@@ -17,7 +17,7 @@ PROD_LOGGING = {
         },
     },
     'handlers': {
-        'errors': {
+        'loggly': {
             'level': 'ERROR',
             'class': 'loggly.handlers.HTTPSHandler',
             'formatter': 'json',
@@ -25,7 +25,7 @@ PROD_LOGGING = {
         },
         'file': {
             'level': 'DEBUG',
-            'class': 'logging.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': PROD_LOG_PATH,
             'formatter': 'brief',
             'maxBytes': 1024 * 1024,
@@ -33,8 +33,8 @@ PROD_LOGGING = {
         },
     },
     'loggers': {
-        'babel_logger': {
-            'handlers': ['errors', 'file'],
+        'babel': {
+            'handlers': ['loggly', 'file'],
             'level': 'DEBUG',
             'propagate': True
         }
@@ -70,7 +70,7 @@ DEV_LOGGING = {
 
     },
     'loggers': {
-        'babel_logger': {
+        'babel': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True
@@ -85,11 +85,16 @@ class LogglyAdapter(logging.LoggerAdapter):
     """
 
     def process(self, msg, kwargs):
-        return '%s' % (
-            msg.replace('\\', '/').
-            replace('"', "'").
-            replace('\n', '\\n').
-            replace('\t', '\\t')), kwargs
+        try:
+            format_msg = '%s' % (
+                msg.replace('\\', '/').
+                replace('"', "'").
+                replace('\n', '\\n').
+                replace('\t', '\\t'))
+        except AttributeError:
+            format_msg = msg
+
+        return format_msg, kwargs
 
 
 def format_traceback(exc, exc_traceback=None):
