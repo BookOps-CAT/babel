@@ -364,15 +364,16 @@ def apply_globals_to_cart(cart_id, widgets):
                 session, Order, cart_id=cart_id)
 
             for rec in ord_recs:
-                olocs = []
-                for l in grid_rec.gridlocations:
-                    olocs.append(
-                        OrderLocation(
-                            order_id=rec.did,
-                            branch_id=l.branch_id,
-                            shelfcode_id=l.shelfcode_id,
-                            qty=l.qty))
-                okwargs['locations'] = olocs
+                if grid_rec:
+                    olocs = []
+                    for l in grid_rec.gridlocations:
+                        olocs.append(
+                            OrderLocation(
+                                order_id=rec.did,
+                                branch_id=l.branch_id,
+                                shelfcode_id=l.shelfcode_id,
+                                qty=l.qty))
+                    okwargs['locations'] = olocs
                 update_record(
                     session, Order, rec.did, **okwargs)
 
