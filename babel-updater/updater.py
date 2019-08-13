@@ -11,14 +11,12 @@ from zipfile import ZipFile
 def run_update(src_directory, dst_directory):
     if os.path.isfile(os.path.join(dst_directory, 'babel.exe')):
 
-        CREATE_NO_WINDOW = 0x08000000
-
         # kill the babel app
         try:
             subprocess.run(
-                'TASKKILL /F /IM babel.exe',
-                creationflags=CREATE_NO_WINDOW)
-            time.sleep(2)
+                'TASKKILL /F /T /IM babel.exe',
+                creationflags=subprocess.CREATE_NO_WINDOW)
+            time.sleep(5)
         except:
             pass
 
@@ -33,7 +31,7 @@ def run_update(src_directory, dst_directory):
                 except FileNotFoundError:
                     pass
                 except PermissionError as e:
-                    print(e)
+                    pass
 
         # unzip babel archive in default app location
         zipfile = os.path.join(src_directory, 'babel2.zip')
@@ -42,9 +40,7 @@ def run_update(src_directory, dst_directory):
 
         print('Extracted')
 
-        subprocess.run(
-            os.path.join(dst_directory, 'babel.exe'),
-            creationflags=CREATE_NO_WINDOW)
+        os.startfile(os.path.join(dst_directory, 'babel.exe'))
 
 
 if __name__ == '__main__':
