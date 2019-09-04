@@ -91,12 +91,12 @@ class UpdateWidget:
 
         if update_dir:
             try:
-                args = '"{}" "{}" "{}"'.format(
-                    os.path.join(APP_DIR, 'updater.exe'),
+                args = '{} "{}" "{}"'.format(
+                    'updater.exe',
                     update_dir,
                     APP_DIR)
-                CREATE_NO_WINDOW = 0x08000000
-                subprocess.run(args, creationflags=CREATE_NO_WINDOW)
+                # subprocess.run(args, creationflags=subprocess.CREATE_NO_WINDOW)
+                subprocess.run(args)
 
             except Exception as exc:
                 _, _, exc_traceback = sys.exc_info()
@@ -106,9 +106,9 @@ class UpdateWidget:
                     f'Traceback: {tb}')
 
     def find_update(self):
-        fh = filedialog.askopenfilename(initialdir=MY_DOCS)
-        if fh:
+        update_dir = filedialog.askdirectory(initialdir=MY_DOCS)
+        if update_dir:
             user_data = shelve.open(USER_DATA)
-            user_data['update_dir'] = os.path.dirname(fh)
+            user_data['update_dir'] = update_dir
             user_data.close()
             self.launch_update()

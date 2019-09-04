@@ -9,6 +9,7 @@ from zipfile import ZipFile
 
 import keyring
 from keyring.backends.Windows import WinVaultKeyring
+from keyring.errors import PasswordDeleteError, PasswordSetError
 from PIL import Image, ImageTk
 
 
@@ -298,7 +299,8 @@ class Installer(Tk):
                 unpack(self.zipfile.get(), self.status)
 
                 user_data = shelve.open(USER_DATA)
-                user_data['update_dir'] = self.update_dir.get()
+                user_data['update_dir'] = os.path.join(
+                    self.update_dir.get(), 'app')
                 db_config = dict(
                     db_name=self.db_name.get().strip(),
                     host=self.db_host.get().strip(),
@@ -306,6 +308,8 @@ class Installer(Tk):
                     user=self.db_user.get().strip())
                 user_data['db_config'] = db_config
                 user_data.close()
+
+                self.status.set('Saving creds.')
 
                 store_in_vault(
                     db_config['db_name'],
@@ -324,11 +328,17 @@ class Installer(Tk):
                     'Setup error',
                     f'Unable to complete. Error: {e}')
 
+            except Exception as e:
+                self.cur_manager.notbusy()
+                messagebox.showerror(
+                    'Setup error',
+                    f'Unable to complete. Error: {e}')
+
     def find_zipfile(self):
         fh = filedialog.askopenfilename(initialdir=MY_DOCS)
         if fh:
             self.zipfile.set(fh)
-            self.update_dir.set(os.path.dirname(self.zipfile.get()))
+            self.update_dir.set(os.path.dirname(fh))
             self.status.set('zipfile selected...')
 
 
