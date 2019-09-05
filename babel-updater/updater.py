@@ -82,7 +82,7 @@ def run_update(src_directory, dst_directory):
                 print('Unrecognized entry: {}'.format(
                     os.path.join(dst_directory, f)))
 
-        time.sleep(2)
+        time.sleep(1)
 
         ulogger.info(f'Found following untouchable files: {untouchables}')
 
