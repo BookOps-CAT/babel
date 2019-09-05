@@ -276,7 +276,6 @@ class Base(Tk):
 
         # lift to the top main window
         self.show_frame('HomeView')
-        self.check_for_updates()
 
     def check_for_updates(self):
         # determine version, wonder if this will work after packaging
