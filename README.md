@@ -28,17 +28,23 @@ create_datastore(
 ```
 
 ## Stand-alone executable under Windows (initial & updates)
-1. Update version (version.txt) if needed
-2. Change logging from development to production (babel.py) - make sure loggly token is added
-3. Activate virtual environment
-4. Run freeze-babel.cmd shell script from the main babel folder
-5. Zip dist folder and drop in appropriate locations on the shared drive (copy version.txt and put it along side zipped file)
-6. Run Babel Windows installer
-7. Add MySQL creds during installation
-8. Launch babel to verify all is fine
+1. Copy content of Babel, Babel-updater (if changed) and Babel-windows-installer directories into a new space
+2. Update version (version.txt)
+3. Change logging from development to production (babel.py) - make sure loggly token is added
+4. Activate virtual environment
+5. Run freeze-babel-debug.cmd shell script from the main babel folder (repeat for updater and installer if changed)
+6. Test if executable file launches correctly
+7. Run freeze-babel.cmd shell scripts from the main babel folder
+8. Copy created updater.exe to distr directory of babel proper
+9. Zip dist folder and drop in appropriate locations on the shared drive (copy version.txt and put it along side zipped file)
+10. Run Babel Windows installer
+11. Add MySQL creds during installation
+12. Create desktop shortcut for babel.exe
+11. Launch babel to verify all is fine
 
 ## Icon Credits
 Icons by
+* Babel2 icon by our colleague Kimberly H. (thanks!)
 * [Everaldo / Yellowicon](http://www.everaldo.com) used under [GNU Lesser General Public License](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License).
 * [Daniele De Santis](https://www.danieledesantis.net/) used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
 * [Icon Archive](http://www.iconarchive.com) used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
