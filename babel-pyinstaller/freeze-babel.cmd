@@ -4,6 +4,7 @@ pyinstaller --clean --windowed ^
     --additional-hooks-dir=. ^
     --hidden-import="win32timezone" ^
     --hidden-import="pymysql" ^
+    --hidden-import="sqlalchemy.ext.baked" ^
     --icon=".\icons\babel2.ico" ^
     --add-data="./icons;icons" ^
     --add-data="version.txt;." ^
