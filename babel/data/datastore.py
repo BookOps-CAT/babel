@@ -61,6 +61,13 @@ class User(Base):
     nyp_code = Column(String(1), nullable=False, default='-')
     bpl_code = Column(String(1), nullable=False, default='-')
 
+    distsets = relationship(
+        'DistSet', cascade='all, delete-orphan')
+    carts = relationship(
+        'Cart', cascade='all, delete-orphan')
+    sheets = relationship(
+        'Sheet', cascade='all, delete-orphan')
+
     def __repr__(self):
         state = inspect(self)
         attrs = ', '.join([
@@ -649,7 +656,7 @@ def create_datastore(
 
     print('inserting first wlo number')
     wlos = insert_or_ignore(
-        session, Wlos, did='wlo0000058282',
+        session, Wlos, did='wlo0000059511',
         timestamp=datetime.now())
     print(f'{wlos} inserted')
     session.commit()
