@@ -351,7 +351,7 @@ class CartsView(Frame):
             lines.append(f'library: {library}')
             lines.append(f'blanketPO: {cart_rec.blanketPO}')
             lines.append(f'wlo range: {wlo_range[0]} - {wlo_range[1]}')
-            lines.append(f'order # range: {oid_range[0]} = {oid_range[1]}')
+            lines.append(f'order # range: {oid_range[0]} - {oid_range[1]}')
 
             # cart_details data
             details = summarize_cart(cart_id)
