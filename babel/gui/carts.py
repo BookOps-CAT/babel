@@ -407,6 +407,7 @@ class CartsView(Frame):
                 messagebox.showinfo(
                     'Linking IDs',
                     'Sierra bib and order numbers linked successfully.')
+                self.observer()
 
             except FileNotFoundError as e:
                 self.cur_manager.notbusy()
