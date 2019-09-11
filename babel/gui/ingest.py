@@ -758,7 +758,7 @@ class ImportView(Frame):
 
     def onValidateName(self, P):
         valid = True
-        if len(P) > 50:
+        if len(P) > 75:
             valid = False
         return valid
 

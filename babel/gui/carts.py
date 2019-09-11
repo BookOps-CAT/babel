@@ -131,7 +131,7 @@ class CopyCartWidget:
 
     def onValidateCartName(self, P):
         valid = True
-        if len(P) > 50:
+        if len(P) > 75:
             valid = False
         if ('(' in P or ')' in P):
             valid = False
@@ -208,7 +208,7 @@ class CartsView(Frame):
                     self.cartTrv, _col, False))
 
         self.cartTrv.column('#', width=5, anchor='center')
-        self.cartTrv.column('cart', width=200)
+        self.cartTrv.column('cart', width=350)
         self.cartTrv.column('date', width=130, anchor='center')
         self.cartTrv.column('status', width=100, anchor='center')
         self.cartTrv.column('owner', width=120, anchor='center')
@@ -310,6 +310,7 @@ class CartsView(Frame):
             self.cartdataFrm,
             width=65,
             state=('disabled'),
+            wrap=WORD,
             background='SystemButtonFace',
             borderwidth=0)
         self.cartdataTxt.grid(

@@ -1765,7 +1765,7 @@ class CartView(Frame):
     def onValidateName(self, i, W):
         valid = True
         if W == str(self.cartEnt):
-            if int(i) >= 49:
+            if int(i) >= 75:
                 valid = False
         if W == str(self.priceEnt):
             pass

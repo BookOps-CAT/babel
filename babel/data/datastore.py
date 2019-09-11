@@ -335,7 +335,7 @@ class Cart(Base):
         UniqueConstraint('name', 'system_id', 'user_id', name='uix_cart'), )
 
     did = Column(Integer, primary_key=True)
-    name = Column(String(50), nullable=False)
+    name = Column(String(75), nullable=False)
     created = Column(DateTime, nullable=False, default=datetime.now())
     updated = Column(DateTime, nullable=False, default=datetime.now())
     status_id = Column(
