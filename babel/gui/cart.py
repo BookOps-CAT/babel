@@ -91,7 +91,7 @@ class CartView(Frame):
         self.order_ids = []
         self.disp_start = 0
         self.disp_end = 0
-        self.disp_number = 5
+        self.disp_number = 30
         self.orders_displayed = StringVar()
         self.funds_tally = StringVar()
 
@@ -774,45 +774,33 @@ class CartView(Frame):
 
     def nav_start(self):
         self.cur_manager.busy()
-        self.save_cart()
-        self.disp_start = 0
-        self.disp_end = 5
-        self.selected_order_ids = self.order_ids[
-            self.disp_start:self.disp_end]
-        # mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
-        # mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
-        self.display_selected_orders(self.selected_order_ids)
-        self.orders_displayed.set(
-            'records {}-{} out of {}'.format(
-                self.disp_start + 1,
-                self.disp_end,
-                len(self.order_ids)))
+        if self.disp_start > 0:
+            self.save_cart()
+            self.disp_start = 0
+            if len(self.order_ids) < self.disp_number:
+                self.disp_end = len(self.order_ids)
+            else:
+                self.disp_end = self.disp_number
+            self.selected_order_ids = self.order_ids[
+                self.disp_start:self.disp_end]
+
+            self.display_selected_orders(self.selected_order_ids)
+            self.orders_displayed.set(
+                'records {}-{} out of {}'.format(
+                    self.disp_start + 1,
+                    self.disp_end,
+                    len(self.order_ids)))
         self.cur_manager.notbusy()
 
     def nav_end(self):
         self.cur_manager.busy()
-        self.save_cart()
-        self.disp_start = len(self.order_ids) - self.disp_number
-        self.disp_end = len(self.order_ids)
-        self.selected_order_ids = self.order_ids[-self.disp_number:]
-        # mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
-        # mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
-        self.display_selected_orders(self.selected_order_ids)
-        self.orders_displayed.set(
-            'records {}-{} out of {}'.format(
-                self.disp_start + 1,
-                self.disp_end,
-                len(self.order_ids)))
-        self.cur_manager.notbusy()
-
-    def nav_previous(self):
-        self.cur_manager.busy()
-        if self.disp_start > 0:
+        if self.disp_end < len(self.order_ids):
             self.save_cart()
-            self.disp_end = self.disp_start
-            self.disp_start = self.disp_end - self.disp_number
-            self.selected_order_ids = self.order_ids[
-                self.disp_start:self.disp_end]
+            self.disp_start = len(self.order_ids) - self.disp_number
+            if self.disp_start < 0:
+                self.disp_start = 0
+            self.disp_end = len(self.order_ids)
+            self.selected_order_ids = self.order_ids[-self.disp_number:]
             # mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
             # mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
             self.display_selected_orders(self.selected_order_ids)
@@ -823,12 +811,35 @@ class CartView(Frame):
                     len(self.order_ids)))
         self.cur_manager.notbusy()
 
+    def nav_previous(self):
+        self.cur_manager.busy()
+        if self.disp_start > 0:
+            self.save_cart()
+            self.disp_end = self.disp_start
+            self.disp_start = self.disp_end - self.disp_number
+            if self.disp_start < 0:
+                self.disp_start = 0
+                self.disp_end = len(self.order_ids)
+            self.selected_order_ids = self.order_ids[
+                self.disp_start:self.disp_end]
+
+            self.display_selected_orders(self.selected_order_ids)
+            self.orders_displayed.set(
+                'records {}-{} out of {}'.format(
+                    self.disp_start + 1,
+                    self.disp_end,
+                    len(self.order_ids)))
+        self.cur_manager.notbusy()
+
     def nav_next(self):
         self.cur_manager.busy()
-        if self.disp_end <= len(self.order_ids):
+        if self.disp_end < len(self.order_ids):
             self.save_cart()
             self.disp_start = self.disp_end
             self.disp_end = self.disp_end + self.disp_number
+            if self.disp_end > len(self.order_ids):
+                self.disp_start = 0
+                self.disp_end = len(self.order_ids)
             self.selected_order_ids = self.order_ids[
                 self.disp_start:self.disp_end]
             # mlogger.debug(f'Nav next: {self.disp_start}:{self.disp_end}')
@@ -1716,7 +1727,10 @@ class CartView(Frame):
 
                 self.order_ids = get_order_ids(self.cart_id.get())
                 self.disp_start = 0
-                self.disp_end = self.disp_start + self.disp_number
+                if self.disp_number > len(self.order_ids):
+                    self.disp_end = len(self.order_ids)
+                else:
+                    self.disp_end = self.disp_number
                 self.selected_order_ids = self.order_ids[
                     self.disp_start:self.disp_end]
                 self.orders_displayed.set(
