@@ -1562,6 +1562,7 @@ class CartView(Frame):
     def reset(self):
         mlogger.debug('Reseting CartView variables.')
         self.order_ids = []
+        self.library.set('')
         self.dist_set.set('')
         self.glob_grid_template.set('keep current')
         self.lang.set('keep current')
