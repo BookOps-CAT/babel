@@ -56,8 +56,7 @@ def get_codes(model, **kwargs):
     with session_scope() as session:
         res = get_column_values(
             session, model, 'code', **kwargs)
-        for x in res:
-            values = sorted([x.code for x in res])
+        values = [x.code for x in res]
     return values
 
 

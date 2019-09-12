@@ -28,6 +28,8 @@ class SearchView:
         self.parent = parent
         self.app_data = app_data
 
+        mlogger.debug('SearchView active.')
+
         self.top = Toplevel(master=self.parent)
         self.top.title('Search carts')
         self.cur_manager = BusyManager(self.top)
@@ -508,6 +510,7 @@ class SearchView:
         widget['state'] = 'disable'
 
     def get_comboboxes_values(self):
+        mlogger.info('SearchView getting comoboxes values')
         self.system_names = get_names(System)
         self.library_names = get_names(Library)
         self.lang_names = get_names(Lang)

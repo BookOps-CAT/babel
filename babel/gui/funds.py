@@ -366,7 +366,7 @@ class FundView(Frame):
         # convert values to listbox indices and add conditions
         # branchLst
         branch_idx = self.get_listbox_indices(
-            self.branchOutLst, fund_data['branches'])
+            'branches', self.branchOutLst, fund_data['branches'])
         mlogger.debug('branchOutLst index matches: {}'.format(branch_idx))
         self.add_condition(
             'branchLst', self.branchOutLst, self.branchInLst,
@@ -374,14 +374,14 @@ class FundView(Frame):
 
         # audnLst
         audn_idx = self.get_listbox_indices(
-            self.audnOutLst, fund_data['audns'])
+            'audns', self.audnOutLst, fund_data['audns'])
         mlogger.debug('audnOutLst index matches: {}'.format(audn_idx))
         self.add_condition(
             'audnLst', self.audnOutLst, self.audnInLst, audn_idx)
 
         # libLst
         library_idx = self.get_listbox_indices(
-            self.libOutLst, fund_data['libraries'])
+            'libraries', self.libOutLst, fund_data['libraries'])
         mlogger.debug('libOutLst index matches: {}'.format(
             library_idx))
         self.add_condition(
@@ -391,7 +391,7 @@ class FundView(Frame):
 
         # mattypeOutLst
         mattype_idx = self.get_listbox_indices(
-            self.mattypeOutLst, fund_data['matTypes'])
+            'mattypes', self.mattypeOutLst, fund_data['matTypes'])
         mlogger.debug('mattypeOutLst index matches: {}'.format(
             mattype_idx))
         self.add_condition(
@@ -489,7 +489,7 @@ class FundView(Frame):
     def help(self):
         open_url('https://github.com/BookOps-CAT/babel/wiki/Funds')
 
-    def get_listbox_indices(self, widgetLst, data):
+    def get_listbox_indices(self, widgetName, widgetLst, data):
         """
         Given list of values, retrieves their index in listbox (widgetLst)
         args:
@@ -502,7 +502,13 @@ class FundView(Frame):
         mlogger.debug('Retrieving indices for values {} in a listbox.'.format(
             data))
         values = widgetLst.get(0, END)
-        return sorted([values.index(d) for d in data])
+        try:
+            values = sorted([values.index(d) for d in data])
+            return values
+        except ValueError:
+            missing = (set(data) - set(values))
+            mlogger.error(
+                f'ValueError on {widgetName}: values={missing} not found in widgets values')
 
     def add_condition(self, category, widgetOut, widgetIn, selected):
         mlogger.debug('Adding condition(s) to {} initiated.'.format(
@@ -549,6 +555,7 @@ class FundView(Frame):
             widgetOut.insert(END, value)
 
     def display_funds(self):
+        mlogger.debug('Displaying Funds')
         self.fundLst.delete(0, END)
         funds = get_codes(Fund, system_id=self.system.get())
         for fund in sorted(funds):
@@ -588,6 +595,7 @@ class FundView(Frame):
             self.mattypeOutLst.insert(END, mattype)
 
     def branch_selection_observer(self, *args):
+        mlogger.debug('FundView: branch_selection_observer activated.')
         if self.system.get():
             if self.all_branches.get() == 1:
                 # change label
@@ -610,6 +618,7 @@ class FundView(Frame):
 
     def observer(self, *args):
         if self.activeW.get() == 'FundView':
+            mlogger.debug('FundView: observer activated.')
             self.record = None
             self.fund_code.set('')
             self.fund_desc.set('')
@@ -621,7 +630,7 @@ class FundView(Frame):
             self.display_audiences()
             self.display_mattypes()
             if self.system.get():
-                self.display_branches()
+                # self.display_branches()
                 self.display_library()
             disable_widgets(self.detFrm.winfo_children())
 
