@@ -1673,16 +1673,16 @@ class CartView(Frame):
 
                 # populate values in global checkboxes
 
-                if self.system.get() == 1:
-                    self.library.set('branches')
-                    self.libCbx['state'] = 'disable'
-                elif self.system.get() == 2:
-                    self.libCbx['state'] = '!disable'
-
                 # library
                 self.library_idx = create_name_index(Library)
                 values = (sorted(self.library_idx.values()))
                 self.libCbx['values'] = values
+
+                if cart.library_id:
+                    self.library.set(self.library_idx[cart.library_id])
+                    self.libCbx['state'] = 'disable'
+                else:
+                    self.libCbx['state'] = '!disable'
 
                 # langs
                 self.lang_idx = create_name_index(Lang)
