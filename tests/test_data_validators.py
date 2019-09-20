@@ -12,16 +12,19 @@ class TestValue2String(unittest.TestCase):
         value = 2016
         value_as_uni = validators.value2string(value)
         self.assertIsInstance(value_as_uni, str)
+        self.assertEqual(value_as_uni, '2016')
 
     def test_float_to_unicode(self):
         value = 12.99
         value_as_uni = validators.value2string(value)
         self.assertIsInstance(value_as_uni, str)
+        self.assertEqual(value_as_uni, '12.99')
 
     def test_str_to_unicode(self):
         value = 'Маэстра'
         value_as_uni = validators.value2string(value)
         self.assertIsInstance(value_as_uni, str)
+        self.assertEqual(value_as_uni, value)
 
     def test_none_returns_none(self):
         value = None
@@ -180,6 +183,35 @@ class TestCharactersLimit4Datastore(unittest.TestCase):
         value = validators.shorten4datastore('foo' * 50, 250)
         self.assertEqual(len(value), 150)
         self.assertNotEqual(value[-4:], ' ...')
+
+
+class TestNormalizeWhiteSpaces(unittest.TestCase):
+    """Tests removal of white spaces from values"""
+
+    def test_value_is_none(self):
+        self.assertIsNone(validators.normalize_whitespaces(None))
+
+    def test_value_is_empty_string(self):
+        self.assertIsNone(validators.normalize_whitespaces(''))
+
+    def test_value_is_integer(self):
+        self.assertEqual(
+            validators.normalize_whitespaces(5), '5')
+
+    def test_value_with_tabs(self):
+        self.assertEqual(
+            validators.normalize_whitespaces('foo\tbar'), 'foo bar')
+
+    def test_value_with_new_line(self):
+        self.assertEqual(
+            validators.normalize_whitespaces(
+                'foo bar\nshrubbery'), 'foo bar shrubbery')
+
+    def test_starting_and_trailing_whitespace(self):
+        self.assertEqual(
+            validators.normalize_whitespaces(
+                '  foo bar   '), 'foo bar')
+
 
 
 if __name__ == '__main__':

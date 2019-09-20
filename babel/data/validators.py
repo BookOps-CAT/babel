@@ -50,11 +50,12 @@ def normalize_price(value):
 
 
 def normalize_whitespaces(value):
-    if type(value) is str:
+    value = value2string(value)
+    if value is not None:
         value = value.replace('\t', ' ').replace('\n', ' ').strip()
-        return value
-    else:
-        return value
+    if value == '':
+        value = None
+    return value
 
 
 def shorten4datastore(value, chr_allowed):
