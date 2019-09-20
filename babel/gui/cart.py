@@ -838,7 +838,6 @@ class CartView(Frame):
             self.disp_start = self.disp_end
             self.disp_end = self.disp_end + self.disp_number
             if self.disp_end > len(self.order_ids):
-                self.disp_start = 0
                 self.disp_end = len(self.order_ids)
             self.selected_order_ids = self.order_ids[
                 self.disp_start:self.disp_end]
