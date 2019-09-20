@@ -51,11 +51,16 @@ def create_resource_reader(template_record, sheet_fh):
 
         return reader
 
+    except AttributeError as e:
+        mlogger.error(
+            f'AttributeError on ResourceDataReader: {e}')
+        raise BabelError(e)
+
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
         mlogger.error(
-            f'Unhandled on sheet reader. Traceback: {tb}')
+            f'Unhandled error on ResourceDataReader. Traceback: {tb}')
         raise BabelError(exc)
 
 

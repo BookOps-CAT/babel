@@ -635,11 +635,13 @@ class ImportView(Frame):
                     self.record, self.fh)
                 for d in data:
                     c += 1
+            except BabelError:
+                raise
             except Exception as exc:
                 _, _, exc_traceback = sys.exc_info()
                 tb = format_traceback(exc, exc_traceback)
                 mlogger.error(
-                    'Unhandled error on ResourceDataReader.'
+                    'Unhandled error on create_resource_reader.'
                     f'Traceback: {tb}')
 
             frm = Frame(top)

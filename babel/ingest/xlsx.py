@@ -135,11 +135,11 @@ class ResourceDataReader:
         try:
             self.min_row = header_row + 1
         except TypeError:
-            raise BabelError(
+            raise AttributeError(
                 'Header row number is a required argument')
 
         if title_col is None:
-            raise BabelError(
+            raise AttributeError(
                 'Title column number is a required argument')
 
         wb = load_workbook(
@@ -195,7 +195,7 @@ class ResourceDataReader:
         try:
             kwargs = dict()
             if row[self.title_col] is not None:
-                title = row[self.title_col].strip()
+                title = str(row[self.title_col]).strip()
                 if title != '':
                     kwargs['title'] = title
                     if self.add_title_col is not None:

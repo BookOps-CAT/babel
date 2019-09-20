@@ -3,7 +3,7 @@
 import unittest
 
 
-from context import xlsx
+from context import xlsx, errors
 
 
 class TestOrderDataReader(unittest.TestCase):
@@ -28,6 +28,7 @@ class TestOrderDataReader(unittest.TestCase):
             author_col=1,
             series_col=3,
             publisher_col=5,
+            pub_place_col=8,
             pub_date_col=11,
             summary_col=10,
             isbn_col=6,
@@ -49,7 +50,7 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertIsNone(d.series)
                 self.assertEqual(d.publisher, 'Orion')
                 self.assertEqual(d.pub_date, '2016')
-                self.assertIsNone(d.pub_place)
+                self.assertEqual(d.pub_place, 'New York')
                 self.assertEqual(d.isbn, '9785389109476')
                 self.assertEqual(d.summary, 'Summary 1 here')
                 self.assertEqual(d.price_list, 29.00)
@@ -65,7 +66,7 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertIsNone(d.series)
                 self.assertEqual(d.publisher, 'Harper')
                 self.assertEqual(d.pub_date, '2019')
-                self.assertIsNone(d.pub_place)
+                self.assertEqual(d.pub_place, 'Boston')
                 self.assertEqual(d.isbn, '9785389109452')
                 self.assertEqual(d.summary, 'Summary 2 here')
                 self.assertEqual(d.price_list, 13.00)
@@ -90,6 +91,18 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertEqual(d.other_no, 'A14')
                 self.assertIsNone(d.desc_url)
                 self.assertIsNone(d.misc)
+            if c == 3:
+                self.assertEqual(d.title, '1984')
+                self.assertEqual(d.author, 'Orwell, George')
+                self.assertIsNone(d.series)
+                self.assertEqual(d.publisher, 'Harper')
+                self.assertEqual(d.pub_date, '2018')
+                self.assertEqual(d.pub_place, 'New York')
+                self.assertIsNone(d.summary)
+                self.assertEqual(d.price_list, 9.99)
+                self.assertEqual(d.price_disc, 7.99)
+                self.assertEqual(d.upc, '5060099503828')
+                self.assertIsNone(d.desc_url)
             c += 1
 
 
