@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
+from functools import lru_cache
+import hashlib
 import logging
 import sys
 
@@ -26,6 +28,29 @@ from sierra_adapters.webpac_scraper import catalog_match
 
 
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
+
+
+def create_order_snapshot(order_tracker):
+    snapshot = hashlib.md5()
+    # did = order_tracker['order_id']
+    for key, widget in order_tracker.items():
+        if key != 'order_id':
+            snapshot.update(widget.get().encode('utf-8'))
+    sh = snapshot.digest()
+    # mlogger.debug(
+    #     f'Generated hash ({sh} for order no {did}.)')
+    return sh
+
+
+def create_grids_snapshot(grid_trackers):
+    snapshot = hashlib.md5()
+    for grid in grid_trackers:
+        did = grid['loc_id']
+        for key, widget in grid.items():
+            if key in (
+                    'branchCbx', 'shelfCbx', 'qtyEnt', 'fundCbx'):
+                snapshot.update(widget.get().encode('utf-8'))
+    return snapshot.digest()
 
 
 def save_new_dist_and_grid(
@@ -187,6 +212,30 @@ def get_ids_for_order_boxes_values(values_dict):
         raise BabelError(exc)
 
 
+@lru_cache(maxsize=2)
+def get_shelf_rec_id(session, shelf_code):
+    rec = retrieve_record(
+        session, ShelfCode,
+        code=shelf_code)
+    return rec.did
+
+
+@lru_cache(maxsize=2)
+def get_fund_rec_id(session, fund_code):
+    rec = retrieve_record(
+        session, Fund,
+        code=fund_code)
+    return rec.did
+
+
+@lru_cache(maxsize=24)
+def get_branch_rec_id(session, branch_code):
+    rec = retrieve_record(
+        session, Branch,
+        code=branch_code)
+    return rec.did
+
+
 def save_displayed_order_data(tracker_values):
     try:
         with session_scope() as session:
@@ -206,22 +255,16 @@ def save_displayed_order_data(tracker_values):
                     if l['loc_id'] is not None:
                         lkwargs['did'] = l['loc_id']
                     if l['branchCbx'].get() != '':
-                        rec = retrieve_record(
-                            session, Branch,
-                            code=l['branchCbx'].get())
-                        lkwargs['branch_id'] = rec.did
+                        rec_id = get_branch_rec_id(session, l['branchCbx'].get())
+                        lkwargs['branch_id'] = rec_id
                     if l['shelfCbx'].get() != '':
-                        rec = retrieve_record(
-                            session, ShelfCode,
-                            code=l['shelfCbx'].get())
-                        lkwargs['shelfcode_id'] = rec.did
+                        rec_id = get_shelf_rec_id(session, l['shelfCbx'].get())
+                        lkwargs['shelfcode_id'] = rec_id
                     if l['qtyEnt'].get() != '':
                         lkwargs['qty'] = int(l['qtyEnt'].get())
                     if l['fundCbx'].get() != '':
-                        rec = retrieve_record(
-                            session, Fund,
-                            code=l['fundCbx'].get())
-                        lkwargs['fund_id'] = rec.did
+                        rec_id = get_fund_rec_id(session, l['fundCbx'].get())
+                        lkwargs['fund_id'] = rec_id
                         # validate here
                     if lkwargs:
                         locations.append(OrderLocation(**lkwargs))
@@ -290,6 +333,7 @@ def apply_fund_to_cart(system_id, cart_id, fund_codes):
                 for orec in ord_recs:
                     audn_match = False
                     mat_match = False
+                    library_match = False
 
                     if orec.audn_id in fund_audn:
                         audn_match = True
@@ -486,6 +530,7 @@ def assign_blanketPO_to_cart(cart_id):
         raise BabelError(exc)
 
 
+@lru_cache(maxsize=24)
 def validate_fund(session, fund_id, system_id, library_id,
                   audn_id, mattype_id, branch_id):
     valid = True
