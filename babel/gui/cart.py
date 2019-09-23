@@ -14,7 +14,9 @@ from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     get_orders_by_id,
                                     save_displayed_order_data,
                                     save_new_dist_and_grid, validate_cart_data,
-                                    tabulate_funds)
+                                    tabulate_funds,
+                                    create_order_snapshot,
+                                    create_grids_snapshot)
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status, Library)
@@ -442,7 +444,27 @@ class CartView(Frame):
             needs_validation = determine_needs_validation(self.cart_id.get())
             mlogger.debug(
                 f'Cart needs validation: {needs_validation}')
-            save_displayed_order_data(self.tracker.values())
+
+            # take a new snapshot
+            self.current_snapshot = dict()
+            changed = []
+            for key, value in self.tracker.items():
+                ord_snapshot = create_order_snapshot(value['order'])
+                grids_snapshot = create_grids_snapshot(value['grid']['locs'])
+                current_snapshot = dict(
+                    ord_snapshot=ord_snapshot,
+                    grids_snapshot=grids_snapshot)
+
+                if self.previous_snapshot[key] != current_snapshot:
+                    order_id = value['order']['order_id']
+                    mlogger.debug(
+                        f'Order no.: {order_id} changed.')
+                    changed.append(
+                        dict(
+                            order=value['order'],
+                            grid=value['grid']))
+
+            save_displayed_order_data(changed)
 
             # save cart data
             if self.cartEnt['state'] != 'disable':
@@ -855,6 +877,7 @@ class CartView(Frame):
         self.cur_manager.busy()
         self.redo_preview_frame()
         self.tracker = OrderedDict()
+        self.previous_snapshot = dict()
         recs = get_orders_by_id(order_ids)
         row = 0
         cart_no = self.disp_start + 1
@@ -878,7 +901,7 @@ class CartView(Frame):
         mainTab = Frame(ntb)
 
         res_tracker = self.create_resource_frame(mainTab, orec.resource)
-        ord_tracker = self.create_order_frame(mainTab, orec)
+        ord_tracker, ord_snapshot = self.create_order_frame(mainTab, orec)
 
         gridFrm = LabelFrame(mainTab, text='grid')
         gridFrm.grid(
@@ -955,6 +978,8 @@ class CartView(Frame):
             grid_tracker = self.create_grid(locsFrm, 1)
             grids.append(grid_tracker)
 
+        grids_snapshot = create_grids_snapshot(grids)
+
         self.create_add_locationBtn(gridFrm)
 
         # miscellaneous tab
@@ -974,6 +999,10 @@ class CartView(Frame):
                 'locs': grids
             },
         }
+
+        self.previous_snapshot[ntb.winfo_id()] = dict(
+            ord_snapshot=ord_snapshot,
+            grids_snapshot=grids_snapshot)
 
         return ntb
 
@@ -1261,10 +1290,12 @@ class CartView(Frame):
             'commentEnt': commentEnt,
             'oidEnt': oidEnt,
             'bidEnt': bidEnt,
-            'wloEnt': wloEnt
+            'wloEnt': wloEnt,
         }
 
-        return tracker
+        snapshot = create_order_snapshot(tracker)
+
+        return tracker, snapshot
 
     def create_grid(self, parent, row, loc=(None, '', '', '', '')):
         unitFrm = Frame(parent)
