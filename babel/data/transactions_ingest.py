@@ -47,6 +47,7 @@ def create_resource_reader(template_record, sheet_fh):
             price_list_col=record.price_list_col,
             price_disc_col=record.price_disc_col,
             desc_url_col=record.desc_url_col,
+            comment_col=record.comment_col,
             misc_col=record.misc_col)
 
         return reader
@@ -105,7 +106,8 @@ def create_cart(
             for d in resource_data:
                 ord_rec = insert(
                     session, Order,
-                    cart_id=cart_rec.did)
+                    cart_id=cart_rec.did,
+                    comment=d.comment)
 
                 insert(
                     session, Resource,

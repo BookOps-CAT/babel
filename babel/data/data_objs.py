@@ -19,10 +19,12 @@ VenData = namedtuple(
         'price_list',
         'price_disc',
         'desc_url',
+        'comment',
         'misc'
     ],
     defaults=[
         None, None, None, None,
         None, None, None, None,
         None, None, None, None,
-        Decimal('0.00'), None, None])
+        Decimal('0.00'), None,
+        None, None])

@@ -70,7 +70,7 @@ class ResourceDataReader:
     title_col: int
         title column number, index starts with 0
     add_title_col: int
-        additional title column, index starts with 0
+        additional title column, index starts with 0 (not mapped to MARC)
     author_col: int
         author column number, index starts with 0
     series_col: int
@@ -93,6 +93,11 @@ class ResourceDataReader:
         discounted price column number, index starts with 0
     desc_url: int
         URL of description column number, index starts with 0
+    comment_col: int
+        comment column number, index starts with 0 (not mapped to MARC)
+    misc_col: int
+        miscellaneous data column number, index starts with 0
+        (not mapped to MARC)
 
     """
 
@@ -113,6 +118,7 @@ class ResourceDataReader:
             price_list_col=None,
             price_disc_col=None,
             desc_url_col=None,
+            comment_col=None,
             misc_col=None):
 
         self.header_row = header_row
@@ -130,6 +136,7 @@ class ResourceDataReader:
         self.price_list_col = price_list_col
         self.price_disc_col = price_disc_col
         self.desc_url_col = desc_url_col
+        self.comment_col = comment_col
         self.misc_col = misc_col
 
         try:
@@ -184,6 +191,8 @@ class ResourceDataReader:
             price_list=normalize_price(data.price_list),
             price_disc=normalize_price(data.price_disc),
             desc_url=shorten4datastore(data.desc_url, 500),
+            comment=shorten4datastore(
+                normalize_whitespaces(data.comment), 150),
             misc=shorten4datastore(
                 normalize_whitespaces(data.misc), 250))
         return data
@@ -224,6 +233,8 @@ class ResourceDataReader:
                         kwargs['price_disc'] = row[self.price_disc_col]
                     if self.desc_url_col is not None:
                         kwargs['desc_url'] = row[self.desc_url_col]
+                    if self.comment_col is not None:
+                        kwargs['comment'] = row[self.comment_col]
                     if self.misc_col is not None:
                         kwargs['misc'] = row[self.misc_col]
 

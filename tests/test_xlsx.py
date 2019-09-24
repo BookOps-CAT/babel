@@ -36,7 +36,9 @@ class TestOrderDataReader(unittest.TestCase):
             other_no_col=0,
             price_list_col=12,
             price_disc_col=13,
-            desc_url_col=15)
+            desc_url_col=15,
+            comment_col=16,
+            misc_col=17)
 
         self.assertEqual(data.min_row, 3)
         self.assertEqual(
@@ -59,7 +61,9 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertEqual(d.other_no, 'A12')
                 self.assertEqual(
                     d.desc_url, 'https://en.wikipedia.org/wiki/Zendegi')
-                self.assertIsNone(d.misc)
+                self.assertEqual(
+                    d.comment, 'order 3')
+                self.assertEqual(d.misc, 'rush')
             if c == 1:
                 self.assertEqual(d.title, 'Reamde :  a novel')
                 self.assertEqual(d.author, 'Stephenson, Neal')
@@ -75,6 +79,8 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertEqual(d.other_no, 'A13')
                 self.assertEqual(
                     d.desc_url, 'https://en.wikipedia.org/wiki/Reamde')
+                self.assertEqual(
+                    d.comment, 'order 4')
                 self.assertIsNone(d.misc)
             if c == 2:
                 self.assertEqual(d.title, 'The Best Science fiction of 2019')
@@ -90,6 +96,8 @@ class TestOrderDataReader(unittest.TestCase):
                 self.assertEqual(d.upc, '5060099503827')
                 self.assertEqual(d.other_no, 'A14')
                 self.assertIsNone(d.desc_url)
+                self.assertEqual(
+                    d.comment, 'juv')
                 self.assertIsNone(d.misc)
             if c == 3:
                 self.assertEqual(d.title, '1984')

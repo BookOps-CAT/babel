@@ -449,6 +449,7 @@ class Sheet(Base):
     price_list_col = Column(Integer)
     price_disc_col = Column(Integer)
     desc_url_col = Column(Integer)
+    comment_col = Column(Integer)
     misc_col = Column(Integer)
 
     def __repr__(self):

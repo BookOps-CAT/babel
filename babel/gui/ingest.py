@@ -61,6 +61,7 @@ class ImportView(Frame):
         self.price_list_col = StringVar()
         self.price_disc_col = StringVar()
         self.desc_url_col = StringVar()
+        self.comment_col = StringVar()
         self.misc_col = StringVar()
         self.created = StringVar()
         self.updated = StringVar()
@@ -178,7 +179,7 @@ class ImportView(Frame):
         self.titlecolEnt.grid(
             row=4, column=1, sticky='snw', padx=5, pady=2)
 
-        Label(self.templateFrm, text='extra title col.:').grid(
+        Label(self.templateFrm, text='extra title col.*:').grid(
             row=5, column=0, sticky='snw', padx=5, pady=2)
         self.addtitlecolEnt = Entry(
             self.templateFrm,
@@ -244,7 +245,7 @@ class ImportView(Frame):
         self.pubplacecolEnt.grid(
             row=10, column=1, sticky='snw', padx=5, pady=2)
 
-        Label(self.templateFrm, text='summary column:').grid(
+        Label(self.templateFrm, text='summary column*:').grid(
             row=11, column=0, sticky='snw', padx=5, pady=2)
         self.summarycolEnt = Entry(
             self.templateFrm,
@@ -310,7 +311,7 @@ class ImportView(Frame):
         self.pricedisccolEnt.grid(
             row=16, column=1, sticky='snw', padx=5, pady=2)
 
-        Label(self.templateFrm, text='URL column:').grid(
+        Label(self.templateFrm, text='URL column*:').grid(
             row=17, column=0, sticky='snw', padx=5, pady=2)
         self.urldesccolEnt = Entry(
             self.templateFrm,
@@ -321,8 +322,19 @@ class ImportView(Frame):
         self.urldesccolEnt.grid(
             row=17, column=1, sticky='snw', padx=5, pady=2)
 
-        Label(self.templateFrm, text='misc column:').grid(
+        Label(self.templateFrm, text='comment column*:').grid(
             row=18, column=0, sticky='snw', padx=5, pady=2)
+        self.commentcolEnt = Entry(
+            self.templateFrm,
+            font=RFONT,
+            width=5,
+            textvariable=self.comment_col,
+            validate="key", validatecommand=self.vlcl)
+        self.commentcolEnt.grid(
+            row=18, column=1, sticky='snw', padx=5, pady=2)
+
+        Label(self.templateFrm, text='misc column*:').grid(
+            row=19, column=0, sticky='snw', padx=5, pady=2)
         self.misccolEnt = Entry(
             self.templateFrm,
             font=RFONT,
@@ -330,7 +342,11 @@ class ImportView(Frame):
             textvariable=self.misc_col,
             validate="key", validatecommand=self.vlcl)
         self.misccolEnt.grid(
-            row=18, column=1, sticky='snw', padx=5, pady=2)
+            row=19, column=1, sticky='snw', padx=5, pady=2)
+
+        Label(
+            self.templateFrm, text='* columns not mapped to MARC').grid(
+            row=20, column=0, columnspan=2, sticky='snw', padx=5, pady=5)
 
         # sheet frame
         self.sheetFrm = LabelFrame(self, text='sheet')
@@ -374,7 +390,7 @@ class ImportView(Frame):
             row=0, column=0, sticky='nse', padx=2)
         self.preview_base = Canvas(
             self.sheetPreviewFrm, bg='gray',
-            height=450,  # find a way to adjust based on preview frm size
+            height=460,  # find a way to adjust based on preview frm size
             width=900,
             xscrollcommand=self.xscrollbar.set,
             yscrollcommand=self.yscrollbar.set)
@@ -477,6 +493,8 @@ class ImportView(Frame):
             tmask[self.record.price_disc_col] = 'disc. price'
         if self.record.desc_url_col is not None:
             tmask[self.record.desc_url_col] = 'URL'
+        if self.record.comment_col is not None:
+            tmask[self.record.comment_col] = 'comment'
         if self.record.misc_col is not None:
             tmask[self.record.misc_col] = 'misc.'
 
@@ -543,6 +561,7 @@ class ImportView(Frame):
                 'price_list_col': self.price_list_col.get().strip(),
                 'price_disc_col': self.price_disc_col.get().strip(),
                 'desc_url_col': self.desc_url_col.get().strip(),
+                'comment_col': self.comment_col.get().strip(),
                 'misc_col': self.misc_col.get().strip()
             }
 
@@ -741,6 +760,7 @@ class ImportView(Frame):
         self.desc_url_col.set('')
         self.price_list_col.set('')
         self.price_disc_col.set('')
+        self.comment_col.set('')
         self.misc_col.set('')
         self.update_sheet_templates()
 
@@ -801,6 +821,7 @@ class ImportView(Frame):
                 self.price_list_col.set(drec.price_list_col)
                 self.price_disc_col.set(drec.price_disc_col)
                 self.desc_url_col.set(drec.desc_url_col)
+                self.comment_col.set(drec.comment_col)
                 self.misc_col.set(drec.misc_col)
 
                 disable_widgets(self.templateFrm.winfo_children())

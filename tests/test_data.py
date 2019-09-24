@@ -17,7 +17,7 @@ class TestVenData(unittest.TestCase):
             ('title', 'add_title', 'author', 'series', 'publisher',
              'pub_date', 'pub_place', 'summary', 'isbn', 'upc',
              'other_no', 'price_list', 'price_disc',
-             'desc_url', 'misc'))
+             'desc_url', 'comment', 'misc'))
 
     def test_data_defaults(self):
         # afer upgrade to python 3.7.3 use somenamedtuple._field_defaults
@@ -56,6 +56,8 @@ class TestVenData(unittest.TestCase):
         self.assertEqual(data.price_list, Decimal('12.00'))
         self.assertEqual(data.price_disc, Decimal('9.90'))
         self.assertIsNone(data.desc_url)
+        self.assertIsNone(data.comment)
+        self.assertIsNone(data.misc)
 
 
 if __name__ == '__main__':
