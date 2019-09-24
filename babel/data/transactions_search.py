@@ -187,6 +187,21 @@ def get_system_name(session, system_id):
     return name
 
 
+@lru_cache(maxsize=4)
+def get_owner(session, user_id):
+    owner = None
+    stmn = text("""
+        SELECT name FROM user
+        WHERE did=:user_id
+        """)
+    stmn = stmn.bindparams(user_id=user_id)
+    instances = session.execute(stmn)
+    for i in instances:
+        owner = i.name
+        break
+    return owner
+
+
 def get_data_by_identifier(keyword, keyword_type):
     if keyword_type == 'bib #':
         param = Order.bid
@@ -222,6 +237,7 @@ def get_data_by_identifier(keyword, keyword_type):
             for cart_rec, ord_rec, res_rec in recs:
                 # cart
                 cart = cart_rec.name
+                owner = get_owner(session, cart_rec.user_id)
                 system = get_system_name(session, cart_rec.system_id)
                 library = get_library_name(session, cart_rec.library_id)
                 status = get_status_name(session, cart_rec.status_id)
@@ -266,6 +282,7 @@ def get_data_by_identifier(keyword, keyword_type):
                     bid=bid,
                     oid=oid,
                     wlo=wlo,
+                    owner=owner,
                     cart=cart,
                     created=created,
                     system=system,

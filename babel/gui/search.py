@@ -478,7 +478,7 @@ class SearchView:
 
             widget.insert(
                 f'{ln}.0',
-                f"cart:{d['cart']} | status:{d['status']} | created:{d['created']}\n")
+                f"owner:{d['owner']} | cart:{d['cart']} | status:{d['status']} | created:{d['created']}\n")
             ln += 1
 
             widget.insert(
