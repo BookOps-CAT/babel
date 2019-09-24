@@ -221,6 +221,8 @@ class Base(Tk):
         importImg = ImageTk.PhotoImage(img)
         img = Image.open('./icons/ChainLink-LINK-icon.png')
         linkImgS = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-calc-iconM.png')
+        calcImgM = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -259,7 +261,8 @@ class Base(Tk):
                 'babeldup': babeldupImg,
                 'removeS': removeImgS,
                 'valid': validationImg,
-                'fundM': fundImgM}}
+                'fundM': fundImgM,
+                'calcM': calcImgM}}
 
         # spawn Babel frames
         self.frames = {}

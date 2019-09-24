@@ -28,6 +28,7 @@ from gui.data_retriever import (get_names, save_data, get_record,
                                 get_order_ids, create_code_index,
                                 create_name_index)
 from gui.fonts import RFONT, RBFONT, LFONT
+from gui.reports import CartSummary
 from gui.utils import ToolTip, BusyManager, get_id_from_index, open_url
 from gui.edit_resource import EditResourceWidget
 from logging_settings import LogglyAdapter
@@ -110,6 +111,7 @@ class CartView(Frame):
         sierraImg = self.app_data['img']['sierra']
         validationImg = self.app_data['img']['valid']
         fundImgM = self.app_data['img']['fundM']
+        calcImgM = self.app_data['img']['calcM']
         self.editImgS = self.app_data['img']['editS']
         self.removeImgS = self.app_data['img']['removeS']
         self.deleteImgS = self.app_data['img']['deleteS']
@@ -192,12 +194,20 @@ class CartView(Frame):
             row=6, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.sierraBtn, 'search Sierra')
 
+        self.tabulateBtn = Button(
+            self.actionFrm,
+            image=calcImgM,
+            command=self.tabulate_cart_widget)
+        self.tabulateBtn.grid(
+            row=7, column=0, sticky='sw', padx=10, pady=5)
+        self.createToolTip(self.tabulateBtn, 'tabulate cart data')
+
         self.helpBtn = Button(
             self.actionFrm,
             image=helpImg,
             command=self.help)
         self.helpBtn.grid(
-            row=7, column=0, sticky='sw', padx=10, pady=5)
+            row=8, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
 
         self.globdataFrm = Frame(self, relief='groove')
@@ -753,6 +763,9 @@ class CartView(Frame):
             command=top.destroy)
         cancelBtn.grid(
             row=2, column=1, sticky='snw', padx=10, pady=10)
+
+    def tabulate_cart_widget(self):
+        CartSummary(self, **self.app_data)
 
     def help(self):
         # link to Github wiki with documentation here
