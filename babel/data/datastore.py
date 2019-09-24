@@ -640,7 +640,8 @@ def create_datastore(
                resource.price_disc as price,
                orderlocation.qty as qty, fund.code as fund,
                lang.name as lang, audn.name as audn,
-               vendor.name as vendor, matType.name as mattype
+               vendor.name as vendor, matType.name as mattype,
+               branch.code as branch
         FROM cart
             JOIN `order` ON cart.did = `order`.cart_id
             JOIN resource ON `order`.did = resource.order_id
@@ -650,6 +651,7 @@ def create_datastore(
             JOIN orderlocation ON `order`.did = orderlocation.order_id
             JOIN mattype ON `order`.matType_Id = mattype.did
             JOIN fund ON orderlocation.fund_id = fund.did
+            JOIN branch ON orderlocation.branch_id = branch.did
         """
     session.execute(stmn)
 
