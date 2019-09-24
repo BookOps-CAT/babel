@@ -46,8 +46,8 @@ class Base(Tk):
         Tk.__init__(self, *args, **kwargs)
 
         # use in prod
-        # w, h = self.winfo_screenwidth() - 600, self.winfo_screenheight() - 100
-        # self.geometry("%dx%d+80+0" % (w, h))
+        w, h = self.winfo_screenwidth() - 600, self.winfo_screenheight() - 100
+        self.geometry("%dx%d+0+0" % (w, h))
 
         # container where frames are stacked
         container = Frame(self)
