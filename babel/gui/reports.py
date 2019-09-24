@@ -39,7 +39,7 @@ class CartSummary:
             frm,
             wrap='word',
             height=30,
-            width=120,
+            width=40,
             background='SystemButtonFace',
             borderwidth=0,
             yscrollcommand=scrollbar.set)
@@ -54,8 +54,6 @@ class CartSummary:
         self.resultsTxt.insert(
             '1.0', 'Cart summary:\n\n')
         self.resultsTxt.tag_add('header', '1.0', '1.end')
-        branch_headers = []
-        branch_data = []
 
         data = tabulate_cart_data(self.cart_id.get())
         ln = 3
@@ -71,6 +69,7 @@ class CartSummary:
         self.resultsTxt.tag_config('header', font=RBFONT)
         self.resultsTxt.tag_config('branch', font=RFONT, foreground='tomato2')
         self.resultsTxt.tag_config('data', font=RFONT)
+        self.resultsTxt['state'] = 'disabled'
 
 
 class ReportView(Frame):
