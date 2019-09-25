@@ -310,7 +310,7 @@ def create_cart_copy(cart_id, system, user, profile_idx, cart_name, status):
         raise BabelError(exc)
 
 
-def determine_carts_linked(cart_ids):
+def determine_carts_linked(session, cart_ids):
     """
     Determines if all orders in relevant cart have corresponding
     Sierra order and bib number and updates cart linked status
@@ -321,28 +321,27 @@ def determine_carts_linked(cart_ids):
     mlogger.debug('Updating carts linked status.')
 
     # determine time period when wlos were assigned
-    with session_scope() as session:
-        for cart_id in cart_ids:
-            cart_rec = retrieve_record(session, Cart, did=cart_id)
-            # check if all orders have oid
-            if cart_rec:
-                linked = True
-                for o in cart_rec.orders:
-                    if o.oid is None:
-                        mlogger.debug(
-                            'Order did={o.did} missing oid.')
-                        linked = False
+    for cart_id in cart_ids:
+        cart_rec = retrieve_record(session, Cart, did=cart_id)
+        # check if all orders have oid
+        if cart_rec:
+            linked = True
+            for o in cart_rec.orders:
+                if o.oid is None:
+                    mlogger.debug(
+                        f'Order did={o.did} missing oid.')
+                    linked = False
 
-                if linked:
-                    mlogger.debug(
-                        f'Cart {cart_rec.name} (did={cart_rec.did}) linked.')
-                    update_record(session, Cart, cart_rec.did, linked=True)
-                else:
-                    mlogger.debug(
-                        f'Cart {cart_rec.name} (did={cart_rec.did}) not linked.')
+            if linked:
+                mlogger.debug(
+                    f'Cart {cart_rec.name} (did={cart_rec.did}) linked.')
+                update_record(session, Cart, cart_rec.did, linked=True)
             else:
                 mlogger.debug(
-                    f'Cart with did={cart_id} not linked (missing record).')
+                    f'Cart {cart_rec.name} (did={cart_rec.did}) not linked.')
+        else:
+            mlogger.debug(
+                f'Cart with did={cart_id} not linked (missing record).')
 
 
 def add_sierra_ids_to_orders(source_fh, system_id):
@@ -364,10 +363,12 @@ def add_sierra_ids_to_orders(source_fh, system_id):
                         f'Record updated: order_id={ord_rec.did}, '
                         f'wlo={wlo}, oid={oid}, bid={bid}')
 
+            session.flush()
             # check which carts are linked
-            determine_carts_linked(unique_carts)
+            determine_carts_linked(session, unique_carts)
 
         mlogger.debug('Linking completed.')
+
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
