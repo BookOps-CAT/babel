@@ -654,6 +654,11 @@ class CartsView(Frame):
                     'Please change cart status to proceed.'
                 messagebox.showwarning('Output to spreadsheet', msg)
 
+    def reset_cart_summary(self):
+        self.cartdataTxt['state'] = 'normal'
+        self.cartdataTxt.delete('1.0', END)
+        self.cartdataTxt['state'] = 'disable'
+
     def selectItem(self, a):
         curItem = self.cartTrv.focus()
         try:
@@ -663,6 +668,7 @@ class CartsView(Frame):
                 self.cartTrv.item(curItem)['values'][1])
             self.selected_cart_owner.set(
                 self.cartTrv.item(curItem)['values'][4])
+            self.reset_cart_summary()
         except IndexError:
             pass
 
