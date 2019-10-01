@@ -26,19 +26,19 @@ class TestBlanketPO(unittest.TestCase):
         vendor_codes = ['jamal']
         date_today = date.strftime(date.today(), '%Y%m%d')
         self.assertEqual(
-            create_blanketPO(vendor_codes), f'jamal-{date_today}-0')
+            create_blanketPO(vendor_codes), f'jamal{date_today}0')
 
     def test_correct_multi_vendor_codes(self):
         vendor_codes = ['jamal', 'chbks']
         date_today = date.strftime(date.today(), '%Y%m%d')
         self.assertEqual(
-            create_blanketPO(vendor_codes), f'multi-vendor-{date_today}-0')
+            create_blanketPO(vendor_codes), f'multivendor{date_today}0')
 
     def test_sequence(self):
         vendor_codes = ['jamal']
         date_today = date.strftime(date.today(), '%Y%m%d')
         self.assertEqual(
-            create_blanketPO(vendor_codes, 3), f'jamal-{date_today}-3')
+            create_blanketPO(vendor_codes, 3), f'jamal{date_today}3')
 
 
 if __name__ == '__main__':

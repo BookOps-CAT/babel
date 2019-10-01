@@ -9,7 +9,7 @@ def create_blanketPO(vendor_codes=[], sequence=0):
 
         date_today = date.strftime(date.today(), '%Y%m%d')
         if len(vendor_codes) > 1:
-            code = 'multi-vendor'
+            code = 'multivendor'
         else:
             code = vendor_codes[0]
-        return f'{code}-{date_today}-{sequence}'
+        return f'{code}{date_today}{sequence}'
