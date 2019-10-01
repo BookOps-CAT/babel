@@ -93,6 +93,7 @@ def get_cart_data_view_records(
                    system_id, cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_status=:status
+            ORDER BY cart_date DESC
         """)
         stmn = stmn.bindparams(system_id=system_id, status=status)
 
@@ -102,6 +103,7 @@ def get_cart_data_view_records(
                    cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id
+            ORDER BY cart_date DESC
         """)
         stmn = stmn.bindparams(system_id=system_id)
     elif user != 'All users' and not status:
@@ -110,6 +112,7 @@ def get_cart_data_view_records(
                    cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_owner=:user
+            ORDER BY cart_date DESC
         """)
         stmn = stmn.bindparams(system_id=system_id, user=user)
     else:
@@ -118,6 +121,7 @@ def get_cart_data_view_records(
                    cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_owner=:user AND cart_status=:status
+            ORDER BY cart_date DESC
         """)
         stmn = stmn.bindparams(system_id=system_id, user=user, status=status)
     instances = session.execute(stmn)
