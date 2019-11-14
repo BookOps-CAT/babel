@@ -167,9 +167,12 @@ def get_library_name(session, library_id):
         """)
     stmn = stmn.bindparams(library_id=library_id)
     instances = session.execute(stmn)
+
+    name = None
     for i in instances:
         name = i.name
         break
+
     return name
 
 
