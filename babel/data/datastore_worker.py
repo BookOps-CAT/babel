@@ -4,12 +4,20 @@ from sqlalchemy.orm import load_only
 from sqlalchemy.sql import text
 
 
-def insert_or_ignore(session, model, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).first()
-    if not instance:
-        instance = model(**kwargs)
-        session.add(instance)
-    return instance
+def count_records(session, model, **kwargs):
+    row_count = session.query(model).filter_by(**kwargs).count()
+    return row_count
+
+
+def delete_record(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).one()
+    session.delete(instance)
+
+
+def get_column_values(session, model, column, **kwargs):
+    instances = session.query(model).filter_by(**kwargs).options(
+        load_only(column)).order_by(column)
+    return instances
 
 
 def insert(session, model, **kwargs):
@@ -19,19 +27,11 @@ def insert(session, model, **kwargs):
     return instance
 
 
-def get_column_values(session, model, column, **kwargs):
-    instances = session.query(model).filter_by(**kwargs).options(
-        load_only(column)).order_by(column)
-    return instances
-
-
-def retrieve_record(session, model, **kwargs):
+def insert_or_ignore(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).first()
-    return instance
-
-
-def retrieve_first_record(session, model, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).order_by(model.did).first()
+    if not instance:
+        instance = model(**kwargs)
+        session.add(instance)
     return instance
 
 
@@ -40,9 +40,9 @@ def retrieve_first_n(session, model, n, **kwargs):
     return instances
 
 
-def retrieve_last_record_filtered(session, model, **kwargs):
+def retrieve_first_record(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).order_by(
-        model.did.desc()).first()
+        model.did).first()
     return instance
 
 
@@ -51,26 +51,21 @@ def retrieve_last_record(session, model):
     return instance
 
 
+def retrieve_last_record_filtered(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).order_by(
+        model.did.desc()).first()
+    return instance
+
+
+def retrieve_record(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).first()
+    return instance
+
+
 def retrieve_records(session, model, **kwargs):
     instances = session.query(model).filter_by(**kwargs).order_by(
         model.did).all()
     return instances
-
-
-def count_records(session, model, **kwargs):
-    row_count = session.query(model).filter_by(**kwargs).count()
-    return row_count
-
-
-def update_record(session, model, did, **kwargs):
-    instance = session.query(model).filter_by(did=did).one()
-    for key, value in kwargs.items():
-        setattr(instance, key, value)
-
-
-def delete_record(session, model, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).one()
-    session.delete(instance)
 
 
 def retrieve_cart_order_ids(session, cart_id):
@@ -148,3 +143,9 @@ def retrieve_unique_vendors_from_cart(session, cart_id):
     stmn = stmn.bindparams(cart_id=cart_id)
     instances = session.execute(stmn)
     return instances
+
+
+def update_record(session, model, did, **kwargs):
+    instance = session.query(model).filter_by(did=did).one()
+    for key, value in kwargs.items():
+        setattr(instance, key, value)
