@@ -103,7 +103,6 @@ class GridView(Frame):
             self.distFrm,
             image=addImg,
             command=self.add_distribution)
-        # self.daddBtn.image = addImg
         self.daddBtn.grid(
             row=1, column=3, sticky='sw', padx=10, pady=10)
         self.createToolTip(self.daddBtn, 'add new distribution')
@@ -112,7 +111,6 @@ class GridView(Frame):
             self.distFrm,
             image=editImg,
             command=self.edit_distribution)
-        # self.deditBtn.image = editImg
         self.deditBtn.grid(
             row=2, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.deditBtn, 'edit distribution')
@@ -121,7 +119,6 @@ class GridView(Frame):
             self.distFrm,
             image=copyImg,
             command=self.select_distr_profile_widget)
-        # self.dcopyBtn.image = copyImg
         self.dcopyBtn.grid(
             row=3, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.dcopyBtn, 'copy distribution')
@@ -130,7 +127,6 @@ class GridView(Frame):
             self.distFrm,
             image=self.deleteImg,
             command=self.delete_distribution)
-        # self.ddeleteBtn.image = self.deleteImg
         self.ddeleteBtn.grid(
             row=4, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.ddeleteBtn, 'delete distribution')
@@ -148,7 +144,6 @@ class GridView(Frame):
             self.distFrm,
             image=helpImg,
             command=self.help)
-        # self.helpBtn.image = helpImg
         self.helpBtn.grid(
             row=6, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
@@ -186,7 +181,6 @@ class GridView(Frame):
             self.gridFrm,
             image=addImg,
             command=self.add_grid)
-        # self.gaddBtn.image = addImg
         self.gaddBtn.grid(
             row=1, column=3, sticky='sw', padx=10, pady=10)
         self.createToolTip(self.gaddBtn, 'add new grid')
@@ -195,7 +189,6 @@ class GridView(Frame):
             self.gridFrm,
             image=editImg,
             command=self.edit_grid)
-        # self.geditBtn.image = editImg
         self.geditBtn.grid(
             row=2, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.geditBtn, 'edit grid')
@@ -204,7 +197,6 @@ class GridView(Frame):
             self.gridFrm,
             image=copyImg,
             command=self.copy_grid)
-        # self.gcopyBtn.image = copyImg
         self.gcopyBtn.grid(
             row=3, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.gcopyBtn, 'copy grid')
@@ -213,7 +205,6 @@ class GridView(Frame):
             self.gridFrm,
             image=self.deleteImg,
             command=self.delete_grid)
-        # self.gdeleteBtn.image = self.deleteImg
         self.gdeleteBtn.grid(
             row=4, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.gdeleteBtn, 'delete grid')
@@ -222,7 +213,6 @@ class GridView(Frame):
             self.gridFrm,
             image=self.saveImg,
             command=self.insert_or_update_grid)
-        # self.gsaveBtn.image = self.saveImg
         self.gsaveBtn.grid(
             row=5, column=3, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.gsaveBtn, 'save grid')
@@ -249,7 +239,6 @@ class GridView(Frame):
             yscrollcommand=self.scrollbarC.set)
         self.locCnv.grid(
             row=2, column=0, columnspan=3, rowspan=40, sticky='snew')
-        # self.locCnv.bind_all("<MouseWheel>", self.on_mousewheel)
         self.display_frame()
 
     def show_distribution(self, *args):
@@ -529,7 +518,6 @@ class GridView(Frame):
         removeBtn = Button(
             unitFrm,
             image=self.removeImg)
-        # removeBtn.image = self.removeImg
         removeBtn.grid(
             row=self.last_row, column=0, sticky='ne', padx=5, pady=2)
         removeBtn['command'] = lambda n=removeBtn.winfo_id(): self.remove_location(n)
