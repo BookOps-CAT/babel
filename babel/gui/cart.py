@@ -22,9 +22,7 @@ from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             Branch, Status, Library)
 from gui.carts import CopyCartWidget
 from gui.data_retriever import (get_names, save_data, get_record,
-                                convert4display,
-                                delete_data, delete_data_by_did,
-                                get_codes,
+                                delete_data_by_did,
                                 get_order_ids, create_code_index,
                                 create_name_index)
 from gui.fonts import RFONT, RBFONT, LFONT

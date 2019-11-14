@@ -45,7 +45,7 @@ def create_order_snapshot(order_tracker):
 def create_grids_snapshot(grid_trackers):
     snapshot = hashlib.md5()
     for grid in grid_trackers:
-        did = grid['loc_id']
+        # did = grid['loc_id']
         for key, widget in grid.items():
             if key in (
                     'branchCbx', 'shelfCbx', 'qtyEnt', 'fundCbx'):
