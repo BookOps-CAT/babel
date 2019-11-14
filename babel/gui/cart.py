@@ -1675,6 +1675,7 @@ class CartView(Frame):
                         name=self.dist_set.get(),
                         system_id=self.system.get(),
                         user_id=profile_id)
+                    # mlogger.debug(f'Active DistrSet {dist_rec}')
                     self.dist_id.set(dist_rec.did)
 
                     self.grid_idx = create_name_index(

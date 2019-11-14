@@ -42,6 +42,7 @@ def convert4datastore(kwargs):
 
 
 def get_names(model, **kwargs):
+    # mlogger.debug(f'get_names call with kwargs: {kwargs}')
     values = []
     with session_scope() as session:
         res = get_column_values(
@@ -65,7 +66,7 @@ def get_record(model, **kwargs):
         instance = retrieve_record(session, model, **kwargs)
         try:
             session.expunge_all()
-            return instance
+            # return instance
         except UnmappedInstanceError:
             pass
         finally:
