@@ -245,7 +245,13 @@ class GridView(Frame):
         name = self.distLst.get(ACTIVE)
         self.distr_name.set(name)
         self.distr_record = get_record(
-            DistSet, name=name, system_id=self.system.get())
+            DistSet,
+            name=name,
+            system_id=self.system.get(),
+            user_id=get_id_from_index(
+                self.profile.get(), self.profile_idx))
+
+        # mlogger.debug(f'Selected Distr{self.distr_record}')
 
         self.update_gridLst()
         self.recreate_location_widgets()
@@ -680,7 +686,7 @@ class GridView(Frame):
         if self.activeW.get() == 'GridView':
             # redo display for new user
             self.reset()
-            self.update_distributionLst()
+            # self.update_distributionLst()
 
     def system_observer(self, *args):
         if self.activeW.get() == 'GridView':
@@ -689,7 +695,6 @@ class GridView(Frame):
                     Branch, system_id=self.system.get())
                 self.shelf_idx = create_code_index(
                     ShelfCode, system_id=self.system.get())
-
                 self.reset()
 
     def observer(self, *args):
@@ -706,7 +711,6 @@ class GridView(Frame):
                 self.shelf_idx = create_code_index(
                     ShelfCode, system_id=self.system.get())
 
-                self.update_distributionLst()
                 self.recreate_location_widgets()
 
         disable_widgets([self.distnameEnt])
