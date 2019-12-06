@@ -49,7 +49,7 @@ class GridView(Frame):
         self.locations = OrderedDict()
         self.delete_locations = []
         self.last_row = 0
-        self.counter = StringVar()
+        self.loc_tally = StringVar()
 
         # records if updates
         self.distr_record = None
@@ -221,24 +221,28 @@ class GridView(Frame):
         self.locFrm = LabelFrame(self.gridFrm, text='Locations')
         self.locFrm.grid(
             row=0, column=4, rowspan=40, sticky='snew', padx=10)
+        self.locTallyLbl = Label(
+            self.locFrm, textvariable=self.loc_tally)
+        self.locTallyLbl.grid(
+            row=0, column=0, columnspan=3, sticky='swn')
         Label(self.locFrm, text='branch').grid(
-            row=0, column=0, sticky='snew', pady=5)
+            row=1, column=0, sticky='snew', pady=5)
         Label(self.locFrm, text='shelf').grid(
-            row=0, column=1, sticky='snew', pady=5)
+            row=1, column=1, sticky='snew', pady=5)
         Label(self.locFrm, text='qty').grid(
-            row=0, column=2, sticky='snew', pady=5)
+            row=1, column=2, sticky='snew', pady=5)
 
         # locations canvas
         self.scrollbarC = Scrollbar(self.locFrm, orient=VERTICAL)
         self.scrollbarC.grid(
-            row=1, column=3, rowspan=40, sticky='nsw')
+            row=2, column=3, rowspan=40, sticky='nsw')
         self.locCnv = Canvas(
             self.locFrm,
             width=220,
             height='13c',
             yscrollcommand=self.scrollbarC.set)
         self.locCnv.grid(
-            row=2, column=0, columnspan=3, rowspan=40, sticky='snew')
+            row=3, column=0, columnspan=3, rowspan=40, sticky='snew')
         self.display_frame()
 
     def show_distribution(self, *args):
@@ -507,6 +511,8 @@ class GridView(Frame):
         self.display_frame()
 
         locs = []
+        total_loc = 0
+        total_qty = 0
         for loc in self.grid_record.gridlocations:
             locs.append((
                 loc.did,
@@ -514,6 +520,22 @@ class GridView(Frame):
                 self.shelf_idx[loc.shelfcode_id],
                 loc.qty,
             ))
+            total_loc += 1
+            total_qty += loc.qty
+
+        # set qty & # of branches tally
+        if total_loc == 1:
+            qty_word = 'copy'
+        else:
+            qty_word = 'copies'
+        if total_loc == 1:
+            loc_word = 'branch'
+        else:
+            loc_word = 'branches'
+        self.loc_tally.set(
+            '{} {} in {} {}'.format(
+                total_qty, qty_word,
+                total_loc, loc_word))
 
         self.create_loc_widgets(locs)
 
@@ -630,6 +652,7 @@ class GridView(Frame):
 
     def recreate_location_widgets(self):
         # re-create location widgets
+        self.loc_tally.set('')
         self.grid_name.set('')
         self.locFrm.destroy()
         self.display_frame()
@@ -643,7 +666,7 @@ class GridView(Frame):
         self.locations = OrderedDict()
         self.delete_locations = []
         self.last_row = 0
-        self.counter.set('')
+        self.loc_tally.set('')
         self.update_gridLst()
         self.update_distributionLst()
         self.recreate_location_widgets()
