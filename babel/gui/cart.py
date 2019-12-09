@@ -97,6 +97,7 @@ class CartView(Frame):
         self.funds_tally = StringVar()
 
         # icons
+        addImg = self.app_data['img']['add']
         copyImg = self.app_data['img']['copy']
         editImg = self.app_data['img']['edit']
         self.deleteImg = self.app_data['img']['delete']
@@ -136,12 +137,20 @@ class CartView(Frame):
         self.vlds = (self.register(self.onValidateDiscount),
                      '%i', '%d', '%P')
 
+        self.addBtn = Button(
+            self.actionFrm,
+            image=addImg,
+            command=self.add_resource)
+        self.addBtn.grid(
+            row=0, column=0, sticky='sw', padx=10, pady=5)
+        self.createToolTip(self.addBtn, 'add title to cart')
+
         self.editBtn = Button(
             self.actionFrm,
             image=editImg,
             command=self.rename_cart)
         self.editBtn.grid(
-            row=0, column=0, sticky='sw', padx=10, pady=5)
+            row=1, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.editBtn, 'edit cart name')
 
         self.saveBtn = Button(
@@ -149,7 +158,7 @@ class CartView(Frame):
             image=self.saveImg,
             command=self.save_cart)
         self.saveBtn.grid(
-            row=1, column=0, sticky='sw', padx=10, pady=5)
+            row=2, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.saveBtn, 'save cart')
 
         self.fundBtn = Button(
@@ -157,7 +166,7 @@ class CartView(Frame):
             image=fundImgM,
             command=self.show_fund_widget)
         self.fundBtn.grid(
-            row=2, column=0, sticky='sw', padx=10, pady=5)
+            row=3, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.fundBtn, 'apply funds')
 
         self.validBtn = Button(
@@ -165,7 +174,7 @@ class CartView(Frame):
             image=validationImg,
             command=self.validation_report)
         self.validBtn.grid(
-            row=3, column=0, sticky='sw', padx=10, pady=5)
+            row=4, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.validBtn, 'validate cart')
 
         self.copyBtn = Button(
@@ -173,7 +182,7 @@ class CartView(Frame):
             image=copyImg,
             command=self.copy_cart)
         self.copyBtn.grid(
-            row=4, column=0, sticky='sw', padx=10, pady=5)
+            row=5, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.copyBtn, 'copy entire cart')
 
         self.deleteBtn = Button(
@@ -181,7 +190,7 @@ class CartView(Frame):
             image=self.deleteImg,
             command=self.delete_cart)
         self.deleteBtn.grid(
-            row=5, column=0, sticky='sw', padx=10, pady=5)
+            row=6, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.deleteBtn, 'delete cart')
 
         self.sierraBtn = Button(
@@ -189,7 +198,7 @@ class CartView(Frame):
             image=sierraImg,
             command=self.find_duplicates_widget)
         self.sierraBtn.grid(
-            row=6, column=0, sticky='sw', padx=10, pady=5)
+            row=7, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.sierraBtn, 'search Sierra')
 
         self.tabulateBtn = Button(
@@ -197,7 +206,7 @@ class CartView(Frame):
             image=calcImgM,
             command=self.tabulate_cart_widget)
         self.tabulateBtn.grid(
-            row=7, column=0, sticky='sw', padx=10, pady=5)
+            row=8, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.tabulateBtn, 'tabulate cart data')
 
         self.helpBtn = Button(
@@ -205,7 +214,7 @@ class CartView(Frame):
             image=helpImg,
             command=self.help)
         self.helpBtn.grid(
-            row=8, column=0, sticky='sw', padx=10, pady=5)
+            row=9, column=0, sticky='sw', padx=10, pady=5)
         self.createToolTip(self.helpBtn, 'help')
 
         self.globdataFrm = Frame(self, relief='groove')
@@ -439,6 +448,14 @@ class CartView(Frame):
             row=1, column=1, rowspan=40, columnspan=7, sticky='nwe')
         # self.preview_base.bind_all("<MouseWheel>", self.on_mousewheel)
         self.preview()
+
+    def add_resource(self):
+        edit_widget = EditResourceWidget(
+            self, cart_id=self.cart_id.get(), **self.app_data)
+        self.wait_window(edit_widget.top)
+
+        # redo display
+        self.observer()
 
     def rename_cart(self):
         if self.cart_name.get():
@@ -1571,18 +1588,21 @@ class CartView(Frame):
         self.tracker[ntb_id]['grid']['locs'] = locs
         parent.destroy()
 
-    def edit_resource(self, ntb_id):
-        resource_id = self.tracker[ntb_id]['resource']['resource_id']
-        edit_widget = EditResourceWidget(self, resource_id, **self.app_data)
-        self.wait_window(edit_widget.top)
+    def edit_resource(self, ntb_id=None):
+        if ntb_id is not None:
+            resource_id = self.tracker[ntb_id]['resource']['resource_id']
+            edit_widget = EditResourceWidget(
+                self, resource_id=resource_id, **self.app_data)
+            self.wait_window(edit_widget.top)
 
-        # update display
-        resdataTxt = self.tracker[ntb_id]['resource']['resdataTxt']
-        summaryTxt = self.tracker[ntb_id]['more_res']['summaryTxt']
-        resource_rec = get_record(Resource, did=resource_id)
-        self.populate_resource_data_widget(resdataTxt, resource_rec)
-        self.populate_more_tab_summary(
-            summaryTxt, resource_rec.misc, resource_rec.summary)
+            # update display
+            resdataTxt = self.tracker[ntb_id]['resource']['resdataTxt']
+            summaryTxt = self.tracker[ntb_id]['more_res']['summaryTxt']
+            resource_rec = get_record(Resource, did=resource_id)
+            self.populate_resource_data_widget(resdataTxt, resource_rec)
+            self.populate_more_tab_summary(
+                summaryTxt, resource_rec.misc, resource_rec.summary)
+
         self.update_funds_tally()
 
     def delete_resource(self, ntb):

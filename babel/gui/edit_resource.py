@@ -4,8 +4,8 @@ from tkinter.ttk import *
 from tkinter import messagebox
 
 
-from data.datastore import Resource
-from data.transactions_cart import (update_resource,
+from data.datastore import Order, Resource
+from data.transactions_cart import (add_resource, update_resource,
                                     convert_price2datastore)
 from errors import BabelError
 from gui.data_retriever import (convert4display,
@@ -24,9 +24,10 @@ class EditResourceWidget:
     Widget for editing Resource records
     """
 
-    def __init__(self, parent, resource_id, **app_data):
+    def __init__(self, parent, cart_id=None, resource_id=None, **app_data):
         self.parent = parent
         self.app_data = app_data
+        self.cart_id = cart_id
         self.rec_id = resource_id
         self.rec = None
 
@@ -247,8 +248,12 @@ class EditResourceWidget:
             kwargs = convert4datastore(kwargs)
 
             try:
-                update_resource(self.rec_id, **kwargs)
-                self.top.destroy()
+                if self.rec_id is not None:
+                    update_resource(self.rec_id, **kwargs)
+                    self.top.destroy()
+                else:
+                    add_resource(cart_id=self.cart_id, **kwargs)
+                    self.top.destroy()
             except BabelError as e:
                 messagebox.showerror(
                     'Datastore Error', e, parent=self.top)

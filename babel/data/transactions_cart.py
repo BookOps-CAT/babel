@@ -650,6 +650,22 @@ def determine_needs_validation(cart_id):
             return True
 
 
+def add_resource(cart_id, **kwargs):
+    try:
+        with session_scope() as session:
+            orec = insert(
+                session, Order, cart_id=cart_id)
+            kwargs['order_id'] = orec.did
+            insert(session, Resource, **kwargs)
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            'Unhandled error on updating resource.'
+            f'Traceback: {tb}')
+        raise BabelError(exc)
+
+
 def update_resource(resource_id, **kwargs):
     try:
         with session_scope() as session:
