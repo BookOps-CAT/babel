@@ -18,8 +18,7 @@ from data.datastore import (session_scope, Audn, Branch, Cart, DistSet,
                             Wlos)
 from data.datastore_worker import (count_records, insert_or_ignore, insert,
                                    retrieve_last_record, retrieve_record,
-                                   retrieve_records, update_record,
-                                   retrieve_cart_details_view_stmn)
+                                   retrieve_records, update_record)
 from data.transactions_carts import get_cart_details_as_dataframe
 from data.wlo_generator import wlo_pool
 from gui.utils import get_id_from_index
@@ -255,7 +254,8 @@ def save_displayed_order_data(tracker_values):
                     if l['loc_id'] is not None:
                         lkwargs['did'] = l['loc_id']
                     if l['branchCbx'].get() != '':
-                        rec_id = get_branch_rec_id(session, l['branchCbx'].get())
+                        rec_id = get_branch_rec_id(
+                            session, l['branchCbx'].get())
                         lkwargs['branch_id'] = rec_id
                     if l['shelfCbx'].get() != '':
                         rec_id = get_shelf_rec_id(session, l['shelfCbx'].get())
