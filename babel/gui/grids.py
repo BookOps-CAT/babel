@@ -426,6 +426,21 @@ class GridView(Frame):
             else:
                 mlogger.debug('Delection cancelled by user.')
 
+    def update_tally(self, total_qty, total_loc):
+        # set qty & # of branches tally
+        if total_qty == 1:
+            qty_word = 'copy'
+        else:
+            qty_word = 'copies'
+        if total_loc == 1:
+            loc_word = 'branch'
+        else:
+            loc_word = 'branches'
+        self.loc_tally.set(
+            '{} {} in {} {}'.format(
+                total_qty, qty_word,
+                total_loc, loc_word))
+
     def insert_or_update_grid(self):
         if self.distr_record:
             if self.grid_name.get():
@@ -439,7 +454,8 @@ class GridView(Frame):
                         delete_data_by_did(GridLocation, did)
 
                 gridlocs = []
-
+                total_qty = 0
+                total_loc = 0
                 for loc in self.locations.values():
                     gridlocs.append(
                         dict(
@@ -450,6 +466,14 @@ class GridView(Frame):
                             qty=loc['qtySbx'].get()
                         )
                     )
+                    total_loc += 1
+                    try:
+                        total_qty += int(loc['qtySbx'].get())
+                    except ValueError:
+                        pass
+
+                # update copy/branch tally
+                self.update_tally(total_qty, total_loc)
 
                 # validate
                 valid, issues = self.validate_gridLocations(gridlocs)
@@ -522,20 +546,7 @@ class GridView(Frame):
             ))
             total_loc += 1
             total_qty += loc.qty
-
-        # set qty & # of branches tally
-        if total_loc == 1:
-            qty_word = 'copy'
-        else:
-            qty_word = 'copies'
-        if total_loc == 1:
-            loc_word = 'branch'
-        else:
-            loc_word = 'branches'
-        self.loc_tally.set(
-            '{} {} in {} {}'.format(
-                total_qty, qty_word,
-                total_loc, loc_word))
+        self.update_tally(total_qty, total_loc)
 
         self.create_loc_widgets(locs)
 
