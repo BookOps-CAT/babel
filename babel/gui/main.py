@@ -21,7 +21,7 @@ from gui.cart import CartView
 from gui.search import SearchView
 from gui.settings import SettingsView
 from gui.update import UpdateWidget
-from gui.utils import open_url
+from gui.utils import open_url, enable_widgets, disable_widgets
 from logging_settings import LogglyAdapter
 from paths import USER_DATA
 
@@ -115,7 +115,7 @@ class Base(Tk):
             command=lambda: self.show_frame('CartsView'))
         navig_menu.add_command(
             label='Reports',
-            command=None)
+            command=lambda: self.show_frame('ReportView'))
         navig_menu.add_command(
             label='Grids',
             command=lambda: self.show_frame('GridView'))
@@ -230,6 +230,7 @@ class Base(Tk):
             'profile_idx': self.profile_idx,
             'system': self.system,
             'active_id': self.active_id,
+            'systemBtns': [bplBtn, nypBtn],
             'img': {
                 'add': addImg,
                 'addS': addImgS,
@@ -315,6 +316,13 @@ class Base(Tk):
 
         self.activeW.set(page_name)
         mlogger.debug('show_frame activewW: {}'.format(self.activeW.get()))
+
+        # disable system switching when appropriate
+        if self.activeW.get() in [
+                'CartView', 'SettingsView']:
+            disable_widgets(self.app_data['systemBtns'])
+        else:
+            enable_widgets(self.app_data['systemBtns'])
 
         frame = self.frames[page_name]
         frame.tkraise()

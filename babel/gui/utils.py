@@ -5,7 +5,7 @@ import webbrowser
 
 input_widgets = (
     'TCombobox', 'Listbox', 'TButton', 'TEntry', 'TCheckbutton',
-    'TSpinbox')
+    'TSpinbox', 'TRadiobutton')
 
 
 def disable_widgets(widgets):
