@@ -4,7 +4,7 @@ from tkinter.ttk import *
 from tkinter import messagebox
 
 
-from data.datastore import Order, Resource
+from data.datastore import Resource
 from data.transactions_cart import (add_resource, update_resource,
                                     convert_price2datastore)
 from errors import BabelError
@@ -53,6 +53,16 @@ class EditResourceWidget:
         self.price_list = StringVar()
         self.price_disc = StringVar()
         self.misc = StringVar()
+
+        # register entries validation
+        self.vlam = (self.top.register(self.onValidatePrice),
+                     '%i', '%d', '%P')
+        self.vlis = (self.top.register(self.onValidateIsbn),
+                     '%i', '%d', '%P')
+        self.vldt = (self.top.register(self.onValidateDate),
+                     '%i', '%d', '%P')
+        self.vlup = (self.top.register(self.onValidateUpc),
+                     '%i', '%d', '%P')
 
         # layout
         frm = Frame(top)
@@ -109,7 +119,8 @@ class EditResourceWidget:
         pubdateEnt = Entry(
             frm,
             font=RFONT,
-            textvariable=self.pub_date)
+            textvariable=self.pub_date,
+            validate="key", validatecommand=self.vldt)
         pubdateEnt.grid(
             row=5, column=1, sticky='snew', padx=5, pady=5)
 
@@ -127,7 +138,8 @@ class EditResourceWidget:
         isbnEnt = Entry(
             frm,
             font=RFONT,
-            textvariable=self.isbn)
+            textvariable=self.isbn,
+            validate="key", validatecommand=self.vlis)
         isbnEnt.grid(
             row=6, column=1, sticky='snew', padx=5, pady=5)
 
@@ -136,7 +148,8 @@ class EditResourceWidget:
         upcEnt = Entry(
             frm,
             font=RFONT,
-            textvariable=self.upc)
+            textvariable=self.upc,
+            validate="key", validatecommand=self.vlup)
         upcEnt.grid(
             row=6, column=3, sticky='snew', padx=5, pady=5)
 
@@ -163,7 +176,8 @@ class EditResourceWidget:
         pricelistEnt = Entry(
             frm,
             font=RFONT,
-            textvariable=self.price_list)
+            textvariable=self.price_list,
+            validate="key", validatecommand=self.vlam)
         pricelistEnt.grid(
             row=8, column=1, sticky='snew', padx=5, pady=5)
 
@@ -172,7 +186,8 @@ class EditResourceWidget:
         pricediscEnt = Entry(
             frm,
             font=RFONT,
-            textvariable=self.price_disc)
+            textvariable=self.price_disc,
+            validate="key", validatecommand=self.vlam)
         pricediscEnt.grid(
             row=8, column=3, sticky='snew', padx=5, pady=5)
 
@@ -262,3 +277,57 @@ class EditResourceWidget:
             messagebox.showwarning(
                 'Input Error',
                 'Resource must have title.', parent=self.top)
+
+    def onValidateIsbn(self, i, d, P):
+        mlogger.debug(
+            f'onValidateIsbn entered: {P}, index: {i}, action {d}')
+        valid = True
+        if i == '13':
+            # ISBN no longer than 13 chr
+            valid = False
+        if int(i) < 13 and d == '1':
+            if i == '9':
+                # 10-digit ISBN case
+                if not P[int(i)].isdigit() and P[(int(i))].lower() != 'x':
+                    mlogger.debug('Invalid 10-digit ISBN')
+                    valid = False
+            else:
+                # 13-digit ISBNs
+                if not P.isdigit():
+                    mlogger.debug('Invalid 13-digit ISBN')
+                    valid = False
+
+        return valid
+
+    def onValidateDate(self, i, d, P):
+        mlogger.debug(
+            f'onValidateDate entered: {P}, index: {i}, action: {d}')
+        valid = True
+        if int(i) > 3:
+            valid = False
+        if d == '1' and not P.isdigit():
+            valid = False
+        return valid
+
+    def onValidateUpc(self, i, d, P):
+        mlogger.debug('onValidateUpc entered: {p}, index: {i}, action: {d}')
+        valid = True
+        if d == '1' and not P.isdigit():
+            valid = False
+        return valid
+
+    def onValidatePrice(self, i, d, P):
+        mlogger.debug(
+            f'onValidatePrice entered: {P}, index: {i}, action {d}')
+        valid = True
+        # case 1
+        if i == '0' and not P.isdigit() and d == '1':
+            mlogger.debug('Price validation: Failed case 1')
+            valid = False
+        # case 2
+        if d == '1' and int(i) > 0:
+            e = P[int(i)]
+            if not e.isdigit() and e != '.':
+                mlogger.debug('Price validation: Failed case 2')
+                valid = False
+        return valid
