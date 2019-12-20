@@ -11,7 +11,7 @@ from PIL import Image, ImageTk
 from data.datastore import User
 from gui.data_retriever import get_names, create_name_index
 from gui.home import HomeView
-from gui.reports import ReportView
+from gui.reports import ReportWizView
 from gui.tables import TableView
 from gui.funds import FundView
 from gui.grids import GridView
@@ -115,7 +115,7 @@ class Base(Tk):
             command=lambda: self.show_frame('CartsView'))
         navig_menu.add_command(
             label='Reports',
-            command=lambda: self.show_frame('ReportView'))
+            command=lambda: self.show_frame('ReportWizView'))
         navig_menu.add_command(
             label='Grids',
             command=lambda: self.show_frame('GridView'))
@@ -223,6 +223,10 @@ class Base(Tk):
         linkImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-calc-iconM.png')
         calcImgM = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-arrow-right-iconM.png')
+        runImgM = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-build-iconM.png')
+        downloadImgM = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -263,11 +267,13 @@ class Base(Tk):
                 'removeS': removeImgS,
                 'valid': validationImg,
                 'fundM': fundImgM,
-                'calcM': calcImgM}}
+                'calcM': calcImgM,
+                'runM': runImgM,
+                'downloadM': downloadImgM}}
 
         # spawn Babel frames
         self.frames = {}
-        for F in (FundView, GridView, HomeView, ReportView, TableView,
+        for F in (FundView, GridView, HomeView, ReportWizView, TableView,
                   ImportView, CartsView, CartView, SettingsView):
             page_name = F.__name__
             frame = F(parent=container, controller=self,

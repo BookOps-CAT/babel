@@ -52,7 +52,7 @@ class HomeView(Frame):
             image=reportsImg,
             compound=TOP,
             text='Reports',
-            command=lambda: controller.show_frame('ReportView'))
+            command=lambda: controller.show_frame('ReportWizView'))
         self.reportsBtn.image = reportsImg
         self.reportsBtn.grid(
             row=1, column=2, sticky='sw', padx=20, pady=10)
