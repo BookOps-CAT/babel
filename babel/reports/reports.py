@@ -4,6 +4,7 @@ from pandas import DataFrame, Series
 def generate_fy_summary_for_display(df):
 
     data = dict()
+    data['report_type'] = 1
 
     # unique carts by status
     status = dict()

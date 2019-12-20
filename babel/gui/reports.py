@@ -16,27 +16,6 @@ from gui.fonts import RBFONT, RFONT
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
-class ReportUnitBase(Frame):
-    """
-    Factory for a individual report frames
-    """
-
-    def __init__(self, parent, heading, **app_data):
-        self.parent = parent
-        Frame.__init__(self, parent)
-        self.app_data = app_data
-        self.heading = StringVar()
-        self.heading.set(heading)
-
-        headingLbl = Label(
-            self, textvariable=self.heading,
-            font=RFONT)
-        headingLbl.grid(
-            row=0, column=0, sticky='snew', padx=10, pady=2)
-
-        print(self.heading.get())
-
-
 class ReportView():
     """
     Pop-up window displaying selected report
@@ -50,6 +29,7 @@ class ReportView():
 
         self.top = Toplevel(master=self.parent)
         self.top.title('Report')
+        max_height = int((self.top.winfo_screenheight() - 250))
 
         # local variables
         self.top.report_title = StringVar()
@@ -63,47 +43,77 @@ class ReportView():
         self.baseFrm.grid(
             row=0, column=0, sticky='snew', padx=20, pady=20)
         self.baseFrm.columnconfigure(0, minsize=20)
-        # self.baseFrm.columnconfigure(1, minsize=600)
-        self.baseFrm.columnconfigure(3, minsize=20)
-        self.baseFrm.rowconfigure(0, minsize=20)
+        self.baseFrm.columnconfigure(4, minsize=20)
         self.baseFrm.rowconfigure(4, minsize=20)
 
         self.repTitleLbl = Label(
             self.baseFrm, textvariable=self.top.report_title,
             font=RBFONT, anchor=CENTER)
         self.repTitleLbl.grid(
-            row=1, column=1, sticky='snew', padx=10, pady=20)
+            row=1, column=1, columnspan=2, sticky='snew', padx=10, pady=20)
 
         # scrollbars
         self.xscrollbar = Scrollbar(self.baseFrm, orient=HORIZONTAL)
         self.xscrollbar.grid(
-            row=3, column=1, sticky='swe')
+            row=3, column=1, columnspan=2, sticky='swe')
         self.yscrollbar = Scrollbar(self.baseFrm, orient=VERTICAL)
         self.yscrollbar.grid(
-            row=2, column=2, sticky='nse')
+            row=2, column=3, sticky='nse')
 
-        self.reportTxt = Text(
-            self.baseFrm,
-            font=RFONT,
-            width=200,
-            height=50,
+        self.report_base = Canvas(
+            self.baseFrm, bg='gray',  # remove background after testing
+            height=max_height,
+            width=1200,
             xscrollcommand=self.xscrollbar.set,
             yscrollcommand=self.yscrollbar.set)
-        self.reportTxt.grid(
-            row=2, column=1, sticky='snew', padx=2)
-        self.xscrollbar['command'] = self.reportTxt.xview
-        self.yscrollbar['command'] = self.reportTxt.yview
+        self.report_base.grid(
+            row=2, column=1, columnspan=2, sticky='nwe')
+        self.preview()
 
         # populate report
         self.generate_report(report_data)
 
+    def unitFrm(self, parent, row, col):
+        unit_frame = Frame(parent)
+        unit_frame.grid(
+            row=row, column=col, sticky='snew', padx=5, pady=5)
+        textWidget = Text(
+            unit_frame,
+            font=RFONT,
+            height=50,
+            justify=LEFT)
+        textWidget.grid(
+            row=0, column=0, sticky='snew')
+
+        return textWidget
+
     def generate_report(self, data):
+        if data['report_type'] == 1:
+            self.report_one(data)
+
+    def report_one(self, data):
+        reportTxt = self.unitFrm(self.reportFrm, 0, 0)
         for k, v in data.items():
-            self.reportTxt.insert(END, f'{k}\n')
+            reportTxt.insert(END, f'{k}\n')
             if type(v).__name__ == 'DataFrame':
-                self.reportTxt.insert(END, f'{v.to_string()}\n\n')
+                stat = v.to_string(index=False)
+                print(v.to_string(index=False))
+                reportTxt.insert(END, f'{stat}\n\n')
             else:
-                self.reportTxt.insert(END, f'{v}\n')
+                reportTxt.insert(END, f'{v}\n')
+
+    def preview(self):
+        self.reportFrm = Frame(
+            self.report_base)
+        self.xscrollbar.config(command=self.report_base.xview)
+        self.yscrollbar.config(command=self.report_base.yview)
+        self.report_base.create_window(
+            (0, 0), window=self.reportFrm, anchor="nw",
+            tags="self.reportFrm")
+        self.reportFrm.bind("<Configure>", self.onFrameConfigure)
+
+    def onFrameConfigure(self, event):
+        self.report_base.config(scrollregion=self.report_base.bbox('all'))
 
 
 class ReportWizView(Frame):
