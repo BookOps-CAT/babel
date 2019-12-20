@@ -149,3 +149,61 @@ def update_record(session, model, did, **kwargs):
     instance = session.query(model).filter_by(did=did).one()
     for key, value in kwargs.items():
         setattr(instance, key, value)
+
+
+def construct_fy_summary_stmn(system_id, library_id,
+        user_id, start_date, end_date):
+
+    sql_str = """
+        SELECT cart.did as cart_id,
+               cart.created as cart_date,
+               status.name as cart_status,
+               user.name as user,
+               system.name as system,
+               library.name as library,
+               `order`.did as order_id,
+               lang.name as lang_name,
+               lang.code as lang_code,
+               audn.name as audn,
+               vendor.name as vendor,
+               mattype.name as mattype,
+               resource.price_disc as price,
+               branch.code as branch_code,
+               branch.name as branch_name,
+               orderlocation.qty as qty,
+               fund.code as fund
+        FROM cart
+        JOIN status ON cart.status_id = status.did
+        JOIN user ON cart.user_id = user.did
+        JOIN system ON cart.system_id = system.did
+        JOIN library ON cart.library_id = library.did
+        JOIN `order` ON cart.did = `order`.cart_id
+        JOIN lang ON `order`.lang_id = lang.did
+        JOIN audn ON `order`.audn_id = audn.did
+        JOIN vendor ON `order`.vendor_id = vendor.did
+        JOIN mattype ON `order`.matType_id = mattype.did
+        JOIN resource ON `order`.did = resource.order_id
+        JOIN orderlocation ON `order`.did = orderlocation.order_id
+        JOIN branch ON orderlocation.branch_id = branch.did
+        JOIN fund ON orderlocation.fund_id = fund.did
+        WHERE cart.created BETWEEN CAST(:start_date AS DATE) AND CAST(:end_date AS DATE)
+            AND cart.system_id=:system_id
+    """
+
+    params = dict(
+        system_id=system_id,
+        start_date=f'{start_date}',
+        end_date=f'{end_date}')
+
+    if user_id is not None:
+        params['user_id'] = user_id
+        sql_str += ' AND cart.user_id=:user_id'
+
+    if library_id is not None:
+        params['library_id'] = library_id
+        sql_str += ' AND cart.library_id=:library_id'
+
+    stmn = text(sql_str)
+    stmn = stmn.bindparams(**params)
+
+    return stmn
