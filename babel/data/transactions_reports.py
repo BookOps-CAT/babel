@@ -17,7 +17,7 @@ from errors import BabelError
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
-def get_fy_summary(system_id, library_id, user_id):
+def get_fy_summary(system_id, library_id, user_ids):
     """
     Queries datastore and creates pandas dataframe to be displayed as a report
     """
@@ -30,8 +30,8 @@ def get_fy_summary(system_id, library_id, user_id):
 
     with session_scope() as session:
         stmn = construct_fy_summary_stmn(
-            system_id, library_id, user_id, start_date, end_date)
+            system_id, library_id, user_ids, start_date, end_date)
         df = read_sql(stmn, session.bind)
-    data = generate_fy_summary_for_display(df)
+        data = generate_fy_summary_for_display(df)
 
-    return data
+        return data

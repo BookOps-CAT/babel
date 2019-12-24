@@ -1,10 +1,10 @@
 from pandas import DataFrame, Series
+import matplotlib.pyplot as plt
 
 
 def generate_fy_summary_for_display(df):
 
     data = dict()
-    data['report_type'] = 1
 
     # unique carts by status
     status = dict()
@@ -26,7 +26,7 @@ def generate_fy_summary_for_display(df):
         amount = (d['qty'] * d['price']).sum()
         funds.append(Series(dict(
             fund=k,
-            amount=f'${amount:.2f}')))
+            amount=f'${amount:,.2f}')))
     data['funds'] = DataFrame(funds)
 
     # languages
@@ -35,8 +35,10 @@ def generate_fy_summary_for_display(df):
         amount = (d['qty'] * d['price']).sum()
         langs.append(Series(dict(
             lang=k,
-            amount=f'${amount:.2f}')))
+            amount=f'${amount:,.2f}')))
+    # ldf =
     data['langs'] = DataFrame(langs)
+
 
     # audiences
     audns = []
@@ -44,7 +46,7 @@ def generate_fy_summary_for_display(df):
         amount = (d['qty'] * d['price']).sum()
         audns.append(Series(dict(
             audn=k,
-            amount=f'${amount:.2f}')))
+            amount=f'${amount:,.2f}')))
     data['audns'] = DataFrame(audns)
 
     # material types
@@ -53,7 +55,7 @@ def generate_fy_summary_for_display(df):
         amount = (d['qty'] * d['price']).sum()
         mats.append(Series(dict(
             type=k,
-            amount=f'${amount:.2f}')))
+            amount=f'${amount:,.2f}')))
     data['mats'] = DataFrame(mats)
 
     # vendors
@@ -62,7 +64,7 @@ def generate_fy_summary_for_display(df):
         amount = (d['qty'] * d['price']).sum()
         vendors.append(Series(dict(
             vendor=k,
-            amount=f'${amount:.2f}')))
+            amount=f'${amount:,.2f}')))
 
     data['vendors'] = DataFrame(vendors)
 

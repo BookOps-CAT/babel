@@ -40,6 +40,21 @@ def get_id_from_index(value, idx):
             return k
 
 
+def get_ids_from_index(values, idx):
+    """
+    Datastore id generator for given values in id/value dictionary
+    args:
+        values: list, values to be searched
+        inx: dict, dictionary of with ids as keys
+    yields:
+        did: int, datastore id of matching value
+    """
+    for x in values:
+        for k, v in idx.items():
+            if v == x:
+                yield k
+
+
 def open_url(url):
     """
     Opens default web browser and goes to given URL

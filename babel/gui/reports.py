@@ -9,7 +9,7 @@ from data.transactions_reports import get_fy_summary
 from logging_settings import LogglyAdapter
 from gui.data_retriever import get_record
 from gui.utils import (BusyManager, ToolTip, enable_widgets, disable_widgets,
-                       get_id_from_index)
+                       get_ids_from_index)
 from gui.fonts import RBFONT, RFONT
 
 
@@ -21,11 +21,10 @@ class ReportView():
     Pop-up window displaying selected report
     """
 
-    def __init__(self, parent, report_title, report_data, **app_data):
+    def __init__(self, parent, report_data, **app_data):
         self.parent = parent
         # self.app_data = app_data
         self.system_id = app_data['system'].get()
-        self.user = app_data['profile'].get()
 
         self.top = Toplevel(master=self.parent)
         self.top.title('Report')
@@ -33,7 +32,6 @@ class ReportView():
 
         # local variables
         self.top.report_title = StringVar()
-        self.top.report_title.set(report_title)
 
         # icons
         downloadImg = app_data['img']['downloadM']
@@ -80,27 +78,123 @@ class ReportView():
         textWidget = Text(
             unit_frame,
             font=RFONT,
-            height=50,
-            justify=LEFT)
+            width=35,
+            height=80,
+            wrap=NONE,
+            background='SystemButtonFace',
+            relief='flat')
         textWidget.grid(
             row=0, column=0, sticky='snew')
+        textWidget.tag_configure('tag-right', justify='right')
+        textWidget.tag_configure('tag-left', justify='left')
+        textWidget.tag_configure('tag-center', justify='center')
+        textWidget.tag_configure(
+            'tag-header', justify='center', font=RBFONT, background='#B9DEF6',
+            relief='raised')
 
         return textWidget
 
+    def create_report_title(self, report_type, users):
+        """
+        Returns report title as string
+        """
+        if self.system_id:
+            system = get_record(System, did=self.system_id).name
+        else:
+            system = None
+
+        if report_type == 1:
+            date_today = date.today()
+            if date_today.month > 6:
+                years = f'{date_today.year}-{date_today.year + 1}'
+            else:
+                years = f'{date_today.year - 1} to {date_today.year}'
+            self.top.report_title.set(
+                f'{system} fiscal year {years} to date summary\n'
+                f'users: {", ".join(users)}')
+
+        elif report_type == 2:
+            self.top.report_title.set(
+                f'{system} orders audience breakdown'
+                f'({self.date_from.get()} to{self.date_to.get()})\n'
+                f'{users}')
+        elif report_type == 3:
+            self.top.report_title.set(
+                f'{system} orders by branch '
+                f'({self.date_from.get()} to {self.date_to.get()})\n'
+                f'{users}')
+        elif report_type == 4:
+            self.top.report_title(
+                f'{system} orders by fund '
+                f'({self.date_from.get()} to {self.date_to.get()})\n'
+                f'{users}')
+        elif report_type == 5:
+            self.top.report_title.set(
+                f'{system} orders by language '
+                f'({self.date_from.get()} to {self.date_to.get()})\n'
+                f'{users}')
+        elif report_type == 6:
+            self.top.report_title.set(
+                f'{system} orders by material type '
+                f'({self.date_from.get()} to {self.date_to.get()})\n'
+                f'{users}')
+        elif report_type == 7:
+            self.top.report_title.set(
+                f'{system} orders by vendor '
+                f'({self.date_from.get()} to {self.date_to.get()})\n'
+                f'{users}')
+
     def generate_report(self, data):
+        self.create_report_title(data['report_type'], data['users'])
         if data['report_type'] == 1:
             self.report_one(data)
 
     def report_one(self, data):
         reportTxt = self.unitFrm(self.reportFrm, 0, 0)
-        for k, v in data.items():
-            reportTxt.insert(END, f'{k}\n')
-            if type(v).__name__ == 'DataFrame':
-                stat = v.to_string(index=False)
-                print(v.to_string(index=False))
-                reportTxt.insert(END, f'{stat}\n\n')
-            else:
-                reportTxt.insert(END, f'{v}\n')
+
+        reportTxt.insert(END, 'carts status\n', 'tag-header')
+        cats = [f'{x}: {y}' for x, y in data['status'].items()]
+        for c in cats:
+            reportTxt.insert(END, f'{c}\n\n', 'tag-center')
+
+        reportTxt.insert(END, 'quantities\n', 'tag-header')
+        reportTxt.insert(END, f'orders: {data["orders"]:,}\n', 'tag-center')
+        reportTxt.insert(END, f'copies: {data["copies"]:,}\n\n', 'tag-center')
+
+        reportTxt.insert(END, 'funds\n', 'tag-header')
+        reportTxt.insert(
+            END, data['funds'].to_string(
+                index=False, justify='right', header=False),
+            'tag-right')
+        reportTxt.insert(END, '\n\n')
+
+        reportTxt.insert(END, 'languages\n', 'tag-header')
+        reportTxt.insert(
+            END, data['langs'].to_string(
+                index=False, justify='right', header=False),
+            'tag-right')
+        reportTxt.insert(END, '\n\n')
+
+        reportTxt.insert(END, 'audiences\n', 'tag-header')
+        reportTxt.insert(
+            END, data['audns'].to_string(
+                index=False, header=False, justify='right'),
+            'tag-right')
+        reportTxt.insert(END, '\n\n')
+
+        reportTxt.insert(END, 'material type\n', 'tag-header')
+        reportTxt.insert(
+            END, data['mats'].to_string(
+                index=False, header=False, justify='right'),
+            'tag-right')
+        reportTxt.insert(END, '\n\n')
+
+        reportTxt.insert(END, 'vendors\n', 'tag-header')
+        reportTxt.insert(END, data['vendors'].to_string(
+            index=False, header=False, justify='right'),
+            'tag-right')
+
+        reportTxt['state'] = DISABLED
 
     def preview(self):
         self.reportFrm = Frame(
@@ -130,7 +224,6 @@ class ReportWizView(Frame):
         self.activeW.trace('w', self.observer)
         self.system = app_data['system']
         self.system.trace('w', self.system_observer)
-        self.profile = app_data['profile']
         self.max_height = int((self.winfo_screenheight() - 200))
         self.cur_manager = BusyManager(self)
 
@@ -172,72 +265,100 @@ class ReportWizView(Frame):
         critFrm = LabelFrame(self, text='report wizard')
         critFrm.grid(
             row=0, column=1, rowspan=20, sticky='snew', padx=25, pady=10)
-        critFrm.columnconfigure(0, minsize=10)
+        critFrm.columnconfigure(0, minsize=20)
+        critFrm.columnconfigure(5, minsize=20)
+        critFrm.rowconfigure(14, minsize=10)
 
+        Label(critFrm, text='criteria:', font=RBFONT).grid(
+            row=1, column=1, columnspan=4, sticky='snw', padx=2, pady=10)
         Label(critFrm, text='date from:').grid(
-            row=1, column=1, sticky='snw', padx=2, pady=5)
+            row=2, column=1, sticky='sne', padx=2, pady=5)
         dateFromEnt = Entry(
             critFrm, textvariable=self.date_from,
             font=RFONT,
+            width=17,
             validate='key', validatecommand=self.vldt)
         self.createToolTip(dateFromEnt, 'YYYY-MM-DD')
         dateFromEnt.grid(
-            row=1, column=2, sticky='snw', padx=2, pady=5)
+            row=2, column=2, sticky='snw', padx=2, pady=5)
         Label(critFrm, text='to:').grid(
-            row=1, column=3, sticky='snew', padx=2, pady=5)
+            row=2, column=3, sticky='snew', padx=2, pady=5)
         dateToEnt = Entry(
             critFrm, textvariable=self.date_to,
             font=RFONT,
+            width=17,
             validate='key', validatecommand=self.vldt)
         dateToEnt.grid(
-            row=1, column=4, sticky='snw', padx=2, pady=5)
+            row=2, column=4, sticky='snw', padx=2, pady=5)
         self.createToolTip(dateToEnt, 'YYYY-MM-DD')
 
         Label(critFrm, text='library:').grid(
-            row=2, column=1, sticky='sne', padx=25, pady=5)
+            row=3, column=1, sticky='sne', padx=2, pady=5)
         self.libCbx = Combobox(
             critFrm, textvariable=self.library,
             font=RFONT,
+            width=15,
             state='readonly')
         self.libCbx.grid(
-            row=2, column=2, sticky='snew', padx=2, pady=5)
+            row=3, column=2, sticky='snew', padx=2, pady=5)
+
+        # users
+        Label(critFrm, text='users:').grid(
+            row=4, column=1, sticky='ne', padx=2, pady=5)
+        scrollbar = Scrollbar(critFrm, orient=VERTICAL)
+        scrollbar.grid(
+            row=4, column=3, sticky='snw', pady=5)
+        self.userLst = Listbox(
+            critFrm,
+            font=RFONT,
+            selectmode=EXTENDED,
+            width=15,
+            yscrollcommand=scrollbar.set)
+        self.userLst.grid(
+            row=4, column=2, sticky='snew', pady=5)
+        scrollbar.config(command=self.userLst.yview)
+
+        Separator(critFrm, orient=HORIZONTAL).grid(
+            row=5, column=1, columnspan=4, sticky='snew', padx=2, pady=15)
 
         # report types
+        Label(critFrm, text='report type:', font=RBFONT).grid(
+            row=6, column=1, columnspan=4, sticky='snw', padx=2, pady=10)
         fyBtn = Radiobutton(
             critFrm, text='current FY summary',
             variable=self.report, value=1)
         fyBtn.grid(
-            row=4, column=1, columnspa=3, sticky='snw', padx=2, pady=5)
+            row=7, column=1, columnspa=2, sticky='snw', padx=2, pady=5)
         audnBtn = Radiobutton(
             critFrm, text='audience',
             variable=self.report, value=2)
         audnBtn.grid(
-            row=5, column=1, columnspan=3, sticky='snw', padx=2, pady=5)
+            row=8, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
         branchBtn = Radiobutton(
             critFrm, text='branch',
             variable=self.report, value=3)
         branchBtn.grid(
-            row=6, column=1, columnspan=3, sticky='snw', padx=2, pady=5)
+            row=9, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
         fundBtn = Radiobutton(
             critFrm, text='fund',
             variable=self.report, value=4)
         fundBtn.grid(
-            row=7, column=1, columnspan=3, sticky='snw', padx=2, pady=5)
+            row=10, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
         langBtn = Radiobutton(
             critFrm, text='language',
             variable=self.report, value=5)
         langBtn.grid(
-            row=8, column=1, columnspa=3, sticky='snw', padx=2, pady=5)
+            row=11, column=1, columnspa=2, sticky='snw', padx=2, pady=5)
         matBtn = Radiobutton(
             critFrm, text='material type',
             variable=self.report, value=6)
         matBtn.grid(
-            row=9, column=1, columnspa=3, sticky='snw', padx=2, pady=5)
+            row=12, column=1, columnspa=2, sticky='snw', padx=2, pady=5)
         vendorBtn = Radiobutton(
             critFrm, text='vendor',
             variable=self.report, value=7)
         vendorBtn.grid(
-            row=10, column=1, columnspan=3, sticky='snw', padx=2, pady=5)
+            row=13, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
 
     def validate_criteria(self):
         """
@@ -270,88 +391,66 @@ class ReportWizView(Frame):
 
         return msg
 
-    def create_report_title(self):
-        """
-        Returns report title as string
-        """
-        if self.system.get():
-            system = get_record(System, did=self.system.get()).name
-        else:
-            system = None
-
-        if self.report.get() == 1:
-            date_today = date.today()
-            if date_today.month > 6:
-                years = f'{date_today.year}-{date_today.year + 1}'
-            else:
-                years = f'{date_today.year - 1} to {date_today.year}'
-            report_title = f'{system} fiscal year {years} to date summary\n' \
-                f'{self.profile.get()}'
-
-        elif self.report.get() == 2:
-            report_title = f'{system} orders audience breakdown' \
-                f'({self.date_from.get()} to{self.date_to.get()})\n' \
-                f'{self.profile.get()}'
-        elif self.report.get() == 3:
-            report_title = f'{system} orders by branch ' \
-                f'({self.date_from.get()} to {self.date_to.get()})\n' \
-                f'{self.profile.get()}'
-        elif self.report.get() == 4:
-            report_title = f'{system} orders by fund ' \
-                f'({self.date_from.get()} to {self.date_to.get()})\n' \
-                f'{self.profile.get()}'
-        elif self.report.get() == 5:
-            report_title = f'{system} orders by language ' \
-                f'({self.date_from.get()} to {self.date_to.get()})\n' \
-                f'{self.profile.get()}'
-        elif self.report.get() == 6:
-            report_title = f'{system} orders by material type ' \
-                f'({self.date_from.get()} to {self.date_to.get()})\n' \
-                f'{self.profile.get()}'
-        elif self.report.get() == 7:
-            report_title = f'{system} orders by vendor ' \
-                f'({self.date_from.get()} to {self.date_to.get()})\n' \
-                f'{self.profile.get()}'
-
-        return report_title
-
     def generate_report(self):
         """
         Creates specified report in a pop up window
         """
         criteria_issues = self.validate_criteria()
         if not criteria_issues:
-            report_title = self.create_report_title()
             report_data = self.analyze_data()
-
             if report_data:
                 ReportView(
-                    self, report_title, report_data, **self.app_data)
+                    self, report_data, **self.app_data)
+            else:
+                messagebox.showinfo(
+                    'Info', 'No data matching criteria')
 
         else:
             messagebox.showwarning(
                 'Criteria error', f'Errors:\n{criteria_issues}')
 
+    def map_selected_users_to_datastore_id(self, users):
+        """
+        Maps selected users to datastore user.did
+        returns:
+            datastore_user_ids: list of int, list of datastore user dids
+        """
+        datastore_user_ids = [x for x in get_ids_from_index(
+            users, self.app_data['profile_idx'])]
+
+        return datastore_user_ids
+
+    def get_selected_users(self):
+        """
+        Returns a list of selected user names
+        """
+        lst_ids = self.userLst.curselection()
+        users = [self.userLst.get(i) for i in lst_ids]
+        return users
+
     def analyze_data(self):
         report_data = None
         system_id = self.system.get()
-        if self.profile.get() != 'All users':
-            user_id = get_id_from_index(
-                self.profile.get(), self.app_data['profile_idx'])
-        else:
-            user_id = None
+        users = self.get_selected_users()
+        user_ids = self.map_selected_users_to_datastore_id(users)
+
 
         if self.library.get() == 'any':
             library_id = None
         else:
-            library_id = get_record(Library, name=self.library.get())
+            library_id = get_record(Library, name=self.library.get()).did
 
         try:
             if self.report.get() == 1:
                 report_data = get_fy_summary(
-                    system_id, library_id, user_id)
+                    system_id, library_id, user_ids)
 
-            return report_data
+            report_data['report_type'] = self.report.get()
+            if users:
+                report_data['users'] = users
+            else:
+                report_data['users'] = 'All users'
+
         except BabelError as e:
             messagebox.showerror(
                 'Report error', e)
@@ -368,6 +467,7 @@ class ReportWizView(Frame):
                 disable_widgets([self.libCbx])
             else:
                 enable_widgets([self.libCbx])
+                self.libCbx['state'] = 'readonly'
                 self.library.set('any')
 
     def observer(self, *args):
@@ -378,6 +478,9 @@ class ReportWizView(Frame):
                 'branches',
                 'research'
             )
+            self.userLst.insert(END, 'all')
+            for user in sorted(self.app_data['profile_idx'].values()):
+                self.userLst.insert(END, user)
             self.system_observer()
 
     def onValidateDate(self, i, d, P):

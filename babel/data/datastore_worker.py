@@ -152,8 +152,7 @@ def update_record(session, model, did, **kwargs):
 
 
 def construct_fy_summary_stmn(system_id, library_id,
-        user_id, start_date, end_date):
-
+                              user_ids, start_date, end_date):
     sql_str = """
         SELECT cart.did as cart_id,
                cart.created as cart_date,
@@ -195,9 +194,15 @@ def construct_fy_summary_stmn(system_id, library_id,
         start_date=f'{start_date}',
         end_date=f'{end_date}')
 
-    if user_id is not None:
-        params['user_id'] = user_id
-        sql_str += ' AND cart.user_id=:user_id'
+    if user_ids:
+        s = []
+        sql_str += ' AND ('
+        for user in list(enumerate(user_ids)):
+            arg = f'user_{user[0]}'
+            params[arg] = user[1]
+            s.append(f'cart.user_id=:{arg}')
+        sql_str += ' OR '.join(s)
+        sql_str += ' )'
 
     if library_id is not None:
         params['library_id'] = library_id
