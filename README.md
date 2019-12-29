@@ -14,7 +14,7 @@ At the moment we do not plan to create a universal application that could be use
 
 ## Database Localhost Installation
 Babel is configured to work with MySQL database.
-Follow [MySQL Installer instruction](https://dev.mysql.com/doc/refman/8.0/en/windows-installation.html) to install server on a localhost. Then use create_datastore method to setup database with all required tables.
+Follow [MySQL Installer instruction](https://dev.mysql.com/doc/refman/8.0/en/windows-installation.html) to install server on a localhost. Using MySQL Workbench create schema named as your db_name. Then use create_datastore method to setup database with all required tables.
 
 localhost example:
 ```python
