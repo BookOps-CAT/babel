@@ -478,6 +478,8 @@ class ReportWizView(Frame):
                 'branches',
                 'research'
             )
+
+            self.userLst.delete(0, END)
             self.userLst.insert(END, 'all')
             for user in sorted(self.app_data['profile_idx'].values()):
                 self.userLst.insert(END, user)
