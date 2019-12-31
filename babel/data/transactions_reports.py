@@ -38,7 +38,7 @@ def get_fy_summary(system_id, library_id, user_ids):
 
         mlogger.debug(f'Report query stmn: {stmn}')
 
-        df = read_sql(stmn, session.bind)
+        df = read_sql(stmn, session.bind, parse_dates=['cart_date'])
         data = generate_fy_summary_for_display(df)
 
         return data

@@ -2,6 +2,7 @@ from datetime import date
 import logging
 from tkinter import *
 from tkinter.ttk import *
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 
 from data.datastore import System, Library
@@ -11,7 +12,7 @@ from gui.data_retriever import get_record
 from gui.utils import (BusyManager, ToolTip, enable_widgets, disable_widgets,
                        get_ids_from_index)
 from gui.fonts import RBFONT, RFONT
-
+from reports.reports import generate_fy_summary_by_user_chart
 
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
@@ -94,7 +95,7 @@ class ReportView():
 
         return textWidget
 
-    def create_report_title(self, report_type, users):
+    def create_report_title(self, report_type, users_lbl):
         """
         Returns report title as string
         """
@@ -111,7 +112,7 @@ class ReportView():
                 years = f'{date_today.year - 1} to {date_today.year}'
             self.top.report_title.set(
                 f'{system} fiscal year {years} to date summary\n'
-                f'users: {", ".join(users)}')
+                f'users: {", ".join(users_lbl)}')
 
         elif report_type == 2:
             self.top.report_title.set(
@@ -195,6 +196,12 @@ class ReportView():
             'tag-right')
 
         reportTxt['state'] = DISABLED
+
+        plt = generate_fy_summary_by_user_chart(data['users'])
+        canvas = FigureCanvasTkAgg(plt, self.reportFrm)
+        canvas.draw()
+        canvas.get_tk_widget().grid(
+            row=0, column=1, sticky='ne', padx=20)
 
     def preview(self):
         self.reportFrm = Frame(
@@ -434,7 +441,6 @@ class ReportWizView(Frame):
         users = self.get_selected_users()
         user_ids = self.map_selected_users_to_datastore_id(users)
 
-
         if self.library.get() == 'any':
             library_id = None
         else:
@@ -447,9 +453,9 @@ class ReportWizView(Frame):
 
             report_data['report_type'] = self.report.get()
             if users:
-                report_data['users'] = users
+                report_data['users_lbl'] = users
             else:
-                report_data['users'] = 'All users'
+                report_data['users_lbl'] = 'All users'
 
         except BabelError as e:
             messagebox.showerror(

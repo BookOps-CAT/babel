@@ -1,9 +1,32 @@
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, Grouper
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+from matplotlib.backend_bases import key_press_handler
+from numpy import arange
+
+
+def generate_fy_summary_by_user_chart(data):
+    f = Figure(figsize=(8.8, 4), dpi=100, tight_layout=True)
+    a = f.add_subplot(111)
+    users = data.keys()
+    x = arange(12)
+    month_lbl = [
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+    for user, y in data.items():
+        a.plot(x, y)
+        # f.xticks(x, month_lbl)
+        # f.ylabel('amount')
+        # f.xlabel('months')
+    f.legend(users)
+    # f.title('fiscal year to date summary')
+    # ax = plt.gca()
+    # ax.spines['top'].set_visible(False)
+    # ax.spines['right'].set_visible(False)
+    return f
 
 
 def generate_fy_summary_for_display(df):
-
     data = dict()
 
     # unique carts by status
@@ -36,9 +59,7 @@ def generate_fy_summary_for_display(df):
         langs.append(Series(dict(
             lang=k,
             amount=f'${amount:,.2f}')))
-    # ldf =
     data['langs'] = DataFrame(langs)
-
 
     # audiences
     audns = []
@@ -67,5 +88,20 @@ def generate_fy_summary_for_display(df):
             amount=f'${amount:,.2f}')))
 
     data['vendors'] = DataFrame(vendors)
+
+    # users in time
+    users = dict()
+    for k, d in fdf.groupby('user'):
+        y = [0] * 12
+        for m, md in d.groupby(Grouper(key='cart_date', freq='M')):
+            amount = (md['price'] * md['qty']).sum()
+            pos = m.month
+            if pos <= 6:
+                y[pos + 7] = amount
+            else:
+                y[pos - 7] = amount
+        users[k] = y
+
+    data['users'] = users
 
     return data
