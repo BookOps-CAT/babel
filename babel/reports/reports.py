@@ -1,29 +1,43 @@
 from pandas import DataFrame, Series, Grouper
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-from matplotlib.backend_bases import key_press_handler
-from numpy import arange
 
 
-def generate_fy_summary_by_user_chart(data):
-    f = Figure(figsize=(8.8, 4), dpi=100, tight_layout=True)
-    a = f.add_subplot(111)
-    users = data.keys()
-    x = arange(12)
+def generate_fy_summary_by_user_chart(user_data, language_data):
+    # try refactoring it with one figure and two subplots
+    f1 = Figure(
+        figsize=(8.65, 4), dpi=100, tight_layout=True,
+        frameon=False)
+    f2 = Figure(
+        figsize=(8.65, 4), dpi=100, tight_layout=True,
+        frameon=False)
+    a = f1.add_subplot(111)
+    b = f2.add_subplot(111)
+
+    users = user_data.keys()
+    langs = language_data.keys()
     month_lbl = [
         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-    for user, y in data.items():
-        a.plot(x, y)
-        # f.xticks(x, month_lbl)
-        # f.ylabel('amount')
-        # f.xlabel('months')
-    f.legend(users)
-    # f.title('fiscal year to date summary')
-    # ax = plt.gca()
-    # ax.spines['top'].set_visible(False)
-    # ax.spines['right'].set_visible(False)
-    return f
+    for user, y in user_data.items():
+        a.plot(month_lbl, y)
+
+    for lang, y in language_data.items():
+        b.plot(month_lbl, y)
+
+    a.set_xlabel('months')
+    b.set_xlabel('months')
+    a.set_ylabel('dollars allocated')
+    b.set_ylabel('dollars allocated')
+    a.spines['top'].set_visible(False)
+    a.spines['right'].set_visible(False)
+    b.spines['top'].set_visible(False)
+    b.spines['right'].set_visible(False)
+    a.legend(users)
+    b.legend(langs)
+    a.set_title('funds allocation in current FY by user')
+    b.set_title('funds allocation in current FY by language')
+
+    return f1, f2
 
 
 def generate_fy_summary_for_display(df):
@@ -54,12 +68,28 @@ def generate_fy_summary_for_display(df):
 
     # languages
     langs = []
+    lang_time = dict()
     for k, d in fdf.groupby('lang_name'):
         amount = (d['qty'] * d['price']).sum()
         langs.append(Series(dict(
             lang=k,
             amount=f'${amount:,.2f}')))
+
+        # languages in time chart data
+        y = [0] * 12
+        for m, md in d.groupby(Grouper(key='cart_date', freq='M')):
+            m_amount = (md['price'] * md['qty']).sum()
+            pos = m.month
+            if pos <= 6:
+                y[pos + 7] = m_amount
+            else:
+                y[pos - 7] = m_amount
+        lang_time[k] = y
+
+    print(lang_time)
+
     data['langs'] = DataFrame(langs)
+    data['langs_time'] = lang_time
 
     # audiences
     audns = []
@@ -102,6 +132,6 @@ def generate_fy_summary_for_display(df):
                 y[pos - 7] = amount
         users[k] = y
 
-    data['users'] = users
+    data['users_time'] = users
 
     return data

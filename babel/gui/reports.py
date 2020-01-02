@@ -1,8 +1,8 @@
 from datetime import date
 import logging
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from tkinter import *
 from tkinter.ttk import *
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 
 from data.datastore import System, Library
@@ -60,13 +60,14 @@ class ReportView():
             row=2, column=3, sticky='nse')
 
         self.report_base = Canvas(
-            self.baseFrm, bg='gray',  # remove background after testing
+            self.baseFrm,
             height=max_height,
             width=1200,
             xscrollcommand=self.xscrollbar.set,
             yscrollcommand=self.yscrollbar.set)
         self.report_base.grid(
             row=2, column=1, columnspan=2, sticky='nwe')
+
         self.preview()
 
         # populate report
@@ -75,7 +76,7 @@ class ReportView():
     def unitFrm(self, parent, row, col):
         unit_frame = Frame(parent)
         unit_frame.grid(
-            row=row, column=col, sticky='snew', padx=5, pady=5)
+            row=row, column=col, rowspan=4, sticky='snew', padx=5, pady=5)
         textWidget = Text(
             unit_frame,
             font=RFONT,
@@ -146,7 +147,7 @@ class ReportView():
                 f'{users}')
 
     def generate_report(self, data):
-        self.create_report_title(data['report_type'], data['users'])
+        self.create_report_title(data['report_type'], data['users_lbl'])
         if data['report_type'] == 1:
             self.report_one(data)
 
@@ -197,11 +198,25 @@ class ReportView():
 
         reportTxt['state'] = DISABLED
 
-        plt = generate_fy_summary_by_user_chart(data['users'])
-        canvas = FigureCanvasTkAgg(plt, self.reportFrm)
-        canvas.draw()
-        canvas.get_tk_widget().grid(
-            row=0, column=1, sticky='ne', padx=20)
+        # draw chart(s)
+        # somehow the chart or its canvas interfere with baseFrm scrollbars:
+        # when exiting top window, tkinter throws TclError unable to find
+        # destroyed scrollbar widgets; not severe problem, but clean up in the
+        # future
+        chartFrm = Frame(self.reportFrm)
+        chartFrm.grid(
+            row=0, column=1, sticky='snew', padx=20, pady=5)
+
+        ch1, ch2 = generate_fy_summary_by_user_chart(
+            data['users_time'], data['langs_time'])
+        canvas1 = FigureCanvasTkAgg(ch1, chartFrm)
+        canvas1.draw()
+        canvas1.get_tk_widget().grid(
+            row=0, column=1, sticky='ne')
+        canvas2 = FigureCanvasTkAgg(ch2, chartFrm)
+        canvas2.draw()
+        canvas2.get_tk_widget().grid(
+            row=1, column=1, sticky='ne')
 
     def preview(self):
         self.reportFrm = Frame(
