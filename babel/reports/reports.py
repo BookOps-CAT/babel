@@ -86,8 +86,6 @@ def generate_fy_summary_for_display(df):
                 y[pos - 7] = m_amount
         lang_time[k] = y
 
-    print(lang_time)
-
     data['langs'] = DataFrame(langs)
     data['langs_time'] = lang_time
 

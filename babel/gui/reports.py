@@ -111,6 +111,7 @@ class ReportView():
                 years = f'{date_today.year}-{date_today.year + 1}'
             else:
                 years = f'{date_today.year - 1} to {date_today.year}'
+
             self.top.report_title.set(
                 f'{system} fiscal year {years} to date summary\n'
                 f'users: {", ".join(users_lbl)}')
@@ -470,7 +471,7 @@ class ReportWizView(Frame):
             if users:
                 report_data['users_lbl'] = users
             else:
-                report_data['users_lbl'] = 'All users'
+                report_data['users_lbl'] = ['All users']
 
         except BabelError as e:
             messagebox.showerror(
