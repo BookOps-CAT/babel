@@ -81,7 +81,7 @@ class ReportView():
         textWidget = Text(
             unit_frame,
             font=RFONT,
-            width=35,
+            width=40,
             height=80,
             wrap=NONE,
             background='SystemButtonFace',
@@ -97,7 +97,8 @@ class ReportView():
 
         return textWidget
 
-    def create_report_title(self, report_type, users_lbl):
+    def create_report_title(self, report_type, users_lbl,
+                            start_date, end_date):
         """
         Returns report title as string
         """
@@ -119,17 +120,19 @@ class ReportView():
 
         elif report_type == 2:
             self.top.report_title.set(
-                f'{system} categories detailed breakdown'
-                f'({self.date_from.get()} to{self.date_to.get()})\n'
-                f'{users}')
+                f'{system} detailed breakdown\n'
+                f'from {start_date} to {end_date}\n'
+                f'users: {", ".join(users_lbl)}')
         elif report_type == 3:
             self.top.report_title.set(
-                f'{system} breakdown by branch'
+                f'{system} breakdown by branch '
                 f'({self.date_from.get()} to {self.date_to.get()})\n'
                 f'{users}')
 
     def generate_report(self, data):
-        self.create_report_title(data['report_type'], data['users_lbl'])
+        self.create_report_title(
+            data['report_type'], data['users_lbl'], data['start_date'],
+            data['end_date'])
         if data['report_type'] == 1:
             self.report_one(data)
         elif data['report_type'] == 2:
@@ -205,11 +208,19 @@ class ReportView():
         canvas2.get_tk_widget().grid(
             row=1, column=1, sticky='ne')
 
-    def report_two(data):
+    def report_two(self, data):
         """Detailed breakdown by each category"""
-        pass
+        reportTxt = self.unitFrm(self.reportFrm, 0, 0)
 
-    def report_three(data):
+        reportTxt.insert(END, 'audience\n', 'tag-header')
+        reportTxt.insert(
+            END, data['audns'].to_string(
+                index=False, justify='right'), 'tag-right')
+        reportTxt.insert(END, '\n\n')
+
+        reportTxt['state'] = DISABLED
+
+    def report_three(self, data):
         """Breakdown by branch"""
         pass
 

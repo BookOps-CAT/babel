@@ -98,7 +98,7 @@ def get_categories_breakdown(system_id, library_id, user_ids,
 
     df = query2dataframe(system_id, library_id, user_ids,
                          start_date, end_date)
-    data = generate_detailed_breakdown(df)
+    data = generate_detailed_breakdown(df, start_date, end_date)
 
     return data
 

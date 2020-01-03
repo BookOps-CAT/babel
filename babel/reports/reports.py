@@ -42,6 +42,8 @@ def generate_fy_summary_by_user_chart(user_data, language_data):
 
 def generate_fy_summary_for_display(df):
     data = dict()
+    data['start_date'] = None
+    data['end_date'] = None
 
     # unique carts by status
     status = dict()
@@ -135,18 +137,22 @@ def generate_fy_summary_for_display(df):
     return data
 
 
-def generate_detailed_breakdown(df):
+def generate_detailed_breakdown(df, start_date, end_date):
     """
     Creates report data in form of a dictionary
     based on Pandas dataframe
 
     args:
         df: Pandas dataframe
+        start_date: str, report starting date (inclusive)
+        end_date: str, report ending date (inclusive)
 
     returns:
         data: dict, data in form of dictionary
     """
     data = dict()
+    data['start_date'] = start_date
+    data['end_date'] = end_date
 
     # filter out carts that are not finilized
     fdf = df[df['cart_status'] != 'in-works']
