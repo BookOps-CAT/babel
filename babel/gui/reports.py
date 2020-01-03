@@ -119,7 +119,7 @@ class ReportView():
 
         elif report_type == 2:
             self.top.report_title.set(
-                f'{system} detailed categories breakdown '
+                f'{system} categories detailed breakdown'
                 f'({self.date_from.get()} to{self.date_to.get()})\n'
                 f'{users}')
         elif report_type == 3:
@@ -347,7 +347,7 @@ class ReportWizView(Frame):
         fyBtn.grid(
             row=7, column=1, columnspa=2, sticky='snw', padx=2, pady=5)
         audnBtn = Radiobutton(
-            critFrm, text='detailed category breakdown',
+            critFrm, text='detailed breakdown by various categories',
             variable=self.report, value=2)
         audnBtn.grid(
             row=8, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
@@ -448,7 +448,7 @@ class ReportWizView(Frame):
 
             elif self.report.get() == 3:
                 report_data = get_branch_breakdown(
-                    system_Id, library_id, user_ids,
+                    system_id, library_id, user_ids,
                     self.date_from.get(), self.date_to.get())
 
             report_data['report_type'] = self.report.get()

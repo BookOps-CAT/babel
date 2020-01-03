@@ -9,12 +9,47 @@ from pandas import read_sql
 from data.datastore import session_scope
 from data.datastore_worker import construct_report_query_stmn
 from reports.reports import (generate_fy_summary_for_display,
-                             generate_detailed_breakdown)
+                             generate_detailed_breakdown,
+                             generate_branch_breakdown)
 from logging_settings import LogglyAdapter
 # from errors import BabelError
 
 
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
+
+
+def query2dataframe(system_id, library_id, user_ids,
+                    start_date, end_date):
+    """
+    Queries datastore for relevant records and outputs the results
+    as Pandas dataframe
+
+    args:
+        system_id: int, datastore system.did
+        library_id: int, datastore library.did
+        user_ids: list, datastore user.did list
+
+    returns:
+        df: Pandas dataframe with following columns:
+            cart_id, cart_date, user, system, library, order_id,
+            lang_name, lang_code, audn, vendor, mattype, price
+            branch_code, branch_name, qty, fund, total
+    """
+    mlogger.debug(
+        'Report criteria: '
+        f'system_id={system_id}, library_id={library_id}, '
+        f'user_ids={user_ids}, start_date={start_date}, '
+        f'end_date={end_date}')
+
+    with session_scope() as session:
+        stmn = construct_report_query_stmn(
+            system_id, library_id, user_ids, start_date, end_date)
+
+        mlogger.debug(f'Report query stmn: {stmn}')
+
+        df = read_sql(stmn, session.bind, parse_dates=['cart_date'])
+
+        return df
 
 
 def get_fy_summary(system_id, library_id, user_ids):
@@ -34,21 +69,11 @@ def get_fy_summary(system_id, library_id, user_ids):
         start_date = date.fromisoformat(f'{date_today.year}-07-01')
     end_date = date_today
 
-    mlogger.debug(
-        f'Report criteria: type=FY summary (1), system_id={system_id}, '
-        f'library_id={library_id}, user_ids={user_ids}, '
-        f'start_date={start_date}, end_date={end_date}')
+    df = query2dataframe(system_id, library_id, user_ids,
+                         start_date, end_date)
+    data = generate_fy_summary_for_display(df)
 
-    with session_scope() as session:
-        stmn = construct_report_query_stmn(
-            system_id, library_id, user_ids, start_date, end_date)
-
-        mlogger.debug(f'Report query stmn: {stmn}')
-
-        df = read_sql(stmn, session.bind, parse_dates=['cart_date'])
-        data = generate_fy_summary_for_display(df)
-
-        return data
+    return data
 
 
 def get_categories_breakdown(system_id, library_id, user_ids,
@@ -71,17 +96,11 @@ def get_categories_breakdown(system_id, library_id, user_ids,
         f'user_ids={user_ids}, start_date={start_date}, '
         f'end_date={end_date}')
 
-    with session_scope() as session:
-        stmn = construct_report_query_stmn(
-            system_id, library_id, user_ids,
-            start_date, end_date)
-        mlogger.debug(
-            f'Report query stmn: {stmn}')
+    df = query2dataframe(system_id, library_id, user_ids,
+                         start_date, end_date)
+    data = generate_detailed_breakdown(df)
 
-        df = read_sql(stmn, session.bind, parse_dates=['cart_date'])
-        data = generate_detailed_breakdown(df)
-
-        return data
+    return data
 
 
 def get_branch_breakdown(system_id, library_id, user_ids,
@@ -97,4 +116,8 @@ def get_branch_breakdown(system_id, library_id, user_ids,
     returns:
         data: dict, data to be displayed broke down by branch
     """
-    pass
+    df = query2dataframe(system_id, library_id, user_ids,
+                         start_date, end_date)
+    data = generate_branch_breakdown(df)
+
+    return data
