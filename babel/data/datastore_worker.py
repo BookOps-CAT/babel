@@ -151,8 +151,22 @@ def update_record(session, model, did, **kwargs):
         setattr(instance, key, value)
 
 
-def construct_fy_summary_stmn(system_id, library_id,
-                              user_ids, start_date, end_date):
+def construct_report_query_stmn(system_id, library_id,
+                                user_ids, start_date, end_date):
+    """
+    Creates SQL query statemanet to select datastore records matching
+    report criteria
+
+    args:
+        system_id: int, datastore system.did
+        library_id: int, datastore library.did
+        user_ids: list, list of datastore user.did
+        start_date: str, starting date (inclusive) in format YYYY-MM-DD
+        end_date: str, ending date (inclusive) in format YYYY-MM-DD
+
+    returns:
+        stmn: instance of sqlalchemy.sql.expression.TextClause
+    """
     sql_str = """
         SELECT cart.did as cart_id,
                cart.created as cart_date,

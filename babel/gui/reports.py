@@ -6,7 +6,8 @@ from tkinter.ttk import *
 
 
 from data.datastore import System, Library
-from data.transactions_reports import get_fy_summary
+from data.transactions_reports import (get_fy_summary, get_categories_breakdown,
+                                       get_branch_breakdown)
 from logging_settings import LogglyAdapter
 from gui.data_retriever import get_record
 from gui.utils import (BusyManager, ToolTip, enable_widgets, disable_widgets,
@@ -118,32 +119,12 @@ class ReportView():
 
         elif report_type == 2:
             self.top.report_title.set(
-                f'{system} orders audience breakdown'
+                f'{system} detailed categories breakdown '
                 f'({self.date_from.get()} to{self.date_to.get()})\n'
                 f'{users}')
         elif report_type == 3:
             self.top.report_title.set(
-                f'{system} orders by branch '
-                f'({self.date_from.get()} to {self.date_to.get()})\n'
-                f'{users}')
-        elif report_type == 4:
-            self.top.report_title(
-                f'{system} orders by fund '
-                f'({self.date_from.get()} to {self.date_to.get()})\n'
-                f'{users}')
-        elif report_type == 5:
-            self.top.report_title.set(
-                f'{system} orders by language '
-                f'({self.date_from.get()} to {self.date_to.get()})\n'
-                f'{users}')
-        elif report_type == 6:
-            self.top.report_title.set(
-                f'{system} orders by material type '
-                f'({self.date_from.get()} to {self.date_to.get()})\n'
-                f'{users}')
-        elif report_type == 7:
-            self.top.report_title.set(
-                f'{system} orders by vendor '
+                f'{system} breakdown by branch'
                 f'({self.date_from.get()} to {self.date_to.get()})\n'
                 f'{users}')
 
@@ -151,8 +132,13 @@ class ReportView():
         self.create_report_title(data['report_type'], data['users_lbl'])
         if data['report_type'] == 1:
             self.report_one(data)
+        elif data['report_type'] == 2:
+            self.report_two(data)
+        elif data['report_type'] == 3:
+            self.report_three(data)
 
     def report_one(self, data):
+        """Current fiscal year summary"""
         reportTxt = self.unitFrm(self.reportFrm, 0, 0)
 
         reportTxt.insert(END, 'carts status\n', 'tag-header')
@@ -218,6 +204,14 @@ class ReportView():
         canvas2.draw()
         canvas2.get_tk_widget().grid(
             row=1, column=1, sticky='ne')
+
+    def report_two(data):
+        """Detailed breakdown by each category"""
+        pass
+
+    def report_three(data):
+        """Breakdown by branch"""
+        pass
 
     def preview(self):
         self.reportFrm = Frame(
@@ -353,35 +347,15 @@ class ReportWizView(Frame):
         fyBtn.grid(
             row=7, column=1, columnspa=2, sticky='snw', padx=2, pady=5)
         audnBtn = Radiobutton(
-            critFrm, text='audience',
+            critFrm, text='detailed category breakdown',
             variable=self.report, value=2)
         audnBtn.grid(
             row=8, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
         branchBtn = Radiobutton(
-            critFrm, text='branch',
+            critFrm, text='individual branches report',
             variable=self.report, value=3)
         branchBtn.grid(
             row=9, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
-        fundBtn = Radiobutton(
-            critFrm, text='fund',
-            variable=self.report, value=4)
-        fundBtn.grid(
-            row=10, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
-        langBtn = Radiobutton(
-            critFrm, text='language',
-            variable=self.report, value=5)
-        langBtn.grid(
-            row=11, column=1, columnspa=2, sticky='snw', padx=2, pady=5)
-        matBtn = Radiobutton(
-            critFrm, text='material type',
-            variable=self.report, value=6)
-        matBtn.grid(
-            row=12, column=1, columnspa=2, sticky='snw', padx=2, pady=5)
-        vendorBtn = Radiobutton(
-            critFrm, text='vendor',
-            variable=self.report, value=7)
-        vendorBtn.grid(
-            row=13, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
 
     def validate_criteria(self):
         """
@@ -466,6 +440,16 @@ class ReportWizView(Frame):
             if self.report.get() == 1:
                 report_data = get_fy_summary(
                     system_id, library_id, user_ids)
+
+            elif self.report.get() == 2:
+                report_data = get_categories_breakdown(
+                    system_id, library_id, user_ids,
+                    self.date_from.get(), self.date_to.get())
+
+            elif self.report.get() == 3:
+                report_data = get_branch_breakdown(
+                    system_Id, library_id, user_ids,
+                    self.date_from.get(), self.date_to.get())
 
             report_data['report_type'] = self.report.get()
             if users:

@@ -89,6 +89,11 @@ def generate_fy_summary_for_display(df):
     data['langs'] = DataFrame(langs)
     data['langs_time'] = lang_time
 
+
+
+
+
+
     # audiences
     audns = []
     for k, d in fdf.groupby('audn'):
@@ -133,3 +138,11 @@ def generate_fy_summary_for_display(df):
     data['users_time'] = users
 
     return data
+
+
+def generate_detailed_breakdown(df):
+    pass
+
+
+def generate_branch_breakdown(df):
+    pass
