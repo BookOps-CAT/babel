@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from pandas import DataFrame, Series, Grouper
 from matplotlib.figure import Figure
 
@@ -5,10 +7,10 @@ from matplotlib.figure import Figure
 def generate_fy_summary_by_user_chart(user_data, language_data):
     # try refactoring it with one figure and two subplots
     f1 = Figure(
-        figsize=(8.65, 4), dpi=100, tight_layout=True,
+        figsize=(6.3, 4), dpi=100, tight_layout=True,
         frameon=False)
     f2 = Figure(
-        figsize=(8.65, 4), dpi=100, tight_layout=True,
+        figsize=(6.3, 4), dpi=100, tight_layout=True,
         frameon=False)
     a = f1.add_subplot(111)
     b = f2.add_subplot(111)
@@ -164,9 +166,9 @@ def generate_detailed_breakdown(df, start_date, end_date):
         copies_qty = d['qty'].sum()
         amount = (d['price'] * d['qty']).sum()
         audns.append(Series(dict(
-            audn=k,
-            orders_qty=orders_qty,
-            copies_qty=copies_qty,
+            audience=k,
+            orders=orders_qty,
+            copies=copies_qty,
             amount=f'${amount:,.2f}')))
 
     data['audns'] = DataFrame(audns)
@@ -179,9 +181,9 @@ def generate_detailed_breakdown(df, start_date, end_date):
         copies_qty = d['qty'].sum()
         amount = (d['price'] * d['qty']).sum()
         langs.append(Series(dict(
-            lang=k,
-            orders_qty=orders_qty,
-            copies_qty=copies_qty,
+            language=k,
+            orders=orders_qty,
+            copies=copies_qty,
             amount=f'${amount:,.2f}')))
 
         for kk, dd in d.groupby('audn'):
@@ -189,10 +191,10 @@ def generate_detailed_breakdown(df, start_date, end_date):
             la_copies_qty = dd['qty'].sum()
             la_amount = (dd['price'] * dd['qty']).sum()
             langs_audns.append(Series(dict(
-                lang=k,
-                audn=kk,
-                orders_qty=la_orders_qty,
-                copies_qty=la_copies_qty,
+                language=k,
+                audience=kk,
+                orders=la_orders_qty,
+                copies=la_copies_qty,
                 amount=f'${la_amount:,.2f}')))
 
     data['langs'] = DataFrame(langs)
@@ -206,8 +208,8 @@ def generate_detailed_breakdown(df, start_date, end_date):
         amount = (d['price'] * d['qty']).sum()
         vendors.append(Series(dict(
             vendor=k,
-            orders_qty=orders_qty,
-            copies_qty=copies_qty,
+            orders=orders_qty,
+            copies=copies_qty,
             amount=f'${amount:,.2f}')))
 
     data['vendors'] = DataFrame(vendors)
@@ -220,8 +222,8 @@ def generate_detailed_breakdown(df, start_date, end_date):
         amount = (d['price'] * d['qty']).sum()
         funds.append(Series(dict(
             fund=k,
-            orders_qty=orders_qty,
-            copies_qty=copies_qty,
+            orders=orders_qty,
+            copies=copies_qty,
             amount=f'${amount:,.2f}')))
 
     data['funds'] = DataFrame(funds)
@@ -234,9 +236,9 @@ def generate_detailed_breakdown(df, start_date, end_date):
         copies_qty = d['qty'].sum()
         amount = (d['price'] * d['qty']).sum()
         mattypes.append(Series(dict(
-            mattype=k,
-            orders_qty=orders_qty,
-            copies_qty=copies_qty,
+            type=k,
+            orders=orders_qty,
+            copies=copies_qty,
             amount=f'${amount:,.2f}')))
 
         for kk, dd in d.groupby('lang_name'):
@@ -244,10 +246,10 @@ def generate_detailed_breakdown(df, start_date, end_date):
             l_copies_qty = dd['qty'].sum()
             l_amount = (dd['price'] * dd['qty']).sum()
             mattypes_langs.append(Series(dict(
-                mattype=k,
-                lang=kk,
-                orders_qty=l_orders_qty,
-                copies_qty=l_copies_qty,
+                type=k,
+                language=kk,
+                orders=l_orders_qty,
+                copies=l_copies_qty,
                 amount=f'${l_amount:,.2f}')))
 
     data['mattypes'] = DataFrame(mattypes)
@@ -256,5 +258,65 @@ def generate_detailed_breakdown(df, start_date, end_date):
     return data
 
 
-def generate_branch_breakdown(df):
-    pass
+def generate_branch_breakdown(df, start_date, end_date):
+    """
+    Creates individual branches report data in form of a dictionary
+    based on Pandas dataframe
+
+    args:
+        df: Pandas dataframe
+        start_date: str, report starting date (inclusive)
+        end_date: str, report ending date (inclusive)
+
+    returns:
+        data: dict, data in form of dictionary
+    """
+    data = dict()
+    data['start_date'] = start_date
+    data['end_date'] = end_date
+
+    # filter out carts that are not finilized
+    fdf = df[df['cart_status'] != 'in-works']
+
+    # group by branch
+    branches = OrderedDict()
+    for k, d in fdf.groupby('branch_name'):
+        branch = []
+        total_copies = d['qty'].sum()
+        ad = d[d['audn'] == 'adult']
+        adult_copies = ad['qty'].sum()
+        yd = d[d['audn'] == 'young adult']
+        ya_copies = yd['qty'].sum()
+        jd = d[d['audn'] == 'juvenile']
+        juv_copies = jd['qty'].sum()
+        for kk, dd in d.groupby('lang_name'):
+            total_lang_copies = dd['qty'].sum()
+            add = dd[dd['audn'] == 'adult']
+            adult_lang_copies = add['qty'].sum()
+            ydd = dd[dd['audn'] == 'juvenile']
+            juv_lang_copies = ydd['qty'].sum()
+            ydd = dd[dd['audn'] == 'young adult']
+            ya_lang_copies = ydd['qty'].sum()
+
+            branch.append(Series(
+                {
+                    'lang': kk,
+                    'total': total_lang_copies,
+                    'adult': adult_lang_copies,
+                    'ya': ya_lang_copies,
+                    'juv': juv_lang_copies
+                }))
+        branch.append(Series(
+            {
+                'lang': 'combined',
+                'total': total_copies,
+                'adult': adult_copies,
+                'ya': ya_copies,
+                'juv': juv_copies
+            }))
+
+        branches[k] = DataFrame(branch)
+
+    data['branches'] = branches
+
+    return data

@@ -63,7 +63,7 @@ class ReportView():
         self.report_base = Canvas(
             self.baseFrm,
             height=max_height,
-            width=1200,
+            width=1010,
             xscrollcommand=self.xscrollbar.set,
             yscrollcommand=self.yscrollbar.set)
         self.report_base.grid(
@@ -126,8 +126,8 @@ class ReportView():
         elif report_type == 3:
             self.top.report_title.set(
                 f'{system} breakdown by branch '
-                f'({self.date_from.get()} to {self.date_to.get()})\n'
-                f'{users}')
+                f'(from {start_date} to {end_date})\n'
+                f'users: {", ".join(users_lbl)}')
 
     def generate_report(self, data):
         self.create_report_title(
@@ -200,29 +200,101 @@ class ReportView():
         ch1, ch2 = generate_fy_summary_by_user_chart(
             data['users_time'], data['langs_time'])
         canvas1 = FigureCanvasTkAgg(ch1, chartFrm)
-        canvas1.draw()
         canvas1.get_tk_widget().grid(
             row=0, column=1, sticky='ne')
+        canvas1.draw()
+
         canvas2 = FigureCanvasTkAgg(ch2, chartFrm)
-        canvas2.draw()
         canvas2.get_tk_widget().grid(
             row=1, column=1, sticky='ne')
+        canvas2.draw()
 
     def report_two(self, data):
         """Detailed breakdown by each category"""
-        reportTxt = self.unitFrm(self.reportFrm, 0, 0)
 
-        reportTxt.insert(END, 'audience\n', 'tag-header')
-        reportTxt.insert(
+        # left panel
+        leftColTxt = self.unitFrm(self.reportFrm, 0, 0)
+
+        # audience box
+        leftColTxt.insert(END, 'audience\n', 'tag-header')
+        leftColTxt.insert(
             END, data['audns'].to_string(
                 index=False, justify='right'), 'tag-right')
-        reportTxt.insert(END, '\n\n')
+        leftColTxt.insert(END, '\n\n')
 
-        reportTxt['state'] = DISABLED
+        # languages boxes
+        leftColTxt.insert(END, 'language\n', 'tag-header')
+        leftColTxt.insert(
+            END, data['langs'].to_string(
+                index=False, justify='right'), 'tag-right')
+        leftColTxt.insert(END, '\n\n')
+
+        leftColTxt.insert(END, 'languages by audience\n', 'tag-header')
+        leftColTxt.insert(
+            END, data['langs_audns'].to_string(
+                index=False, justify='right'), 'tag-right')
+        leftColTxt.insert(END, '\n\n')
+
+        # center panel
+        centerColTxt = self.unitFrm(self.reportFrm, 0, 1)
+
+        # vendors
+        centerColTxt.insert(END, 'vendors\n', 'tag-header')
+        centerColTxt.insert(
+            END, data['vendors'].to_string(
+                index=False, justify='right'), 'tag-right')
+        centerColTxt.insert(END, '\n\n')
+
+        # funds
+        centerColTxt.insert(END, 'funds\n', 'tag-header')
+        centerColTxt.insert(
+            END, data['funds'].to_string(
+                index=False, justify='right'), 'tag-right')
+        centerColTxt.insert(END, '\n\n')
+
+        # right panel
+        rightColTxt = self.unitFrm(self.reportFrm, 0, 2)
+
+        # material types
+        rightColTxt.insert(END, 'material types\n', 'tag-header')
+        rightColTxt.insert(
+            END, data['mattypes'].to_string(
+                index=False, justify='right'), 'tag-right')
+        rightColTxt.insert(END, '\n\n')
+
+        rightColTxt.insert(END, 'material type by language\n', 'tag-header')
+        rightColTxt.insert(
+            END, data['mattypes_langs'].to_string(
+                index=False, justify='right'), 'tag-right')
+        rightColTxt.insert(END, '\n\n')
+
+        # read-only mode
+        leftColTxt['state'] = DISABLED
+        centerColTxt['state'] = DISABLED
+        rightColTxt['state'] = DISABLED
 
     def report_three(self, data):
         """Breakdown by branch"""
-        pass
+        c = 0
+        r = 0
+        for branch_name, branch_data in data['branches'].items():
+            c += 1
+            if c == 1:
+                wTxt = self.unitFrm(self.reportFrm, r, c)
+            elif c == 2:
+                wTxt = self.unitFrm(self.reportFrm, r, c)
+            elif c == 3:
+                wTxt = self.unitFrm(self.reportFrm, r, c)
+                c = 0
+                r += 1
+            else:
+                c = 0
+
+            wTxt.insert(END, f'{branch_name}\n', 'tag-header')
+            wTxt.insert(
+                END, branch_data.to_string(
+                    index=False, justify='right'), 'tag-right')
+            wTxt.insert(END, '\n\n')
 
     def preview(self):
         self.reportFrm = Frame(
@@ -264,6 +336,10 @@ class ReportWizView(Frame):
         self.date_to = StringVar()
         self.library = StringVar()
         self.report = IntVar()
+
+        # temp while in dev
+        self.date_from.set('2019-12-01')
+        self.date_to.set('2019-12-31')
 
         # layout
         self.rowconfigure(3, minsize=15)
@@ -358,7 +434,7 @@ class ReportWizView(Frame):
         fyBtn.grid(
             row=7, column=1, columnspa=2, sticky='snw', padx=2, pady=5)
         audnBtn = Radiobutton(
-            critFrm, text='detailed breakdown by various categories',
+            critFrm, text='detailed breakdown',
             variable=self.report, value=2)
         audnBtn.grid(
             row=8, column=1, columnspan=2, sticky='snw', padx=2, pady=5)
