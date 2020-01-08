@@ -8,10 +8,12 @@ from tkinter import messagebox
 from errors import BabelError
 from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     assign_blanketPO_to_cart,
-                                    assign_wlo_to_cart, find_matches,
+                                    assign_wlo_to_cart,
+                                    find_matches,
                                     determine_needs_validation,
                                     get_last_cart,
                                     get_orders_by_id,
+                                    has_library_assigned,
                                     save_displayed_order_data,
                                     save_new_dist_and_grid, validate_cart_data,
                                     tabulate_funds,
@@ -616,42 +618,55 @@ class CartView(Frame):
             messagebox.showerror('Database error', e)
 
     def show_fund_widget(self):
-        self.fundTop = Toplevel(self)
-        self.fundTop.title('Funds')
-        # add funds icon here
+        # enforce library selection before proceeding
+        if str(self.libCbx['state']) != 'disable':
+            messagebox.showwarning(
+                'Unfinished business...',
+                'Please make sure to complete and save\n'
+                'any cart name edits or library assigment\n'
+                'before proceeding.')
+        elif not has_library_assigned(self.cart_id.get()):
+            messagebox.showwargning(
+                'Incomplete cart',
+                'Please assign a library and save your changes before\n'
+                'applying funds.')
+        else:
+            self.fundTop = Toplevel(self)
+            self.fundTop.title('Funds')
+            # add funds icon here
 
-        frm = Frame(self.fundTop)
-        frm.grid(
-            row=0, column=0, sticky='snew', padx=10, pady=10)
-        frm.columnconfigure(0, minsize=40)
+            frm = Frame(self.fundTop)
+            frm.grid(
+                row=0, column=0, sticky='snew', padx=10, pady=10)
+            frm.columnconfigure(0, minsize=40)
 
-        Label(frm, text='select funds:').grid(
-            row=0, column=0, sticky='snw', pady=5)
-        applyBtn = Button(
-            frm,
-            image=self.saveImgS,
-            command=lambda: self.apply_funds(listbox, listbox.curselection()))
-        applyBtn.grid(
-            row=0, column=1, sticky='se', padx=5, pady=10)
-        self.createToolTip(applyBtn, 'apply selected funds')
+            Label(frm, text='select funds:').grid(
+                row=0, column=0, sticky='snw', pady=5)
+            applyBtn = Button(
+                frm,
+                image=self.saveImgS,
+                command=lambda: self.apply_funds(listbox, listbox.curselection()))
+            applyBtn.grid(
+                row=0, column=1, sticky='se', padx=5, pady=10)
+            self.createToolTip(applyBtn, 'apply selected funds')
 
-        scrollbar = Scrollbar(frm, orient=VERTICAL)
-        scrollbar.grid(
-            row=1, column=2, sticky='sne', pady=5)
-        listbox = Listbox(
-            frm,
-            font=RFONT,
-            selectmode=EXTENDED,
-            yscrollcommand=scrollbar.set)
-        listbox.grid(
-            row=1, column=0, columnspan=2, sticky='snew', pady=5)
-        scrollbar.config(command=listbox.yview)
+            scrollbar = Scrollbar(frm, orient=VERTICAL)
+            scrollbar.grid(
+                row=1, column=2, sticky='sne', pady=5)
+            listbox = Listbox(
+                frm,
+                font=RFONT,
+                selectmode=EXTENDED,
+                yscrollcommand=scrollbar.set)
+            listbox.grid(
+                row=1, column=0, columnspan=2, sticky='snew', pady=5)
+            scrollbar.config(command=listbox.yview)
 
-        mlogger.debug(
-            'Fund listbox in fundTop widget values: {}'.format(
-                sorted(self.fund_idx.values())))
-        for code in sorted(self.fund_idx.values()):
-            listbox.insert(END, code)
+            mlogger.debug(
+                'Fund listbox in fundTop widget values: {}'.format(
+                    sorted(self.fund_idx.values())))
+            for code in sorted(self.fund_idx.values()):
+                listbox.insert(END, code)
 
     def apply_funds(self, listbox, selected):
         self.cur_manager.busy()

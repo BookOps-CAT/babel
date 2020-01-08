@@ -29,6 +29,21 @@ from sierra_adapters.webpac_scraper import catalog_match
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
 
+def has_library_assigned(cart_id):
+    """
+    args:
+        cart_id: int, datastore Cart.did
+    returns:
+        boolean: True is library assigned, False if not
+    """
+    with session_scope() as session:
+        rec = retrieve_record(session, Cart, did=cart_id)
+        if rec.library_id:
+            return True
+        else:
+            return False
+
+
 def create_order_snapshot(order_tracker):
     snapshot = hashlib.md5()
     # did = order_tracker['order_id']
