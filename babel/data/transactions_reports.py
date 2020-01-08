@@ -36,7 +36,7 @@ def query2dataframe(system_id, library_id, user_ids,
             branch_code, branch_name, qty, fund, total
     """
     mlogger.debug(
-        'Report criteria: '
+        'Report query criteria: '
         f'system_id={system_id}, library_id={library_id}, '
         f'user_ids={user_ids}, start_date={start_date}, '
         f'end_date={end_date}')
@@ -90,12 +90,6 @@ def get_categories_breakdown(system_id, library_id, user_ids,
     returns:
         data: dict, data to be displayed broke down to different categories
     """
-    mlogger.debug(
-        f'Report criteria: report_type=detailed breakdown (2), '
-        f'system_id={system_id}, library_id={library_id}, '
-        f'user_ids={user_ids}, start_date={start_date}, '
-        f'end_date={end_date}')
-
     df = query2dataframe(system_id, library_id, user_ids,
                          start_date, end_date)
     data = generate_detailed_breakdown(df, start_date, end_date)

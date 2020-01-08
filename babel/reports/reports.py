@@ -300,7 +300,7 @@ def generate_branch_breakdown(df, start_date, end_date):
 
             branch.append(Series(
                 {
-                    'lang': kk,
+                    '': kk,
                     'total': total_lang_copies,
                     'adult': adult_lang_copies,
                     'ya': ya_lang_copies,
@@ -308,14 +308,16 @@ def generate_branch_breakdown(df, start_date, end_date):
                 }))
         branch.append(Series(
             {
-                'lang': 'combined',
+                '': 'combined',
                 'total': total_copies,
                 'adult': adult_copies,
                 'ya': ya_copies,
                 'juv': juv_copies
             }))
 
-        branches[k] = DataFrame(branch)
+        bdf = DataFrame(branch)
+        if not bdf.empty:
+            branches[k] = bdf
 
     data['branches'] = branches
 

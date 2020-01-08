@@ -1,12 +1,14 @@
 from datetime import date
 import logging
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import *
 from tkinter.ttk import *
 
 
 from data.datastore import System, Library
-from data.transactions_reports import (get_fy_summary, get_categories_breakdown,
+from data.transactions_reports import (get_fy_summary,
+                                       get_categories_breakdown,
                                        get_branch_breakdown)
 from logging_settings import LogglyAdapter
 from gui.data_retriever import get_record
@@ -14,6 +16,7 @@ from gui.utils import (BusyManager, ToolTip, enable_widgets, disable_widgets,
                        get_ids_from_index)
 from gui.fonts import RBFONT, RFONT
 from reports.reports import generate_fy_summary_by_user_chart
+
 
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
 
@@ -36,7 +39,7 @@ class ReportView():
         self.top.report_title = StringVar()
 
         # icons
-        downloadImg = app_data['img']['downloadM']
+        # downloadImg = app_data['img']['downloadM']
 
         # layout
         self.baseFrm = Frame(self.top)
@@ -74,15 +77,15 @@ class ReportView():
         # populate report
         self.generate_report(report_data)
 
-    def unitFrm(self, parent, row, col):
+    def unitFrm(self, parent, height, row, col):
         unit_frame = Frame(parent)
         unit_frame.grid(
-            row=row, column=col, rowspan=4, sticky='snew', padx=5, pady=5)
+            row=row, column=col, sticky='snew', padx=5, pady=5)  # rowspan=4
         textWidget = Text(
             unit_frame,
             font=RFONT,
             width=40,
-            height=80,
+            height=height,
             wrap=NONE,
             background='SystemButtonFace',
             relief='flat')
@@ -110,12 +113,12 @@ class ReportView():
         if report_type == 1:
             date_today = date.today()
             if date_today.month > 6:
-                years = f'{date_today.year}-{date_today.year + 1}'
+                years = f'{date_today.year}/{date_today.year + 1}'
             else:
-                years = f'{date_today.year - 1} to {date_today.year}'
+                years = f'{date_today.year - 1}/{date_today.year}'
 
             self.top.report_title.set(
-                f'{system} fiscal year {years} to date summary\n'
+                f'{system} fiscal year-to-date summary ({years})\n'
                 f'users: {", ".join(users_lbl)}')
 
         elif report_type == 2:
@@ -125,7 +128,7 @@ class ReportView():
                 f'users: {", ".join(users_lbl)}')
         elif report_type == 3:
             self.top.report_title.set(
-                f'{system} breakdown by branch '
+                f'{system} breakdown by branch\n'
                 f'(from {start_date} to {end_date})\n'
                 f'users: {", ".join(users_lbl)}')
 
@@ -142,7 +145,7 @@ class ReportView():
 
     def report_one(self, data):
         """Current fiscal year summary"""
-        reportTxt = self.unitFrm(self.reportFrm, 0, 0)
+        reportTxt = self.unitFrm(self.reportFrm, 80, 0, 0)
 
         reportTxt.insert(END, 'carts status\n', 'tag-header')
         cats = [f'{x}: {y}' for x, y in data['status'].items()]
@@ -213,7 +216,7 @@ class ReportView():
         """Detailed breakdown by each category"""
 
         # left panel
-        leftColTxt = self.unitFrm(self.reportFrm, 0, 0)
+        leftColTxt = self.unitFrm(self.reportFrm, 40, 0, 0)
 
         # audience box
         leftColTxt.insert(END, 'audience\n', 'tag-header')
@@ -236,7 +239,7 @@ class ReportView():
         leftColTxt.insert(END, '\n\n')
 
         # center panel
-        centerColTxt = self.unitFrm(self.reportFrm, 0, 1)
+        centerColTxt = self.unitFrm(self.reportFrm, 40, 0, 1)
 
         # vendors
         centerColTxt.insert(END, 'vendors\n', 'tag-header')
@@ -253,7 +256,7 @@ class ReportView():
         centerColTxt.insert(END, '\n\n')
 
         # right panel
-        rightColTxt = self.unitFrm(self.reportFrm, 0, 2)
+        rightColTxt = self.unitFrm(self.reportFrm, 40, 0, 2)
 
         # material types
         rightColTxt.insert(END, 'material types\n', 'tag-header')
@@ -275,26 +278,57 @@ class ReportView():
 
     def report_three(self, data):
         """Breakdown by branch"""
-        c = 0
-        r = 0
+
+        rows, cols, heights = self._determine_widgets_layout(data)
+        n = 0
         for branch_name, branch_data in data['branches'].items():
-            c += 1
-            if c == 1:
-                wTxt = self.unitFrm(self.reportFrm, r, c)
-            elif c == 2:
-                wTxt = self.unitFrm(self.reportFrm, r, c)
-            elif c == 3:
-                wTxt = self.unitFrm(self.reportFrm, r, c)
-                c = 0
-                r += 1
-            else:
-                c = 0
+            wTxt = self.unitFrm(
+                self.reportFrm, heights[n], rows[n], cols[n])
 
             wTxt.insert(END, f'{branch_name}\n', 'tag-header')
             wTxt.insert(
                 END, branch_data.to_string(
                     index=False, justify='right'), 'tag-right')
             wTxt.insert(END, '\n\n')
+            wTxt['state'] = DISABLED
+            mlogger.debug(
+                f'Report layout: {branch_name}=row:{rows[n]}, '
+                f'col={cols[n]}, heights={heights[n]}')
+
+            n += 1
+
+    def _determine_widgets_layout(self, data):
+        # divide branch data into groups of three for each column
+        grouped_sizes = []
+        row_sizes = []
+        for branch_name, branch_data in data['branches'].items():
+            if len(row_sizes) >= 3:
+                grouped_sizes.append(row_sizes)
+                row_sizes = []
+
+            # calculate number of records in a dataframe
+            row_sizes.append(len(branch_data.index))
+
+        # pick up any leftovers
+        if len(row_sizes) < 3:
+            grouped_sizes.append(row_sizes)
+
+        # determine layout location and height
+        cols = []
+        rows = []
+        heights = []
+
+        r = 0
+        for row_sizes in grouped_sizes:
+            for c in range(len(row_sizes)):
+                rows.append(r)
+                cols.append(c)
+                max_height = row_sizes[row_sizes.index(max(row_sizes))] + 2
+                heights.append(max_height)
+                mlogger.debug(f'row={r}, col={c}, max_height={max_height}')
+            r += 1
+
+        return rows, cols, heights
 
     def preview(self):
         self.reportFrm = Frame(
@@ -336,10 +370,6 @@ class ReportWizView(Frame):
         self.date_to = StringVar()
         self.library = StringVar()
         self.report = IntVar()
-
-        # temp while in dev
-        self.date_from.set('2019-12-01')
-        self.date_to.set('2019-12-31')
 
         # layout
         self.rowconfigure(3, minsize=15)
@@ -481,6 +511,8 @@ class ReportWizView(Frame):
         """
         criteria_issues = self.validate_criteria()
         if not criteria_issues:
+            mlogger.debug(
+                f'Generating report number {self.report.get()}')
             report_data = self.analyze_data()
             if report_data:
                 ReportView(
