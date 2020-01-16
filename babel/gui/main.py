@@ -227,6 +227,10 @@ class Base(Tk):
         runImgM = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-build-iconM.png')
         downloadImgM = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-ksirtet-iconM.png')
+        gridImgM = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-run-iconM.png')
+        customImgM = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -269,7 +273,9 @@ class Base(Tk):
                 'fundM': fundImgM,
                 'calcM': calcImgM,
                 'runM': runImgM,
-                'downloadM': downloadImgM}}
+                'downloadM': downloadImgM,
+                'gridM': gridImgM,
+                'customM': customImgM}}
 
         # spawn Babel frames
         self.frames = {}

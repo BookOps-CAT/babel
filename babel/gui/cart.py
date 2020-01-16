@@ -11,6 +11,7 @@ from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
                                     assign_wlo_to_cart,
                                     find_matches,
                                     determine_needs_validation,
+                                    get_cart_resources,
                                     get_last_cart,
                                     get_orders_by_id,
                                     has_library_assigned,
@@ -98,6 +99,185 @@ class CartSummary:
         self.resultsTxt['state'] = 'disabled'
 
 
+class ApplyGridsWidget:
+    """Widget for selective application of grids to resources in the cart"""
+
+    def __init__(self, parent, system_id,
+                 profile_id, distributions, **app_data):
+
+        mlogger.debug('ApplyGridsWidget launched.')
+
+        self.parent = parent
+        self.app_data = app_data
+        self.system_id = system_id
+        self.profile_id = profile_id
+        self.cart_id = app_data['active_id'].get()
+        self.distr_names = distributions  # user specific
+        self.append_grid = IntVar()
+        self.selected_distr = StringVar()
+        self.selected_distr.trace('w', self.distr_observer)
+        self.selected_distr_id = None
+        self.selected_grid = StringVar()
+        self.grid_idx = dict()
+
+        self.top = Toplevel(master=self.parent)
+        self.top.title('Apply distributions')
+        self.cur_manager = BusyManager(self.top)
+
+        # icons
+        applyImg = self.app_data['img']['save']
+        removeImg = self.app_data['img']['delete']
+        customImg = self.app_data['img']['customM']
+        helpImg = self.app_data['img']['help']
+
+        frm = Frame(self.top)
+        frm.grid(
+            row=0, column=0, sticky='snew', padx=10, pady=20)
+
+        # list of resources
+
+        # determine what columns to display
+        # only resource/order did is required but hidden
+        # if none, present default
+        columns = (
+            '#', 'title', 'author', 'ISBN', 'price', 'grids')
+
+        self.resourcesTrv = Treeview(
+            frm,
+            columns=columns,
+            show='headings',
+            height=40)
+
+        for col in columns:
+            self.resourcesTrv.heading(
+                col,
+                text=col,
+                command=lambda _col=col: self._treeview_sort_column(
+                    self.resourcesTrv, _col, False))
+
+        self.resourcesTrv.column('#', width=5, anchor='center')
+        self.resourcesTrv.grid(
+            row=0, column=0, rowspan=20, sticky='snew')
+
+        scrollbar = Scrollbar(
+            frm, orient='vertical', command=self.resourcesTrv.yview)
+        scrollbar.grid(row=0, column=1, rowspan=20, sticky='ns')
+        self.resourcesTrv.configure(yscrollcommand=scrollbar.set)
+
+        # buttons
+        btnFrm = Frame(self.top)
+        btnFrm.grid(
+            row=0, column=1, rowspan=20, sticky='snew', pady=20)
+
+        applyBtn = Button(
+            btnFrm,
+            image=applyImg,
+            command=self.apply_distribution)
+        applyBtn.grid(
+            row=0, column=0, sticky='sw', padx=5, pady=5)
+
+        removeBtn = Button(
+            btnFrm,
+            image=removeImg,
+            command=self.remove_distribution)
+        removeBtn.grid(
+            row=1, column=0, sticky='sw', padx=5, pady=5)
+
+        customBtn = Button(
+            btnFrm,
+            image=customImg,
+            command=self.customize_view)
+        customBtn.grid(
+            row=2, column=0, sticky='sw', padx=5, pady=5)
+
+        helpBtn = Button(
+            btnFrm,
+            image=helpImg,
+            command=self.help)
+        helpBtn.grid(
+            row=3, column=0, sticky='sw', padx=5, pady=5)
+
+        # grids frm
+        gridFrm = Frame(self.top)
+        gridFrm.grid(
+            row=0, column=2, rowspan=20, sticky='snew', padx=5, pady=20)
+
+        Label(gridFrm, text='distributions', font=RBFONT).grid(
+            row=0, column=0, sticky='snw', padx=5, pady=10)
+
+        self.distrCbx = Combobox(
+            gridFrm,
+            state='readonly',
+            font=RFONT,
+            values=self.distr_names,
+            textvariable=self.selected_distr)
+        self.distrCbx.grid(
+            row=1, column=0, sticky='snew', padx=5, pady=5)
+
+        self.gridCbx = Combobox(
+            gridFrm,
+            state='readonly',
+            font=RFONT,
+            textvariable=self.selected_grid)
+        self.gridCbx.grid(
+            row=2, column=0, sticky='snew', padx=5, pady=5)
+
+        Checkbutton(
+            gridFrm,
+            text='add to existing',
+            variable=self.append_grid).grid(
+            row=3, column=0, sticky='snw', padx=5, pady=5)
+
+        self.create_resources_list()
+
+    def apply_distribution(self):
+        pass
+
+    def create_resources_list(self):
+        print(self.cart_id)
+        resources = get_cart_resources(self.cart_id)
+
+
+    def customize_view(self):
+        pass
+
+    def distr_observer(self, *args):
+        if self.selected_distr.get():
+            dist_rec = get_record(
+                DistSet,
+                name=self.selected_distr.get(),
+                system_id=self.system_id,
+                user_id=self.profile_id)
+            self.selected_distr_id = dist_rec.did
+
+            self.grid_idx = create_name_index(
+                DistGrid,
+                distset_id=dist_rec.did)
+
+            # populate gridCbx values
+            values = sorted(self.grid_idx.values())
+            self.gridCbx['values'] = values
+
+    def help(self):
+        pass
+
+    def remove_distribution(self):
+        pass
+
+    def _treeview_sort_column(self, tv, col, reverse):
+        tree_list = [(tv.set(k, col), k) for k in tv.get_children('')]
+        tree_list.sort(reverse=reverse)
+
+        # rearrange items in sorted positions
+        for index, (val, k) in enumerate(tree_list):
+            tv.move(k, '', index)
+
+        # reverse sort next time
+        tv.heading(
+            col,
+            command=lambda: self.treeview_sort_column(tv, col, not reverse))
+
+
 class CartView(Frame):
     """
     Gui for creating and managing order cart
@@ -173,6 +353,7 @@ class CartView(Frame):
         validationImg = self.app_data['img']['valid']
         fundImgM = self.app_data['img']['fundM']
         calcImgM = self.app_data['img']['calcM']
+        gridImg = self.app_data['img']['gridM']
         self.editImgS = self.app_data['img']['editS']
         self.removeImgS = self.app_data['img']['removeS']
         self.deleteImgS = self.app_data['img']['deleteS']
@@ -223,12 +404,20 @@ class CartView(Frame):
             row=2, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.saveBtn, 'save cart')
 
+        self.gridBtn = Button(
+            self.actionFrm,
+            image=gridImg,
+            command=self.selective_grids_widget)
+        self.gridBtn.grid(
+            row=3, column=0, sticky='sw', padx=10, pady=5)
+        self._createToolTip(self.gridBtn, 'apply distributions')
+
         self.fundBtn = Button(
             self.actionFrm,
             image=fundImgM,
             command=self.show_fund_widget)
         self.fundBtn.grid(
-            row=3, column=0, sticky='sw', padx=10, pady=5)
+            row=4, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.fundBtn, 'apply funds')
 
         self.validBtn = Button(
@@ -236,7 +425,7 @@ class CartView(Frame):
             image=validationImg,
             command=self.validation_report)
         self.validBtn.grid(
-            row=4, column=0, sticky='sw', padx=10, pady=5)
+            row=5, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.validBtn, 'validate cart')
 
         self.copyBtn = Button(
@@ -244,7 +433,7 @@ class CartView(Frame):
             image=copyImg,
             command=self.copy_cart)
         self.copyBtn.grid(
-            row=5, column=0, sticky='sw', padx=10, pady=5)
+            row=6, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.copyBtn, 'copy entire cart')
 
         self.deleteBtn = Button(
@@ -252,7 +441,7 @@ class CartView(Frame):
             image=self.deleteImg,
             command=self.delete_cart)
         self.deleteBtn.grid(
-            row=6, column=0, sticky='sw', padx=10, pady=5)
+            row=7, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.deleteBtn, 'delete cart')
 
         self.sierraBtn = Button(
@@ -260,7 +449,7 @@ class CartView(Frame):
             image=sierraImg,
             command=self.find_duplicates_widget)
         self.sierraBtn.grid(
-            row=7, column=0, sticky='sw', padx=10, pady=5)
+            row=8, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.sierraBtn, 'search Sierra')
 
         self.tabulateBtn = Button(
@@ -268,7 +457,7 @@ class CartView(Frame):
             image=calcImgM,
             command=self.tabulate_cart_widget)
         self.tabulateBtn.grid(
-            row=8, column=0, sticky='sw', padx=10, pady=5)
+            row=9, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.tabulateBtn, 'tabulate cart data')
 
         self.helpBtn = Button(
@@ -276,7 +465,7 @@ class CartView(Frame):
             image=helpImg,
             command=self.help)
         self.helpBtn.grid(
-            row=9, column=0, sticky='sw', padx=10, pady=5)
+            row=10, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.helpBtn, 'help')
 
         self.globdataFrm = Frame(self, relief='groove')
@@ -1701,6 +1890,20 @@ class CartView(Frame):
         except BabelError as e:
             self.gridTop.destroy()
             messagebox.showerror('Input Error', e)
+
+    def selective_grids_widget(self):
+        """Lauches a widget to selectively appply distributions"""
+
+        system_id = self.system.get()
+        profile_id = get_id_from_index(
+            self.profile.get(), self.profile_idx)
+
+        grids_widget = ApplyGridsWidget(
+            self, system_id, profile_id, self.distr, **self.app_data)
+        self.wait_window(grids_widget.top)
+
+        # update display in the cart
+        self.display_selected_orders(self.selected_order_ids)
 
     def show_fund_widget(self):
         # enforce library selection before proceeding

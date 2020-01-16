@@ -150,6 +150,10 @@ def save_new_dist_and_grid(
             'Please make sure branch, shelf, and qty are valid.')
 
 
+def get_cart_resources(cart_id):
+    """creates a list of resources to be displayed in ApplyGridsWidget"""
+
+
 def get_last_cart():
     """
     retrieves the most recent cart
