@@ -6,9 +6,12 @@ from tkinter.ttk import *
 from tkinter import messagebox
 
 from errors import BabelError
-from data.transactions_cart import (apply_fund_to_cart, apply_globals_to_cart,
+from data.transactions_cart import (apply_fund_to_cart,
+                                    apply_grid_to_selected_orders,
+                                    apply_globals_to_cart,
                                     assign_blanketPO_to_cart,
                                     assign_wlo_to_cart,
+                                    delete_locations_from_selected_orders,
                                     find_matches,
                                     determine_needs_validation,
                                     get_cart_resources,
@@ -127,7 +130,6 @@ class ApplyGridsWidget:
         # icons
         applyImg = self.app_data['img']['save']
         removeImg = self.app_data['img']['delete']
-        customImg = self.app_data['img']['customM']
         helpImg = self.app_data['img']['help']
 
         frm = Frame(self.top)
@@ -136,11 +138,10 @@ class ApplyGridsWidget:
 
         # list of resources
 
-        # determine what columns to display
-        # only resource/order did is required but hidden
-        # if none, present default
+        # in the next release try to allow user pick columns to display
         columns = (
-            '#', 'title', 'author', 'ISBN', 'price', 'grids')
+            '#', 'title', 'author', 'ISBN', 'price', 'comment',
+            'qty', 'locations')
 
         self.resourcesTrv = Treeview(
             frm,
@@ -155,7 +156,15 @@ class ApplyGridsWidget:
                 command=lambda _col=col: self._treeview_sort_column(
                     self.resourcesTrv, _col, False))
 
-        self.resourcesTrv.column('#', width=5, anchor='center')
+        self.resourcesTrv.column('#', width=50, anchor='center')
+        self.resourcesTrv.column('title', width=200)
+        self.resourcesTrv.column('author', width=150, anchor='center')
+        self.resourcesTrv.column('ISBN', width=130, anchor='center')
+        self.resourcesTrv.column('price', width=80, anchor='center')
+        self.resourcesTrv.column('comment', width=80, anchor='center')
+        self.resourcesTrv.column('qty', width=60, anchor='center')
+        self.resourcesTrv.column('locations', width=200, anchor='center')
+
         self.resourcesTrv.grid(
             row=0, column=0, rowspan=20, sticky='snew')
 
@@ -175,6 +184,7 @@ class ApplyGridsWidget:
             command=self.apply_distribution)
         applyBtn.grid(
             row=0, column=0, sticky='sw', padx=5, pady=5)
+        self._createToolTip(applyBtn, 'apply grid')
 
         removeBtn = Button(
             btnFrm,
@@ -182,20 +192,15 @@ class ApplyGridsWidget:
             command=self.remove_distribution)
         removeBtn.grid(
             row=1, column=0, sticky='sw', padx=5, pady=5)
-
-        customBtn = Button(
-            btnFrm,
-            image=customImg,
-            command=self.customize_view)
-        customBtn.grid(
-            row=2, column=0, sticky='sw', padx=5, pady=5)
+        self._createToolTip(removeBtn, 'remove grid')
 
         helpBtn = Button(
             btnFrm,
             image=helpImg,
             command=self.help)
         helpBtn.grid(
-            row=3, column=0, sticky='sw', padx=5, pady=5)
+            row=2, column=0, sticky='sw', padx=5, pady=5)
+        self._createToolTip(helpBtn, 'help')
 
         # grids frm
         gridFrm = Frame(self.top)
@@ -231,15 +236,46 @@ class ApplyGridsWidget:
         self.create_resources_list()
 
     def apply_distribution(self):
-        pass
+        # verify distribution and grid is selected
+        if not self.selected_distr.get() or \
+                not self.selected_grid.get():
+            messagebox.showwarning(
+                'Missing data', 'Please select distribution.',
+                parent=self.top)
+        else:
+            # determine datastore id of orders to be modified
+            order_ids = self.map_selection_to_order_ids()
+            grid_id = get_id_from_index(
+                self.selected_grid.get(), self.grid_idx)
+
+            if self.append_grid.get():
+                append = True
+            else:
+                append = False
+
+            mlogger.debug(
+                f'Applying DistGrid.did={grid_id} to order dids={order_ids}, '
+                f'append mode={append}')
+
+            # apply distribution to datastore
+            if order_ids:
+                apply_grid_to_selected_orders(
+                    order_ids, grid_id, append=append)
+                self.create_resources_list()
+            else:
+                messagebox.showwarning(
+                    'Missing data',
+                    'Please select titles to apply distribution',
+                    parent=self.top)
 
     def create_resources_list(self):
-        print(self.cart_id)
+        mlogger.debug('Retrieving cart resources.')
+        # deleted any previous data
+        self.resourcesTrv.delete(*self.resourcesTrv.get_children())
+
         resources = get_cart_resources(self.cart_id)
-
-
-    def customize_view(self):
-        pass
+        for res in resources:
+            self.resourcesTrv.insert('', END, values=res)
 
     def distr_observer(self, *args):
         if self.selected_distr.get():
@@ -249,6 +285,8 @@ class ApplyGridsWidget:
                 system_id=self.system_id,
                 user_id=self.profile_id)
             self.selected_distr_id = dist_rec.did
+            mlogger.debug(
+                'User seclected DistSet.did={dist_rec.did}')
 
             self.grid_idx = create_name_index(
                 DistGrid,
@@ -261,8 +299,33 @@ class ApplyGridsWidget:
     def help(self):
         pass
 
+    def map_selection_to_order_ids(self):
+        sel = self.resourcesTrv.selection()
+        order_dids = [self.resourcesTrv.item(i)['values'][0] for i in sel]
+        return order_dids
+
     def remove_distribution(self):
-        pass
+        order_ids = self.map_selection_to_order_ids()
+        if order_ids:
+            delete_locations_from_selected_orders(order_ids)
+            self.create_resources_list()
+        else:
+            messagebox.showwarning(
+                'Missing data',
+                'Please select titles to remove distribution',
+                parent=self.top)
+
+    def _createToolTip(self, widget, text):
+        toolTip = ToolTip(widget)
+
+        def enter(event):
+            toolTip.showtip(text)
+
+        def leave(event):
+            toolTip.hidetip()
+
+        widget.bind('<Enter>', enter)
+        widget.bind('<Leave>', leave)
 
     def _treeview_sort_column(self, tv, col, reverse):
         tree_list = [(tv.set(k, col), k) for k in tv.get_children('')]
@@ -275,7 +338,7 @@ class ApplyGridsWidget:
         # reverse sort next time
         tv.heading(
             col,
-            command=lambda: self.treeview_sort_column(tv, col, not reverse))
+            command=lambda: self._treeview_sort_column(tv, col, not reverse))
 
 
 class CartView(Frame):
@@ -1894,16 +1957,20 @@ class CartView(Frame):
     def selective_grids_widget(self):
         """Lauches a widget to selectively appply distributions"""
 
-        system_id = self.system.get()
-        profile_id = get_id_from_index(
-            self.profile.get(), self.profile_idx)
+        if has_library_assigned:
+            system_id = self.system.get()
+            profile_id = get_id_from_index(
+                self.profile.get(), self.profile_idx)
 
-        grids_widget = ApplyGridsWidget(
-            self, system_id, profile_id, self.distr, **self.app_data)
-        self.wait_window(grids_widget.top)
+            grids_widget = ApplyGridsWidget(
+                self, system_id, profile_id, self.distr, **self.app_data)
+            self.wait_window(grids_widget.top)
 
-        # update display in the cart
-        self.display_selected_orders(self.selected_order_ids)
+            # update display in the cart
+            self.display_selected_orders(self.selected_order_ids)
+        else:
+            messgebox.showwarning(
+                'Missing data', 'Please select and save library first.')
 
     def show_fund_widget(self):
         # enforce library selection before proceeding

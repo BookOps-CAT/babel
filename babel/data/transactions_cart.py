@@ -16,7 +16,8 @@ from data.datastore import (session_scope, Audn, Branch, Cart, DistSet,
                             DistGrid, Fund, GridLocation, Lang, MatType,
                             Order, OrderLocation, Resource, ShelfCode, Vendor,
                             Wlos)
-from data.datastore_worker import (count_records, insert_or_ignore, insert,
+from data.datastore_worker import (count_records, delete_record,
+                                   insert_or_ignore, insert,
                                    retrieve_last_record, retrieve_record,
                                    retrieve_records, update_record)
 from data.transactions_carts import get_cart_details_as_dataframe
@@ -150,8 +151,122 @@ def save_new_dist_and_grid(
             'Please make sure branch, shelf, and qty are valid.')
 
 
+@lru_cache(maxsize=24)
+def get_branch_code(session, branch_id):
+    rec = retrieve_record(
+        session, Branch,
+        did=branch_id)
+    return rec.code
+
+
 def get_cart_resources(cart_id):
     """creates a list of resources to be displayed in ApplyGridsWidget"""
+
+    resources = []
+    with session_scope() as session:
+        records = retrieve_records(session, Order, cart_id=cart_id)
+        for rec in records:
+            price = f'{rec.resource.price_disc:,.2f}'
+            qty = 0
+            loc_ids = []
+            for loc in rec.locations:
+                qty += loc.qty
+                loc_ids.append(loc.branch_id)
+            locations = []
+            for loc_id in loc_ids:
+                branch_code = get_branch_code(session, loc_id)
+                locations.append(branch_code)
+            locations = ','.join(sorted(locations))
+
+            resources.append(
+                (rec.did, rec.resource.title, rec.resource.author,
+                 rec.resource.isbn, price, rec.comment, qty, locations))
+
+    return resources
+
+
+def apply_grid_to_selected_orders(order_ids, grid_id, append=False):
+    """
+    Datastore transaction that appends or replaces current
+    OrderLocation records
+    args:
+        order_ids: list, list of datastore order dids
+        grid_id: int, datastore DistGrid.did
+        append: boolean, True appends to existing locations,
+                         False replaces existing locations
+    """
+    with session_scope() as session:
+        # retrieve grid location data
+        grid_rec = retrieve_record(session, DistGrid, did=grid_id)
+
+        if append:
+            # add to existing locations
+            for oid in order_ids:
+                ord_rec = retrieve_record(session, Order, did=oid)
+
+                for gloc in grid_rec.gridlocations:
+                    # find duplicates and merge
+                    dup = False
+                    for oloc in ord_rec.locations:
+                        if oloc.branch_id == gloc.branch_id and \
+                                oloc.shelfcode_id == gloc.shelfcode_id:
+                            # add quantity to existing oloc
+                            dup = True
+                            mlogger.debug(
+                                'Updating existing '
+                                f'OrderLocation.did={oloc.did} '
+                                f'with new qty={oloc.qty + gloc.qty}')
+                            update_record(
+                                session, OrderLocation, oloc.did,
+                                order_id=oid,
+                                branch_id=oloc.branch_id,
+                                shelfcode_id=oloc.shelfcode_id,
+                                qty=oloc.qty + gloc.qty,
+                                fund_id=oloc.fund_id)
+                    if not dup:
+                        mlogger.debug(
+                            f'Inserting new OrderLocation for Order.did={oid} '
+                            f'based on DistGrid.did={gloc.did}')
+                        insert_or_ignore(
+                            session, OrderLocation,
+                            order_id=oid,
+                            branch_id=gloc.branch_id,
+                            shelfcode_id=gloc.shelfcode_id,
+                            qty=gloc.qty)
+        else:
+            # replace existing locations
+            for oid in order_ids:
+                # delete exiting locaations
+                loc_recs = retrieve_records(
+                    session, OrderLocation, order_id=oid)
+                for oloc in loc_recs:
+                    mlogger.debug(
+                        f'Deleting OrderLocation.did={oloc.did} '
+                        f'of order.did={oid}')
+                    delete_record(session, OrderLocation, did=oloc.did)
+
+                for gloc in grid_rec.gridlocations:
+                    mlogger.debug(
+                        f'Inserting new OrderLocation based on '
+                        f'DistGrid.did={gloc.did}')
+                    insert_or_ignore(
+                        session, OrderLocation,
+                        order_id=oid,
+                        branch_id=gloc.branch_id,
+                        shelfcode_id=gloc.shelfcode_id,
+                        qty=gloc.qty)
+
+
+def delete_locations_from_selected_orders(order_ids):
+    with session_scope() as session:
+        for oid in order_ids:
+            loc_recs = retrieve_records(
+                session, OrderLocation, order_id=oid)
+            for oloc in loc_recs:
+                mlogger.debug(
+                    f'Deleting OrderLocation.did={oloc.did} '
+                    f'of Order.did={oid}')
+                delete_record(session, OrderLocation, did=oloc.did)
 
 
 def get_last_cart():
