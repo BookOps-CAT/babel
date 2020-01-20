@@ -122,6 +122,8 @@ class ApplyGridsWidget:
         self.selected_distr_id = None
         self.selected_grid = StringVar()
         self.grid_idx = dict()
+        self.total_qty = StringVar()
+        self.total_amount = StringVar()
 
         self.top = Toplevel(master=self.parent)
         self.top.title('Apply distributions')
@@ -206,6 +208,7 @@ class ApplyGridsWidget:
         gridFrm = Frame(self.top)
         gridFrm.grid(
             row=0, column=2, rowspan=20, sticky='snew', padx=5, pady=20)
+        gridFrm.rowconfigure(4, minsize=30)
 
         Label(gridFrm, text='distributions', font=RBFONT).grid(
             row=0, column=0, sticky='snw', padx=5, pady=10)
@@ -232,6 +235,18 @@ class ApplyGridsWidget:
             text='add to existing',
             variable=self.append_grid).grid(
             row=3, column=0, sticky='snw', padx=5, pady=5)
+
+        Label(
+            gridFrm,
+            textvariable=self.total_qty,
+            font=RFONT).grid(
+            row=5, column=0, sticky='snw', padx=5, pady=5)
+
+        Label(
+            gridFrm,
+            textvariable=self.total_amount,
+            font=RFONT).grid(
+            row=6, column=0, sticky='snw', padx=5, pady=5)
 
         self.create_resources_list()
 
@@ -270,12 +285,22 @@ class ApplyGridsWidget:
 
     def create_resources_list(self):
         mlogger.debug('Retrieving cart resources.')
-        # deleted any previous data
+
+        # delete any previous data
         self.resourcesTrv.delete(*self.resourcesTrv.get_children())
 
+        # repopulate
+        total_qty = 0
+        total_amount = 0
         resources = get_cart_resources(self.cart_id)
         for res in resources:
             self.resourcesTrv.insert('', END, values=res)
+            total_amount += float(res[4]) * res[6]
+            total_qty += res[6]
+
+        # update running tally labels
+        self.total_qty.set(f'Total qty: {total_qty} copie(s)')
+        self.total_amount.set(f'Total amount: ${total_amount:,.2f}')
 
     def distr_observer(self, *args):
         if self.selected_distr.get():
