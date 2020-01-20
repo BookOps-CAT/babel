@@ -209,6 +209,7 @@ class ApplyGridsWidget:
         gridFrm.grid(
             row=0, column=2, rowspan=20, sticky='snew', padx=5, pady=20)
         gridFrm.rowconfigure(4, minsize=30)
+        gridFrm.rowconfigure(7, minsize=50)
 
         Label(gridFrm, text='distributions', font=RBFONT).grid(
             row=0, column=0, sticky='snw', padx=5, pady=10)
@@ -249,6 +250,14 @@ class ApplyGridsWidget:
             row=6, column=0, sticky='snw', padx=5, pady=5)
 
         self.create_resources_list()
+
+        closeBtn = Button(
+            gridFrm,
+            text='close',
+            width=10,
+            command=self.top.destroy)
+        closeBtn.grid(
+            row=8, column=0, sticky='snw', padx=20, pady=5)
 
     def apply_distribution(self):
         # verify distribution and grid is selected
@@ -1990,7 +1999,7 @@ class CartView(Frame):
             grids_widget = ApplyGridsWidget(
                 self, system_id, profile_id, self.distr, **self.app_data)
 
-            # create model top widget
+            # create model top widgetd
             grids_widget.top.focus_set()
             grids_widget.top.grab_set()
             grids_widget.top.transient(self)
