@@ -1989,6 +1989,11 @@ class CartView(Frame):
 
             grids_widget = ApplyGridsWidget(
                 self, system_id, profile_id, self.distr, **self.app_data)
+
+            # create model top widget
+            grids_widget.top.focus_set()
+            grids_widget.top.grab_set()
+            grids_widget.top.transient(self)
             self.wait_window(grids_widget.top)
 
             # update display in the cart
