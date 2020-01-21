@@ -176,7 +176,7 @@ class Base(Tk):
         img = Image.open('./icons/Action-arrow-blue-double-down-iconS.png')
         copyImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-viewmag-iconM.png')
-        viewImg = ImageTk.PhotoImage(img)
+        viewImgM = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-viewmag-iconS.png')
         viewImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-floppy-iconM.png')
@@ -251,7 +251,7 @@ class Base(Tk):
                 'help': helpImg,
                 'copy': copyImg,
                 'copyS': copyImgS,
-                'view': viewImg,
+                'view': viewImgM,
                 'viewS': viewImgS,
                 'marc': marcImg,
                 'sheet': sheetImg,

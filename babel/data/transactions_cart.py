@@ -165,7 +165,9 @@ def get_cart_resources(cart_id):
     resources = []
     with session_scope() as session:
         records = retrieve_records(session, Order, cart_id=cart_id)
+        n = 0
         for rec in records:
+            n += 1
             price = f'{rec.resource.price_disc:,.2f}'
             qty = 0
             loc_ids = []
@@ -179,7 +181,7 @@ def get_cart_resources(cart_id):
             locations = ','.join(sorted(locations))
 
             resources.append(
-                (rec.did, rec.resource.title, rec.resource.author,
+                (rec.did, n, rec.resource.title, rec.resource.author,
                  rec.resource.isbn, price, rec.comment, qty, locations))
 
     return resources
@@ -921,3 +923,15 @@ def tabulate_funds(cart_id):
         update_record(session, Cart, did=cart_id, updated=datetime.now())
 
     return tally
+
+
+def search_cart(cart_id, keywords, keyword_type, search_type):
+    # search need to be normalized to perform well
+    # see
+    # https://stackoverflow.com/questions/47635580/case-insensitive-exact-match-with-sqlalchemy
+
+    with session_scope() as session:
+        if keyword_type == 'isbn':
+            res = session.query(Cart).filter(
+                Cart.did == cart_id).fliter(
+                    Resource.isbn == keywords).all()

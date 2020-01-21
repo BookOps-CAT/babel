@@ -142,12 +142,13 @@ class ApplyGridsWidget:
 
         # in the next release try to allow user pick columns to display
         columns = (
-            '#', 'title', 'author', 'ISBN', 'price', 'comment',
+            'oid', '#', 'title', 'author', 'ISBN', 'price', 'comment',
             'qty', 'locations')
 
         self.resourcesTrv = Treeview(
             frm,
             columns=columns,
+            displaycolumns=columns[1:],
             show='headings',
             height=40)
 
@@ -283,9 +284,11 @@ class ApplyGridsWidget:
 
             # apply distribution to datastore
             if order_ids:
+                self.cur_manager.busy()
                 apply_grid_to_selected_orders(
                     order_ids, grid_id, append=append)
                 self.create_resources_list()
+                self.cur_manager.notbusy()
             else:
                 messagebox.showwarning(
                     'Missing data',
@@ -294,6 +297,7 @@ class ApplyGridsWidget:
 
     def create_resources_list(self):
         mlogger.debug('Retrieving cart resources.')
+        self.cur_manager.busy()
 
         # delete any previous data
         self.resourcesTrv.delete(*self.resourcesTrv.get_children())
@@ -304,12 +308,13 @@ class ApplyGridsWidget:
         resources = get_cart_resources(self.cart_id)
         for res in resources:
             self.resourcesTrv.insert('', END, values=res)
-            total_amount += float(res[4]) * res[6]
-            total_qty += res[6]
+            total_amount += float(res[5]) * res[7]
+            total_qty += res[7]
 
         # update running tally labels
         self.total_qty.set(f'Total qty: {total_qty} copie(s)')
         self.total_amount.set(f'Total amount: ${total_amount:,.2f}')
+        self.cur_manager.notbusy()
 
     def distr_observer(self, *args):
         if self.selected_distr.get():
@@ -341,7 +346,9 @@ class ApplyGridsWidget:
     def remove_distribution(self):
         order_ids = self.map_selection_to_order_ids()
         if order_ids:
+            self.cur_manager.busy()
             delete_locations_from_selected_orders(order_ids)
+            self.cur_manager.notbusy()
             self.create_resources_list()
         else:
             messagebox.showwarning(
@@ -375,6 +382,159 @@ class ApplyGridsWidget:
             command=lambda: self._treeview_sort_column(tv, col, not reverse))
 
 
+class SearchCartWidget:
+    """Top window allowing searching currently displayed cart"""
+
+    def __init__(self, parent, **app_data):
+        mlogger.debug('SearchCartWidget launched.')
+
+        self.parent = parent
+        self.app_data = app_data
+        self.order_id = app_data['searched_order']
+        self.cart_id = app_data['active_id'].get()
+        self.keywords = StringVar()
+
+        self.search_top = Toplevel(master=self.parent)
+        self.search_top.title('Search cart')
+        self.cur_manager = BusyManager(self.search_top)
+
+        # input frame
+        inputFrm = Frame(self.search_top)
+        inputFrm.grid(
+            row=0, column=0, sticky='snew', padx=20, pady=20)
+
+        self.keywordEnt = Entry(
+            inputFrm,
+            font=RFONT,
+            textvariable=self.keywords,
+            width=40)
+        self.keywordEnt.grid(
+            row=0, column=0, sticky='snew', padx=2, pady=5)
+
+        key_types = [
+            'isbn',
+            'upc',
+            'wlo #',
+            'order #',
+            'bib #',
+            'other #',
+            'title',
+            'author'
+        ]
+
+        self.keytypeCbx = Combobox(
+            inputFrm,
+            font=RFONT,
+            values=key_types,
+            state='readonly',
+            width=10)
+        self.keytypeCbx.grid(
+            row=0, column=1, sticky='snew', padx=2, pady=5)
+        self.keytypeCbx.set(key_types[0])
+
+        search_types = [
+            'phrase',
+            'keyword'
+        ]
+
+        self.searchtypeCbx = Combobox(
+            inputFrm,
+            font=RFONT,
+            values=search_types,
+            state='readonly',
+            width=10)
+        self.searchtypeCbx.grid(
+            row=0, column=2, sticky='snew', padx=2, pady=5)
+        self.searchtypeCbx.set(search_types[0])
+
+        # buttons frame
+        btnFrm = Frame(self.search_top)
+        btnFrm.grid(
+            row=1, column=0, sticky='snew', padx=20)
+        btnFrm.columnconfigure(0, minsize=160)
+
+        self.searchBtn = Button(
+            btnFrm,
+            text='search',
+            command=self.search,
+            width=10)
+        self.searchBtn.grid(
+            row=0, column=1, sticky='snw', padx=5, pady=5)
+
+        self.closeBtn = Button(
+            btnFrm,
+            text='close',
+            command=self.search_top.destroy,
+            width=10)
+        self.closeBtn.grid(
+            row=0, column=2, sticky='snw', padx=5, pady=5)
+
+        # results frame
+        resFrm = Frame(self.search_top)
+        resFrm.grid(
+            row=2, column=0, sticky='snew', padx=20, pady=20)
+
+        columns = (
+            'oid', '#', 'title', 'author', 'ISBN')
+
+        self.resultsTrv = Treeview(
+            resFrm,
+            columns=columns,
+            displaycolumns=columns[1:],
+            show='headings',
+            height=20)
+
+        for col in columns:
+            self.resultsTrv.heading(
+                col,
+                text=col,
+                command=lambda _col=col: self._treeview_sort_column(
+                    self.resultsTrv, _col, False))
+
+        self.resultsTrv.column('#', width=50, anchor='center')
+        self.resultsTrv.column('title', width=200)
+        self.resultsTrv.column('author', width=150, anchor='center')
+        self.resultsTrv.column('ISBN', width=130, anchor='center')
+
+        self.resultsTrv.grid(
+            row=0, column=0, sticky='snew')
+
+        scrollbar = Scrollbar(
+            resFrm, orient='vertical', command=self.resultsTrv.yview)
+        scrollbar.grid(row=0, column=1, sticky='ns')
+        self.resultsTrv.configure(yscrollcommand=scrollbar.set)
+
+    def populate_result_list(self, results):
+        print(f'Found {len(results)} results')
+
+    def search(self):
+        if not self.keywords.get().strip():
+            messagebox.showwarning(
+                'Missing data',
+                'Please enter keywords to search.',
+                parent=self.search_top)
+        else:
+            results = search_cart(
+                self.cart_id,
+                self.keywords.get(),
+                self.keytypeCbx.get(),
+                self.searchtypeCbx.get())
+            self.populate_result_list(results)
+
+    def _treeview_sort_column(self, tv, col, reverse):
+        tree_list = [(tv.set(k, col), k) for k in tv.get_children('')]
+        tree_list.sort(reverse=reverse)
+
+        # rearrange items in sorted positions
+        for index, (val, k) in enumerate(tree_list):
+            tv.move(k, '', index)
+
+        # reverse sort next time
+        tv.heading(
+            col,
+            command=lambda: self._treeview_sort_column(tv, col, not reverse))
+
+
 class CartView(Frame):
     """
     Gui for creating and managing order cart
@@ -392,6 +552,9 @@ class CartView(Frame):
         self.system.trace('w', self.observer)
         self.profile = app_data['profile']
         self.profile_idx = app_data['profile_idx']
+        self.searched_order = IntVar()
+        self.app_data['searched_order'] = self.searched_order
+        self.searched_order.trace('w', self.search_observer)
         self.profile.trace('w', self.profile_observer)
         max_height = int((self.winfo_screenheight() - 200))
         self.cur_manager = BusyManager(self)
@@ -442,6 +605,7 @@ class CartView(Frame):
         self.deleteImg = self.app_data['img']['delete']
         helpImg = self.app_data['img']['help']
         self.saveImg = self.app_data['img']['save']
+        searchImg = self.app_data['img']['view']
         previousImg = self.app_data['img']['previous']
         nextImg = self.app_data['img']['next']
         startImg = self.app_data['img']['start']
@@ -507,7 +671,8 @@ class CartView(Frame):
             command=self.selective_grids_widget)
         self.gridBtn.grid(
             row=3, column=0, sticky='sw', padx=10, pady=5)
-        self._createToolTip(self.gridBtn, 'apply distributions')
+        self._createToolTip(
+            self.gridBtn, 'apply distribution to\nselected titles')
 
         self.fundBtn = Button(
             self.actionFrm,
@@ -533,13 +698,13 @@ class CartView(Frame):
             row=6, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.copyBtn, 'copy entire cart')
 
-        self.deleteBtn = Button(
+        self.searchBtn = Button(
             self.actionFrm,
-            image=self.deleteImg,
-            command=self.delete_cart)
-        self.deleteBtn.grid(
+            image=searchImg,
+            command=self.search_widget)
+        self.searchBtn.grid(
             row=7, column=0, sticky='sw', padx=10, pady=5)
-        self._createToolTip(self.deleteBtn, 'delete cart')
+        self._createToolTip(self.searchBtn, 'search cart')
 
         self.sierraBtn = Button(
             self.actionFrm,
@@ -564,6 +729,14 @@ class CartView(Frame):
         self.helpBtn.grid(
             row=10, column=0, sticky='sw', padx=10, pady=5)
         self._createToolTip(self.helpBtn, 'help')
+
+        self.deleteBtn = Button(
+            self.actionFrm,
+            image=self.deleteImg,
+            command=self.delete_cart)
+        self.deleteBtn.grid(
+            row=11, column=0, sticky='sw', padx=10, pady=5)
+        self._createToolTip(self.deleteBtn, 'delete cart')
 
         self.globdataFrm = Frame(self, relief='groove')
         self.globdataFrm.grid(
@@ -2010,6 +2183,16 @@ class CartView(Frame):
         else:
             messgebox.showwarning(
                 'Missing data', 'Please select and save library first.')
+
+    def search_observer(self, *args):
+        """Triggers display of particular resource/order"""
+        mlogger.debug(
+            'Search observer: updating displayed resources to see '
+            f'Order.did={self.searched_order.get()}')
+
+    def search_widget(self):
+        """ Widget to search carts"""
+        search_widget = SearchCartWidget(self, **self.app_data)
 
     def show_fund_widget(self):
         # enforce library selection before proceeding
