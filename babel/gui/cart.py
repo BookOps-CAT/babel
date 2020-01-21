@@ -22,7 +22,8 @@ from data.transactions_cart import (apply_fund_to_cart,
                                     save_new_dist_and_grid, validate_cart_data,
                                     tabulate_funds,
                                     create_order_snapshot,
-                                    create_grids_snapshot)
+                                    create_grids_snapshot,
+                                    search_cart)
 from data.datastore import (Cart, Order, Resource, Lang, Audn, DistSet,
                             DistGrid, ShelfCode, Vendor, MatType, Fund,
                             Branch, Status, Library)
@@ -393,6 +394,7 @@ class SearchCartWidget:
         self.order_id = app_data['searched_order']
         self.cart_id = app_data['active_id'].get()
         self.keywords = StringVar()
+        self.key_type = StringVar()
 
         self.search_top = Toplevel(master=self.parent)
         self.search_top.title('Search cart')
@@ -411,7 +413,7 @@ class SearchCartWidget:
         self.keywordEnt.grid(
             row=0, column=0, sticky='snew', padx=2, pady=5)
 
-        key_types = [
+        self.key_types = [
             'isbn',
             'upc',
             'wlo #',
@@ -425,14 +427,15 @@ class SearchCartWidget:
         self.keytypeCbx = Combobox(
             inputFrm,
             font=RFONT,
-            values=key_types,
+            values=self.key_types,
+            textvariable=self.key_type,
             state='readonly',
             width=10)
         self.keytypeCbx.grid(
             row=0, column=1, sticky='snew', padx=2, pady=5)
-        self.keytypeCbx.set(key_types[0])
+        self.keytypeCbx.set(self.key_types[0])
 
-        search_types = [
+        self.search_types = [
             'phrase',
             'keyword'
         ]
@@ -440,12 +443,12 @@ class SearchCartWidget:
         self.searchtypeCbx = Combobox(
             inputFrm,
             font=RFONT,
-            values=search_types,
+            values=self.search_types,
             state='readonly',
             width=10)
         self.searchtypeCbx.grid(
             row=0, column=2, sticky='snew', padx=2, pady=5)
-        self.searchtypeCbx.set(search_types[0])
+        self.searchtypeCbx.set(self.search_types[0])
 
         # buttons frame
         btnFrm = Frame(self.search_top)
@@ -498,6 +501,7 @@ class SearchCartWidget:
 
         self.resultsTrv.grid(
             row=0, column=0, sticky='snew')
+        self.resultsTrv.bind('<Double-Button-1>', self.select_item)
 
         scrollbar = Scrollbar(
             resFrm, orient='vertical', command=self.resultsTrv.yview)
@@ -505,7 +509,8 @@ class SearchCartWidget:
         self.resultsTrv.configure(yscrollcommand=scrollbar.set)
 
     def populate_result_list(self, results):
-        print(f'Found {len(results)} results')
+        for value in results:
+            self.resultsTrv.insert('', END, values=value)
 
     def search(self):
         if not self.keywords.get().strip():
@@ -514,12 +519,28 @@ class SearchCartWidget:
                 'Please enter keywords to search.',
                 parent=self.search_top)
         else:
+            # force any id type keywords to be searched as phrases
+            if self.key_type.get() in self.key_types[:6]:
+                self.searchtypeCbx.set(self.search_types[0])
+
+            keywords = self.keywords.get().strip()
+
             results = search_cart(
                 self.cart_id,
-                self.keywords.get(),
+                keywords,
                 self.keytypeCbx.get(),
                 self.searchtypeCbx.get())
+
             self.populate_result_list(results)
+
+    def select_item(self, a):
+        curItem = self.resultsTrv.focus()
+        try:
+            self.order_id.set(self.resultsTrv.item(curItem)['values'][0])
+            mlogger.debug(
+                f'Cart SearchWidget: selected Order.did={self.order_id.get()}')
+        except IndexError:
+            pass
 
     def _treeview_sort_column(self, tv, col, reverse):
         tree_list = [(tv.set(k, col), k) for k in tv.get_children('')]

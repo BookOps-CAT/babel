@@ -6,6 +6,9 @@ import hashlib
 import logging
 import sys
 
+from sqlalchemy import and_
+from sqlalchemy.dialects import mysql
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import text
 
@@ -931,7 +934,43 @@ def search_cart(cart_id, keywords, keyword_type, search_type):
     # https://stackoverflow.com/questions/47635580/case-insensitive-exact-match-with-sqlalchemy
 
     with session_scope() as session:
+        recs = []
+
         if keyword_type == 'isbn':
-            res = session.query(Cart).filter(
-                Cart.did == cart_id).fliter(
-                    Resource.isbn == keywords).all()
+            recs = (
+                session.query(Order, Cart)
+                .join(Order, Order.cart_id == Cart.did)
+                .filter(Cart.did == cart_id)
+                .filter(Order.resource.isbn.like(f'%{keywords}%'))
+                .order_by(Order.did)
+                .all())
+
+        if keyword_type == 'upc':
+            pass
+
+        if keyword_type == 'other #':
+            pass
+
+        if keyword_type == 'wlo #':
+            pass
+
+        if keyword_type == 'order #':
+            pass
+
+        if keyword_type == 'bib #':
+            pass
+
+        if keyword_type == 'title':
+            if search_type == 'phrase':
+                pass
+
+            elif search_type == 'keyword':
+                pass
+
+        results = []
+        n = 0
+        for r in recs:
+            n += 1
+            pass
+
+        return results
