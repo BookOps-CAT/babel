@@ -560,6 +560,46 @@ class SearchCartWidget:
 class CartView(Frame):
     """
     Gui for creating and managing order cart
+
+    self.tracker example (OrderedDict):
+    ntb_id:
+        {'resource':
+            {'resource_id': 160,
+             'resourcefrm': <tkinter.ttk.Frame object>,
+             'catalogBtn': <tkinter.ttk.Button object>,
+             'resdataTxt': <tkinter.Text object>},
+        'more_res':
+            {'summaryTxt': <tkinter.Text object>},
+        'order':
+            {'order_id': 160,
+             'langCbx': <tkinter.ttk.Combobox object>,
+             'vendorCbx': <tkinter.ttk.Combobox object>,
+             'audnCbx': <tkinter.ttk.Combobox object>,
+             'mattypeCbx': <tkinter.ttk.Combobox object>,
+             'poEnt': <tkinter.ttk.Entry object>,
+             'noteEnt': <tkinter.ttk.Entry object>,
+             'commentEnt': <tkinter.ttk.Entry object>,
+             'oidEnt': <tkinter.ttk.Entry object>,
+             'bidEnt': <tkinter.ttk.Entry object>,
+             'wloEnt': <tkinter.ttk.Entry object>},
+        'grid':
+            {'gridCbx': <tkinter.ttk.Combobox object>,
+             'locsFrm': <tkinter.ttk.Frame object>,
+             'locs': [
+                {'loc_id': 82779, 'unitFrm': <tkinter.ttk.Frame object>,
+                 'unitFrm_row': 1,
+                 'removeBtn': <tkinter.ttk.Button object>,
+                 'branchCbx': <tkinter.ttk.Combobox object>,
+                 'shelfCbx': <tkinter.ttk.Combobox object>,
+                 'qtyEnt': <tkinter.ttk.Entry object>,
+                 'fundCbx': <tkinter.ttk.Combobox object>},
+                {'loc_id': 82780, 'unitFrm': <tkinter.ttk.Frame object>,
+                 'unitFrm_row': 2,
+                 'removeBtn': <tkinter.ttk.Button object>,
+                 'branchCbx': <tkinter.ttk.Combobox object>,
+                 'shelfCbx': <tkinter.ttk.Combobox object>,
+                 'qtyEnt': <tkinter.ttk.Entry object>,
+                 'fundCbx': <tkinter.ttk.Combobox object>}]}}
     """
 
     def __init__(self, parent, controller, **app_data):
@@ -2211,6 +2251,45 @@ class CartView(Frame):
         mlogger.debug(
             'Search observer: updating displayed resources to see '
             f'Order.did={self.searched_order.get()}')
+
+        # calculate and remember slider size for given cart
+        offset, _ = self.yscrollbar.get()
+        mlogger.debug(
+            f'CartView: starting offset: {offset}')
+
+        res_unit_size = 0.07180254300673149  # will this vary with diff resolution?
+        loc_unit_size = 0.004791619477001546
+
+        op = 0
+        lc = 0
+        for key, values in self.tracker.items():
+            op += 1
+            if values['order']['order_id'] == self.searched_order.get():
+                ntb = values['resource']['resourcefrm'].master.master
+                print(f'winfo_rooty={ntb.winfo_rooty()}')
+                # print(f'winfo_vrootheigth={ntb.winfo_vrootheight()}')
+                print(f'winfo_vrooty={ntb.winfo_vrooty()}')
+                print(f'winfo_height={ntb.winfo_height()}')
+                print(f'winfo_y={ntb.winfo_y()}')
+
+
+                mlogger.debug(
+                    f'CartView: searched order position={op}')
+
+                if op >= 2:
+                    offset = ((op - 1) * res_unit_size) + (lc * loc_unit_size)
+
+                if offset > 1.0:
+                    offset = 1.0
+                mlogger.debug(
+                    f'CartView: new canvas position offset:{offset}, '
+                    f'jump to position {op}')
+
+                self.preview_base.yview_moveto(offset)
+
+            if len(values['grid']['locs']) > 3:
+                lc += 1
+
 
     def search_widget(self):
         """ Widget to search carts"""
