@@ -2214,7 +2214,7 @@ class CartView(Frame):
 
     def search_widget(self):
         """ Widget to search carts"""
-        search_widget = SearchCartWidget(self, **self.app_data)
+        SearchCartWidget(self, **self.app_data)
 
     def show_fund_widget(self):
         # enforce library selection before proceeding

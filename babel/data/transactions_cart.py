@@ -929,9 +929,15 @@ def tabulate_funds(cart_id):
 
 
 def search_cart(cart_id, keywords, keyword_type, search_type):
-    # search need to be normalized to perform well
-    # see
-    # https://stackoverflow.com/questions/47635580/case-insensitive-exact-match-with-sqlalchemy
+    """ Searches given cart for resources matching user criteria
+        args:
+            cart_id: int, Cart.did
+            keywords: str, words to search
+            keyword_type: str, various columns to search
+            search_type: str, 'phrase' or 'keyword'
+        returns:
+            results: list of tuples, (oid, #, title, author, isbn)
+    """
 
     with session_scope() as session:
         recs = []
