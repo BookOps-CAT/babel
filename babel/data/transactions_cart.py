@@ -7,7 +7,7 @@ import logging
 import sys
 
 from sqlalchemy import and_
-from sqlalchemy.dialects import mysql
+# from sqlalchemy.dialects import mysql
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import text
@@ -936,41 +936,57 @@ def search_cart(cart_id, keywords, keyword_type, search_type):
     with session_scope() as session:
         recs = []
 
+        query = session.query(
+            Order.did,
+            Resource.title, Resource.author, Resource.isbn).join(
+                Order, Order.did == Resource.order_id).filter(
+                    Order.cart_id == cart_id)
+
         if keyword_type == 'isbn':
-            recs = (
-                session.query(Order, Cart)
-                .join(Order, Order.cart_id == Cart.did)
-                .filter(Cart.did == cart_id)
-                .filter(Order.resource.isbn.like(f'%{keywords}%'))
-                .order_by(Order.did)
-                .all())
-
+            recs = query.filter(
+                Resource.isbn.ilike(f'%{keywords}%')).all()
         if keyword_type == 'upc':
-            pass
-
+            recs = query.filter(
+                Resource.upc.ilike(f'%{keywords}%')).all()
         if keyword_type == 'other #':
-            pass
-
+            recs = query.filter(
+                Resource.other_no.ilike(f'%{keywords}')).all()
         if keyword_type == 'wlo #':
-            pass
-
+            recs = query.filter(
+                Order.wlo.ilike(f'%{keywords}%')).all()
         if keyword_type == 'order #':
-            pass
-
+            recs = query.filter(
+                Order.oid.ilike(f'%{keywords}%')).all()
         if keyword_type == 'bib #':
-            pass
-
+            recs = query.filter(
+                Order.bid.ilike(f'%{keywords}%')).all()
         if keyword_type == 'title':
             if search_type == 'phrase':
-                pass
-
+                query = query.filter(
+                    Resource.title.ilike(f'%{keywords}%'))
+                recs = query.all()
             elif search_type == 'keyword':
-                pass
+                keywords = keywords.split(' ')
+                for word in keywords:
+                    query = query.filter(
+                        Resource.title.ilike(f'%{word}%'))
+                recs = query.all()
+        if keyword_type == 'author':
+            if search_type == 'phrase':
+                recs = query.filter(
+                    Resource.author.ilike(f'%{keywords}%')).all()
+            elif search_type == 'keyword':
+                keywords = keywords.split(' ')
+                for word in keywords:
+                    query = query.filter(
+                        Resource.author.ilike(f'%{word}%'))
+                recs = query.all()
 
         results = []
         n = 0
-        for r in recs:
+        for rec in recs:
             n += 1
-            pass
+            results.append(
+                (rec[0], n, rec[1], rec[2], rec[3]))
 
         return results

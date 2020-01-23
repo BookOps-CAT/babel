@@ -513,6 +513,7 @@ class SearchCartWidget:
             self.resultsTrv.insert('', END, values=value)
 
     def search(self):
+        self.resultsTrv.delete(*self.resultsTrv.get_children())
         if not self.keywords.get().strip():
             messagebox.showwarning(
                 'Missing data',
