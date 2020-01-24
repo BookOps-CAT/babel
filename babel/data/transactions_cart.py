@@ -946,7 +946,7 @@ def search_cart(cart_id, keywords, keyword_type, search_type):
             Order.did,
             Resource.title, Resource.author, Resource.isbn).join(
                 Order, Order.did == Resource.order_id).filter(
-                    Order.cart_id == cart_id)
+                    Order.cart_id == cart_id).order_by(Order.did)
 
         if keyword_type == 'isbn':
             recs = query.filter(

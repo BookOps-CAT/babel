@@ -1030,6 +1030,7 @@ class CartView(Frame):
         self.preview_base.grid(
             row=1, column=1, rowspan=40, columnspan=7, sticky='nwe')
         # self.preview_base.bind_all("<MouseWheel>", self.on_mousewheel)
+        # self.preview_base.configure(yscrollincrement=1)
         self._preview()
 
     def add_location(self, parent):
@@ -1532,14 +1533,16 @@ class CartView(Frame):
         self.previous_snapshot = dict()
         recs = get_orders_by_id(order_ids)
         row = 0
-        cart_no = self.disp_start + 1
+        cart_pos = self.disp_start + 1
         for orec in recs:
             ntb = self.order_widget(
-                self.preview_frame, row + 1, orec, cart_no)
+                self.preview_frame, row + 1, orec, cart_pos)
             ntb.grid(
                 row=row, column=0, sticky='snew', padx=2, pady=2)
             row += 1
-            cart_no += 1
+            cart_pos += 1
+
+        self.preview_base.yview_moveto(0.0)
         self.cur_manager.notbusy()
 
     def distribution_observer(self, *args):
@@ -1738,7 +1741,7 @@ class CartView(Frame):
                     len(self.order_ids)))
         self.cur_manager.notbusy()
 
-    def order_widget(self, parent, no, orec, cart_no):
+    def order_widget(self, parent, no, orec, cart_pos):
         # displays individual notebook for resource & order data
 
         ntb = Notebook(
@@ -1834,7 +1837,7 @@ class CartView(Frame):
         moreTab = Frame(ntb)
         more_tracker = self.more_tab_widget(
             moreTab, orec.resource)
-        ntb.add(mainTab, text=f'title {cart_no}')
+        ntb.add(mainTab, text=f'title {cart_pos}')
         ntb.add(moreTab, text='more')
 
         self.tracker[ntb.winfo_id()] = {
@@ -2249,47 +2252,76 @@ class CartView(Frame):
     def search_observer(self, *args):
         """Triggers display of particular resource/order"""
         mlogger.debug(
-            'Search observer: updating displayed resources to see '
+            'CartView: search_observer: updating display to see '
             f'Order.did={self.searched_order.get()}')
 
-        # calculate and remember slider size for given cart
-        offset, _ = self.yscrollbar.get()
-        mlogger.debug(
-            f'CartView: starting offset: {offset}')
+        # detemine a page (group of resources) where the selected order
+        # is locatated
+        searching = True
+        start = 0
+        end = self.disp_number
+        while searching:
+            group = self.order_ids[start:end]
+            if self.searched_order.get() in group:
+                self.selected_order_ids = group[:]
+                self.display_selected_orders(group)
+                searching = False
+                break
 
-        res_unit_size = 0.07180254300673149  # will this vary with diff resolution?
-        loc_unit_size = 0.004791619477001546
+            s += self.disp_number
+            e += self.disp_number
 
-        op = 0
-        lc = 0
+            if e > len(self.order_ids):
+                e = len(self.order_ids)
+
+            if not group:
+                searching = False
+                break
+
+        self.disp_start = s
+        self.disp_end = e
+        self.orders_displayed.set(
+            f'records {self.disp_start + 1}-{self.disp_end} out of '
+            f'{len(self.order_ids)}')
+
+
+        # not easily possible to calculate size of a stadard notebook with
+        # less then 4 locations; for now hardcoded
+        nt_size = 378
+        loc_size = 32
+        start_gap = 2
+        between_gap = 4
+
+        ntc = 0  # number of notebook widgets
+        loc = 0  # number of extra (more then 3) location frames
         for key, values in self.tracker.items():
-            op += 1
+            ntc += 1
             if values['order']['order_id'] == self.searched_order.get():
-                ntb = values['resource']['resourcefrm'].master.master
-                print(f'winfo_rooty={ntb.winfo_rooty()}')
-                # print(f'winfo_vrootheigth={ntb.winfo_vrootheight()}')
-                print(f'winfo_vrooty={ntb.winfo_vrooty()}')
-                print(f'winfo_height={ntb.winfo_height()}')
-                print(f'winfo_y={ntb.winfo_y()}')
-
+                # record relative position of the top left corner of the
+                # notebook to the top left corner of parent widget in pixels
+                if ntc > 1:
+                    pos = start_gap + (
+                        (ntc - 1) * nt_size) + (
+                        (ntc - 1) * between_gap) + (loc * loc_size)
+                else:
+                    pos = 0.0
 
                 mlogger.debug(
-                    f'CartView: searched order position={op}')
+                    f'CartView: selected record relative position: {pos}, '
+                    f'ntc={ntc}, loc={loc}')
 
-                if op >= 2:
-                    offset = ((op - 1) * res_unit_size) + (lc * loc_unit_size)
-
-                if offset > 1.0:
-                    offset = 1.0
-                mlogger.debug(
-                    f'CartView: new canvas position offset:{offset}, '
-                    f'jump to position {op}')
-
-                self.preview_base.yview_moveto(offset)
-
+            # take into account longer notebooks with more then
+            # 3 locations
             if len(values['grid']['locs']) > 3:
-                lc += 1
+                loc += len(values['grid']['locs']) - 3
 
+        # calculate offeset canvas should be moved to
+        offset = pos / ((ntc * nt_size) + (
+            ntc * between_gap) + (loc * loc_size) + start_gap)
+        mlogger.debug(
+            f'CartView: selected record offset: {offset}')
+        self.preview_base.update_idletasks()
+        self.preview_base.yview_moveto(offset)
 
     def search_widget(self):
         """ Widget to search carts"""
@@ -2358,6 +2390,10 @@ class CartView(Frame):
                 open_url(f'{url}{keyword}')
 
     def tabulate_cart_widget(self):
+        """
+        Displays a pop-up window with a quick breakdown of copies and
+        amounts per location
+        """
         CartSummary(self, **self.app_data)
 
     def template_observer(self, *args):
@@ -2484,7 +2520,7 @@ class CartView(Frame):
         self.preview_frame.bind("<Configure>", self._onFrameConfigure)
 
     def _onFrameConfigure(self, event):
-        self.preview_base.config(scrollregion=self.preview_base.bbox('all'))
+        self.preview_base.config(scrollregion=self.preview_frame.bbox('all'))
 
     def _redo_preview_frame(self):
         self.preview_frame.destroy()
