@@ -1664,21 +1664,40 @@ class CartView(Frame):
 
     def nav_end(self):
         self.cur_manager.busy()
-        if self.disp_end < len(self.order_ids):
+
+        # find last group (page)
+        if len(self.order_ids) > 30:
             self.save_cart()
-            self.disp_start = len(self.order_ids) - self.disp_number
-            if self.disp_start < 0:
-                self.disp_start = 0
-            self.disp_end = len(self.order_ids)
-            self.selected_order_ids = self.order_ids[-self.disp_number:]
-            # mlogger.debug(f'Nav previous: {self.disp_start}:{self.disp_end}')
-            # mlogger.debug(f'Selected order ids: {self.selected_order_ids}')
-            self.display_selected_orders(self.selected_order_ids)
+
+            total_orders = len(self.order_ids)
+
+            # determmine start and end for proper resource sequence labels
+            # and update display
+            leftover = total_orders % self.disp_number
+            if leftover:
+                mlogger.debug(
+                    'CartView: nav_end: selected order ids: '
+                    f'{self.order_ids[-leftover:]}')
+                self.disp_start = total_orders - leftover                
+            else:
+                mlogger.debug(
+                    'CartView: nav_end: selected order ids: '
+                    f'{self.order_ids[-self.disp_number:]}')
+                self.disp_start = total_orders - self.disp_number
+
+            self.disp_end = total_orders
+
+            mlogger.debug(
+                f'CartView: display order index: disp_start={self.disp_start}, '
+                f'disp_end={self.disp_end}')
+
+            self.display_selected_orders(self.order_ids[self.disp_start:self.disp_end])
             self.orders_displayed.set(
                 'records {}-{} out of {}'.format(
                     self.disp_start + 1,
                     self.disp_end,
-                    len(self.order_ids)))
+                    total_orders))
+
         self.cur_manager.notbusy()
 
     def nav_next(self):
@@ -2264,26 +2283,27 @@ class CartView(Frame):
             group = self.order_ids[start:end]
             if self.searched_order.get() in group:
                 self.selected_order_ids = group[:]
-                self.display_selected_orders(group)
                 searching = False
                 break
 
-            s += self.disp_number
-            e += self.disp_number
+            start += self.disp_number
+            end += self.disp_number
 
-            if e > len(self.order_ids):
-                e = len(self.order_ids)
+            if end > len(self.order_ids):
+                end = len(self.order_ids)
 
             if not group:
                 searching = False
                 break
 
-        self.disp_start = s
-        self.disp_end = e
+        self.disp_start = start
+        self.disp_end = end
+        # orders must be populated after correct disp_start & end are set
+        # to ensure correct numbering of each resource tab
+        self.display_selected_orders(group)
         self.orders_displayed.set(
             f'records {self.disp_start + 1}-{self.disp_end} out of '
             f'{len(self.order_ids)}')
-
 
         # not easily possible to calculate size of a stadard notebook with
         # less then 4 locations; for now hardcoded
