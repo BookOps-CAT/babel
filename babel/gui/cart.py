@@ -1520,6 +1520,8 @@ class CartView(Frame):
         if messagebox.askokcancel('Deletion', msg):
             order_id = self.tracker[ntb.winfo_id()]['order']['order_id']
 
+            
+
             delete_data_by_did(Order, order_id)
             self.tracker.pop(ntb.winfo_id(), None)
             self.order_ids.remove(order_id)
@@ -2356,7 +2358,7 @@ class CartView(Frame):
                 'any cart name edits or library assigment\n'
                 'before proceeding.')
         elif not has_library_assigned(self.cart_id.get()):
-            messagebox.showwargning(
+            messagebox.showwarning(
                 'Incomplete cart',
                 'Please assign a library and save your changes before\n'
                 'applying funds.')
