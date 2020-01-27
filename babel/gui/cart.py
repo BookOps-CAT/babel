@@ -1680,7 +1680,7 @@ class CartView(Frame):
                 mlogger.debug(
                     'CartView: nav_end: selected order ids: '
                     f'{self.order_ids[-leftover:]}')
-                self.disp_start = total_orders - leftover                
+                self.disp_start = total_orders - leftover
             else:
                 mlogger.debug(
                     'CartView: nav_end: selected order ids: '
@@ -1690,10 +1690,11 @@ class CartView(Frame):
             self.disp_end = total_orders
 
             mlogger.debug(
-                f'CartView: display order index: disp_start={self.disp_start}, '
-                f'disp_end={self.disp_end}')
+                'CartView: display order index: disp_start='
+                f'{self.disp_start}, disp_end={self.disp_end}')
 
-            self.display_selected_orders(self.order_ids[self.disp_start:self.disp_end])
+            self.display_selected_orders(
+                self.order_ids[self.disp_start:self.disp_end])
             self.orders_displayed.set(
                 'records {}-{} out of {}'.format(
                     self.disp_start + 1,
