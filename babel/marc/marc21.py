@@ -57,7 +57,7 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     else:
         order_code3 = 'f'
 
-    record.leader = '00000n%sm a2200000u  4500' % MARCmatType
+    record.leader = f'00000n{MARCmatType}m a2200000u  4500'
 
     # 001 field
     tags.append(Field(tag='001', data=order.wlo))
