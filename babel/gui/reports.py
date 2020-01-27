@@ -13,7 +13,7 @@ from data.transactions_reports import (get_fy_summary,
 from logging_settings import LogglyAdapter
 from gui.data_retriever import get_record
 from gui.utils import (BusyManager, ToolTip, enable_widgets, disable_widgets,
-                       get_ids_from_index)
+                       get_ids_from_index, open_url)
 from gui.fonts import RBFONT, RFONT
 from reports.reports import generate_fy_summary_by_user_chart
 
@@ -583,7 +583,8 @@ class ReportWizView(Frame):
             return report_data
 
     def help(self):
-        print('display online help here')
+        # link to Github wiki with documentation here
+        open_url('https://github.com/BookOps-CAT/babel/wiki/Reports')
 
     def system_observer(self, *args):
         if self.activeW.get() == 'ReportWizView':
