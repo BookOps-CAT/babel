@@ -12,7 +12,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
-from sqlalchemy.sql import text
+# from sqlalchemy.sql import text
 import shelve
 
 

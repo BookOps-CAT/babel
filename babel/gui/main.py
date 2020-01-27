@@ -11,7 +11,7 @@ from PIL import Image, ImageTk
 from data.datastore import User
 from gui.data_retriever import get_names, create_name_index
 from gui.home import HomeView
-from gui.reports import ReportView
+from gui.reports import ReportWizView
 from gui.tables import TableView
 from gui.funds import FundView
 from gui.grids import GridView
@@ -21,7 +21,7 @@ from gui.cart import CartView
 from gui.search import SearchView
 from gui.settings import SettingsView
 from gui.update import UpdateWidget
-from gui.utils import open_url
+from gui.utils import open_url, enable_widgets, disable_widgets
 from logging_settings import LogglyAdapter
 from paths import USER_DATA
 
@@ -115,7 +115,7 @@ class Base(Tk):
             command=lambda: self.show_frame('CartsView'))
         navig_menu.add_command(
             label='Reports',
-            command=None)
+            command=lambda: self.show_frame('ReportWizView'))
         navig_menu.add_command(
             label='Grids',
             command=lambda: self.show_frame('GridView'))
@@ -176,7 +176,7 @@ class Base(Tk):
         img = Image.open('./icons/Action-arrow-blue-double-down-iconS.png')
         copyImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-viewmag-iconM.png')
-        viewImg = ImageTk.PhotoImage(img)
+        viewImgM = ImageTk.PhotoImage(img)
         img = Image.open('./icons/Action-viewmag-iconS.png')
         viewImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-floppy-iconM.png')
@@ -223,6 +223,14 @@ class Base(Tk):
         linkImgS = ImageTk.PhotoImage(img)
         img = Image.open('./icons/App-calc-iconM.png')
         calcImgM = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-arrow-right-iconM.png')
+        runImgM = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-build-iconM.png')
+        downloadImgM = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/App-ksirtet-iconM.png')
+        gridImgM = ImageTk.PhotoImage(img)
+        img = Image.open('./icons/Action-run-iconM.png')
+        customImgM = ImageTk.PhotoImage(img)
 
         self.app_data = {
             'activeW': self.activeW,
@@ -230,6 +238,7 @@ class Base(Tk):
             'profile_idx': self.profile_idx,
             'system': self.system,
             'active_id': self.active_id,
+            'systemBtns': [bplBtn, nypBtn],
             'img': {
                 'add': addImg,
                 'addS': addImgS,
@@ -242,7 +251,7 @@ class Base(Tk):
                 'help': helpImg,
                 'copy': copyImg,
                 'copyS': copyImgS,
-                'view': viewImg,
+                'view': viewImgM,
                 'viewS': viewImgS,
                 'marc': marcImg,
                 'sheet': sheetImg,
@@ -262,11 +271,15 @@ class Base(Tk):
                 'removeS': removeImgS,
                 'valid': validationImg,
                 'fundM': fundImgM,
-                'calcM': calcImgM}}
+                'calcM': calcImgM,
+                'runM': runImgM,
+                'downloadM': downloadImgM,
+                'gridM': gridImgM,
+                'customM': customImgM}}
 
         # spawn Babel frames
         self.frames = {}
-        for F in (FundView, GridView, HomeView, ReportView, TableView,
+        for F in (FundView, GridView, HomeView, ReportWizView, TableView,
                   ImportView, CartsView, CartView, SettingsView):
             page_name = F.__name__
             frame = F(parent=container, controller=self,
@@ -315,6 +328,13 @@ class Base(Tk):
 
         self.activeW.set(page_name)
         mlogger.debug('show_frame activewW: {}'.format(self.activeW.get()))
+
+        # disable system switching when appropriate
+        if self.activeW.get() in [
+                'CartView', 'SettingsView']:
+            disable_widgets(self.app_data['systemBtns'])
+        else:
+            enable_widgets(self.app_data['systemBtns'])
 
         frame = self.frames[page_name]
         frame.tkraise()

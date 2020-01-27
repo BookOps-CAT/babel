@@ -14,7 +14,7 @@ from errors import BabelError
 BPL_SEARCH_URL = 'https://iii.brooklynpubliclibrary.org/search/i'
 NYPL_SEARCH_URL = 'https://catalog.nypl.org/search/i'
 
-TIME_OUT = 10  # seconds
+TIME_OUT = 15  # seconds
 
 
 mlogger = logging.getLogger('babel')

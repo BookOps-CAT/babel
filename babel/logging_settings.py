@@ -88,7 +88,8 @@ class LogglyAdapter(logging.LoggerAdapter):
         try:
             format_msg = '%s' % (
                 msg.replace('\\', '/').
-                replace('"', "'").
+                replace('"', "").
+                replace("'", "").
                 replace('\n', '\\n').
                 replace('\t', '\\t'))
         except AttributeError:

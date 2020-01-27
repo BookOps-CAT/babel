@@ -6,6 +6,9 @@ import hashlib
 import logging
 import sys
 
+from sqlalchemy import and_
+# from sqlalchemy.dialects import mysql
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import text
 
@@ -16,10 +19,10 @@ from data.datastore import (session_scope, Audn, Branch, Cart, DistSet,
                             DistGrid, Fund, GridLocation, Lang, MatType,
                             Order, OrderLocation, Resource, ShelfCode, Vendor,
                             Wlos)
-from data.datastore_worker import (count_records, insert_or_ignore, insert,
+from data.datastore_worker import (count_records, delete_record,
+                                   insert_or_ignore, insert,
                                    retrieve_last_record, retrieve_record,
-                                   retrieve_records, update_record,
-                                   retrieve_cart_details_view_stmn)
+                                   retrieve_records, update_record)
 from data.transactions_carts import get_cart_details_as_dataframe
 from data.wlo_generator import wlo_pool
 from gui.utils import get_id_from_index
@@ -28,6 +31,21 @@ from sierra_adapters.webpac_scraper import catalog_match
 
 
 mlogger = LogglyAdapter(logging.getLogger('babel'), None)
+
+
+def has_library_assigned(cart_id):
+    """
+    args:
+        cart_id: int, datastore Cart.did
+    returns:
+        boolean: True is library assigned, False if not
+    """
+    with session_scope() as session:
+        rec = retrieve_record(session, Cart, did=cart_id)
+        if rec.library_id:
+            return True
+        else:
+            return False
 
 
 def create_order_snapshot(order_tracker):
@@ -134,6 +152,126 @@ def save_new_dist_and_grid(
         raise BabelError(
             'Your new grid includes invalid values.\n'
             'Please make sure branch, shelf, and qty are valid.')
+
+
+@lru_cache(maxsize=24)
+def get_branch_code(session, branch_id):
+    rec = retrieve_record(
+        session, Branch,
+        did=branch_id)
+    return rec.code
+
+
+def get_cart_resources(cart_id):
+    """creates a list of resources to be displayed in ApplyGridsWidget"""
+
+    resources = []
+    with session_scope() as session:
+        records = retrieve_records(session, Order, cart_id=cart_id)
+        n = 0
+        for rec in records:
+            n += 1
+            price = f'{rec.resource.price_disc:,.2f}'
+            qty = 0
+            loc_ids = []
+            for loc in rec.locations:
+                qty += loc.qty
+                loc_ids.append(loc.branch_id)
+            locations = []
+            for loc_id in loc_ids:
+                branch_code = get_branch_code(session, loc_id)
+                locations.append(branch_code)
+            locations = ','.join(sorted(locations))
+
+            resources.append(
+                (rec.did, n, rec.resource.title, rec.resource.author,
+                 rec.resource.isbn, price, rec.comment, qty, locations))
+
+    return resources
+
+
+def apply_grid_to_selected_orders(order_ids, grid_id, append=False):
+    """
+    Datastore transaction that appends or replaces current
+    OrderLocation records
+    args:
+        order_ids: list, list of datastore order dids
+        grid_id: int, datastore DistGrid.did
+        append: boolean, True appends to existing locations,
+                         False replaces existing locations
+    """
+    with session_scope() as session:
+        # retrieve grid location data
+        grid_rec = retrieve_record(session, DistGrid, did=grid_id)
+
+        if append:
+            # add to existing locations
+            for oid in order_ids:
+                ord_rec = retrieve_record(session, Order, did=oid)
+
+                for gloc in grid_rec.gridlocations:
+                    # find duplicates and merge
+                    dup = False
+                    for oloc in ord_rec.locations:
+                        if oloc.branch_id == gloc.branch_id and \
+                                oloc.shelfcode_id == gloc.shelfcode_id:
+                            # add quantity to existing oloc
+                            dup = True
+                            mlogger.debug(
+                                'Updating existing '
+                                f'OrderLocation.did={oloc.did} '
+                                f'with new qty={oloc.qty + gloc.qty}')
+                            update_record(
+                                session, OrderLocation, oloc.did,
+                                order_id=oid,
+                                branch_id=oloc.branch_id,
+                                shelfcode_id=oloc.shelfcode_id,
+                                qty=oloc.qty + gloc.qty,
+                                fund_id=oloc.fund_id)
+                    if not dup:
+                        mlogger.debug(
+                            f'Inserting new OrderLocation for Order.did={oid} '
+                            f'based on DistGrid.did={gloc.did}')
+                        insert_or_ignore(
+                            session, OrderLocation,
+                            order_id=oid,
+                            branch_id=gloc.branch_id,
+                            shelfcode_id=gloc.shelfcode_id,
+                            qty=gloc.qty)
+        else:
+            # replace existing locations
+            for oid in order_ids:
+                # delete exiting locaations
+                loc_recs = retrieve_records(
+                    session, OrderLocation, order_id=oid)
+                for oloc in loc_recs:
+                    mlogger.debug(
+                        f'Deleting OrderLocation.did={oloc.did} '
+                        f'of order.did={oid}')
+                    delete_record(session, OrderLocation, did=oloc.did)
+
+                for gloc in grid_rec.gridlocations:
+                    mlogger.debug(
+                        f'Inserting new OrderLocation based on '
+                        f'DistGrid.did={gloc.did}')
+                    insert_or_ignore(
+                        session, OrderLocation,
+                        order_id=oid,
+                        branch_id=gloc.branch_id,
+                        shelfcode_id=gloc.shelfcode_id,
+                        qty=gloc.qty)
+
+
+def delete_locations_from_selected_orders(order_ids):
+    with session_scope() as session:
+        for oid in order_ids:
+            loc_recs = retrieve_records(
+                session, OrderLocation, order_id=oid)
+            for oloc in loc_recs:
+                mlogger.debug(
+                    f'Deleting OrderLocation.did={oloc.did} '
+                    f'of Order.did={oid}')
+                delete_record(session, OrderLocation, did=oloc.did)
 
 
 def get_last_cart():
@@ -255,7 +393,8 @@ def save_displayed_order_data(tracker_values):
                     if l['loc_id'] is not None:
                         lkwargs['did'] = l['loc_id']
                     if l['branchCbx'].get() != '':
-                        rec_id = get_branch_rec_id(session, l['branchCbx'].get())
+                        rec_id = get_branch_rec_id(
+                            session, l['branchCbx'].get())
                         lkwargs['branch_id'] = rec_id
                     if l['shelfCbx'].get() != '':
                         rec_id = get_shelf_rec_id(session, l['shelfCbx'].get())
@@ -650,6 +789,22 @@ def determine_needs_validation(cart_id):
             return True
 
 
+def add_resource(cart_id, **kwargs):
+    try:
+        with session_scope() as session:
+            orec = insert(
+                session, Order, cart_id=cart_id)
+            kwargs['order_id'] = orec.did
+            insert(session, Resource, **kwargs)
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error(
+            'Unhandled error on updating resource.'
+            f'Traceback: {tb}')
+        raise BabelError(exc)
+
+
 def update_resource(resource_id, **kwargs):
     try:
         with session_scope() as session:
@@ -771,3 +926,73 @@ def tabulate_funds(cart_id):
         update_record(session, Cart, did=cart_id, updated=datetime.now())
 
     return tally
+
+
+def search_cart(cart_id, keywords, keyword_type, search_type):
+    """ Searches given cart for resources matching user criteria
+        args:
+            cart_id: int, Cart.did
+            keywords: str, words to search
+            keyword_type: str, various columns to search
+            search_type: str, 'phrase' or 'keyword'
+        returns:
+            results: list of tuples, (oid, #, title, author, isbn)
+    """
+
+    with session_scope() as session:
+        recs = []
+
+        query = session.query(
+            Order.did,
+            Resource.title, Resource.author, Resource.isbn).join(
+                Order, Order.did == Resource.order_id).filter(
+                    Order.cart_id == cart_id).order_by(Order.did)
+
+        if keyword_type == 'isbn':
+            recs = query.filter(
+                Resource.isbn.ilike(f'%{keywords}%')).all()
+        if keyword_type == 'upc':
+            recs = query.filter(
+                Resource.upc.ilike(f'%{keywords}%')).all()
+        if keyword_type == 'other #':
+            recs = query.filter(
+                Resource.other_no.ilike(f'%{keywords}')).all()
+        if keyword_type == 'wlo #':
+            recs = query.filter(
+                Order.wlo.ilike(f'%{keywords}%')).all()
+        if keyword_type == 'order #':
+            recs = query.filter(
+                Order.oid.ilike(f'%{keywords}%')).all()
+        if keyword_type == 'bib #':
+            recs = query.filter(
+                Order.bid.ilike(f'%{keywords}%')).all()
+        if keyword_type == 'title':
+            if search_type == 'phrase':
+                query = query.filter(
+                    Resource.title.ilike(f'%{keywords}%'))
+                recs = query.all()
+            elif search_type == 'keyword':
+                keywords = keywords.split(' ')
+                for word in keywords:
+                    query = query.filter(
+                        Resource.title.ilike(f'%{word}%'))
+                recs = query.all()
+        if keyword_type == 'author':
+            if search_type == 'phrase':
+                recs = query.filter(
+                    Resource.author.ilike(f'%{keywords}%')).all()
+            elif search_type == 'keyword':
+                keywords = keywords.split(' ')
+                for word in keywords:
+                    query = query.filter(
+                        Resource.author.ilike(f'%{word}%'))
+                recs = query.all()
+
+        results = []
+        n = 0
+        for rec in recs:
+            n += 1
+            results.append(
+                (rec[0], n, rec[1], rec[2], rec[3]))
+
+        return results

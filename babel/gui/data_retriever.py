@@ -13,7 +13,7 @@ from sqlalchemy.inspection import inspect
 
 from data.datastore import session_scope
 from data.datastore_worker import (get_column_values, retrieve_record,
-                                   retrieve_records,
+                                   retrieve_records, retrieve_last_record,
                                    insert_or_ignore, delete_record,
                                    update_record,
                                    retrieve_cart_order_ids)
@@ -71,6 +71,16 @@ def get_record(model, **kwargs):
             pass
         finally:
             return instance
+
+
+def get_last_record(model, **kwargs):
+    with session_scope() as session:
+        instance = retrieve_last_record(
+            session,
+            model,
+            **kwargs)
+        session.expunge_all()
+        return instance
 
 
 def get_records(model, **kwargs):
@@ -148,6 +158,7 @@ def save_data(model, did=None, **kwargs):
 
 def delete_data(record):
     try:
+        # check if can be deteled without consequences first
 
         with session_scope() as session:
             model = type(record)

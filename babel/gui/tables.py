@@ -11,7 +11,7 @@ from errors import BabelError
 from gui.data_retriever import (get_names, get_record, save_data,
                                 delete_data)
 from gui.fonts import RFONT
-from gui.utils import disable_widgets, enable_widgets, open_url
+from gui.utils import (disable_widgets, enable_widgets, open_url, ToolTip)
 from logging_settings import LogglyAdapter
 from paths import USER_DATA
 
@@ -105,6 +105,7 @@ class TableView(Frame):
             command=self.add_data)
         self.addBtn.grid(
             row=1, column=5, sticky='sw', padx=20, pady=10)
+        self.createToolTip(self.addBtn, 'add new value')
 
         self.editBtn = Button(
             self,
@@ -112,6 +113,7 @@ class TableView(Frame):
             command=self.edit_data)
         self.editBtn.grid(
             row=2, column=5, sticky='sw', padx=20, pady=5)
+        self.createToolTip(self.editBtn, 'edit value')
 
         self.deleteBtn = Button(
             self,
@@ -119,6 +121,7 @@ class TableView(Frame):
             command=self.delete_data)
         self.deleteBtn.grid(
             row=3, column=5, sticky='sw', padx=20, pady=5)
+        self.createToolTip(self.deleteBtn, 'delete value')
 
         self.saveBtn = Button(
             self,
@@ -126,6 +129,7 @@ class TableView(Frame):
             command=self.insert_or_update_data)
         self.saveBtn.grid(
             row=4, column=5, sticky='sw', padx=20, pady=5)
+        self.createToolTip(self.saveBtn, 'save value')
 
         self.helpBtn = Button(
             self,
@@ -133,6 +137,7 @@ class TableView(Frame):
             command=self.help)
         self.helpBtn.grid(
             row=5, column=5, sticky='sw', padx=20, pady=5)
+        self.createToolTip(self.helpBtn, 'get help')
 
     def add_data(self):
         mlogger.debug('Add btn clicked.')
@@ -610,6 +615,18 @@ class TableView(Frame):
             values = get_names(model, **kwargs)
             for v in values:
                 self.detLst.insert(END, v)
+
+    def createToolTip(self, widget, text):
+        toolTip = ToolTip(widget)
+
+        def enter(event):
+            toolTip.showtip(text)
+
+        def leave(event):
+            toolTip.hidetip()
+
+        widget.bind('<Enter>', enter)
+        widget.bind('<Leave>', leave)
 
     def system_observer(self, *args):
         if self.activeW.get() == 'TableView':
