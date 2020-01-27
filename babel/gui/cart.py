@@ -133,7 +133,6 @@ class ApplyGridsWidget:
         # icons
         applyImg = self.app_data['img']['save']
         removeImg = self.app_data['img']['delete']
-        helpImg = self.app_data['img']['help']
 
         frm = Frame(self.top)
         frm.grid(
@@ -181,13 +180,14 @@ class ApplyGridsWidget:
         btnFrm = Frame(self.top)
         btnFrm.grid(
             row=0, column=1, rowspan=20, sticky='snew', pady=20)
+        btnFrm.rowconfigure(0, minsize=45)
 
         applyBtn = Button(
             btnFrm,
             image=applyImg,
             command=self.apply_distribution)
         applyBtn.grid(
-            row=0, column=0, sticky='sw', padx=5, pady=5)
+            row=1, column=0, sticky='sw', padx=5, pady=5)
         self._createToolTip(applyBtn, 'apply grid')
 
         removeBtn = Button(
@@ -195,16 +195,8 @@ class ApplyGridsWidget:
             image=removeImg,
             command=self.remove_distribution)
         removeBtn.grid(
-            row=1, column=0, sticky='sw', padx=5, pady=5)
-        self._createToolTip(removeBtn, 'remove grid')
-
-        helpBtn = Button(
-            btnFrm,
-            image=helpImg,
-            command=self.help)
-        helpBtn.grid(
             row=2, column=0, sticky='sw', padx=5, pady=5)
-        self._createToolTip(helpBtn, 'help')
+        self._createToolTip(removeBtn, 'remove grid')
 
         # grids frm
         gridFrm = Frame(self.top)
@@ -583,7 +575,9 @@ class CartView(Frame):
              'bidEnt': <tkinter.ttk.Entry object>,
              'wloEnt': <tkinter.ttk.Entry object>},
         'grid':
-            {'gridCbx': <tkinter.ttk.Combobox object>,
+            {'totalQtyLbl': <tkinter.ttk.StringVar object>,
+             'totalQty': int,
+             'gridCbx': <tkinter.ttk.Combobox object>,
              'locsFrm': <tkinter.ttk.Frame object>,
              'locs': [
                 {'loc_id': 82779, 'unitFrm': <tkinter.ttk.Frame object>,
@@ -1803,6 +1797,15 @@ class CartView(Frame):
         # copyBtn.image = self.copyImgS
 
         # grid labels
+        # grid totals
+        total_qty_lbl = StringVar()
+        total_qty = 0
+        totalQtyLbl = Label(
+            gridFrm,
+            font=LFONT,
+            textvariable=total_qty_lbl)
+        totalQtyLbl.grid(
+            row=1, column=4, columnspan=3, sticky='snw', padx=2)
         Label(gridFrm, text=' branch', font=LFONT).grid(
             row=1, column=0, sticky='se', padx=7)
         Label(gridFrm, text='shelf', font=LFONT).grid(
@@ -1835,6 +1838,7 @@ class CartView(Frame):
                 if loc.qty is None:
                     qty = ''
                 else:
+                    total_qty += loc.qty
                     qty = str(loc.qty)
                 try:
                     fund = self.fund_idx[loc.fund_id]
@@ -1851,6 +1855,7 @@ class CartView(Frame):
             grid_tracker = self.create_grid(locsFrm, 1)
             grids.append(grid_tracker)
 
+        total_qty_lbl.set(f'total qty:{total_qty}')
         grids_snapshot = create_grids_snapshot(grids)
 
         self.create_add_locationBtn(gridFrm)
@@ -1867,9 +1872,12 @@ class CartView(Frame):
             'more_res': more_tracker,
             'order': ord_tracker,
             'grid': {
+                'totalQtyLbl': total_qty_lbl,
+                'totalQty': total_qty,
                 'gridCbx': gridCbx,
                 'locsFrm': locsFrm,
-                'locs': grids
+                'locs': grids,
+                'total_qty': total_qty
             },
         }
 
@@ -2054,13 +2062,22 @@ class CartView(Frame):
         ntb_id = removeBtn.master.master.master.master.master.winfo_id()
         locs = self.tracker[ntb_id]['grid']['locs']
         n = 0
+        negative_qty = 0
         for l in locs:
             if l['removeBtn'] == removeBtn:
                 parent = l['unitFrm']
+                if l['qtyEnt'].get():
+                    negative_qty += int(l['qtyEnt'].get())
                 break
             n += 1
         locs.pop(n)
         self.tracker[ntb_id]['grid']['locs'] = locs
+
+        # update total order qty
+        new_qty = self.tracker[ntb_id]['grid']['totalQty'] - negative_qty
+        self.tracker[ntb_id]['grid']['totalQtyLbl'].set(
+            f'total qty:{new_qty}')
+        self.tracker[ntb_id]['grid']['totalQty'] = new_qty
         parent.destroy()
 
     def reset(self):
@@ -2123,7 +2140,12 @@ class CartView(Frame):
                         dict(
                             order=value['order'],
                             grid=value['grid']))
-
+                    new_qty = 0
+                    for l in value['grid']['locs']:
+                        new_qty += int(l['qtyEnt'].get())
+                    self.tracker[key]['grid']['totalQty'] = new_qty
+                    self.tracker[key]['grid']['totalQtyLbl'].set(
+                        f'total qty:{new_qty}')
             save_displayed_order_data(changed)
 
             # save cart data
