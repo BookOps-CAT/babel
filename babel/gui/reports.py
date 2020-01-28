@@ -66,13 +66,13 @@ class ReportView():
         self.report_base = Canvas(
             self.baseFrm,
             height=max_height,
-            width=1010,
+            width=1125,
             xscrollcommand=self.xscrollbar.set,
             yscrollcommand=self.yscrollbar.set)
         self.report_base.grid(
             row=2, column=1, columnspan=2, sticky='nwe')
 
-        self.preview()
+        self._preview()
 
         # populate report
         self.generate_report(report_data)
@@ -84,7 +84,7 @@ class ReportView():
         textWidget = Text(
             unit_frame,
             font=RFONT,
-            width=40,
+            width=45,
             height=height,
             wrap=NONE,
             background='SystemButtonFace',
@@ -100,11 +100,10 @@ class ReportView():
 
         return textWidget
 
-    def create_report_title(self, report_type, users_lbl,
-                            start_date, end_date):
-        """
-        Returns report title as string
-        """
+    def create_report_title(
+            self, report_type, users_lbl,
+            start_date, end_date):
+        """Returns report title as string"""
         if self.system_id:
             system = get_record(System, did=self.system_id).name
         else:
@@ -216,7 +215,10 @@ class ReportView():
         """Detailed breakdown by each category"""
 
         # left panel
-        leftColTxt = self.unitFrm(self.reportFrm, 40, 0, 0)
+        w_height = data['audns'].shape[0]
+        w_height += data['langs'].shape[0]
+        w_height += data['langs_audns'].shape[0] + 13
+        leftColTxt = self.unitFrm(self.reportFrm, w_height, 0, 0)
 
         # audience box
         leftColTxt.insert(END, 'audience\n', 'tag-header')
@@ -239,9 +241,11 @@ class ReportView():
         leftColTxt.insert(END, '\n\n')
 
         # center panel
-        centerColTxt = self.unitFrm(self.reportFrm, 40, 0, 1)
-
         # vendors
+        w_height = data['vendors'].shape[0]
+        w_height += data['funds'].shape[0] + 8
+        centerColTxt = self.unitFrm(self.reportFrm, w_height, 0, 1)
+
         centerColTxt.insert(END, 'vendors\n', 'tag-header')
         centerColTxt.insert(
             END, data['vendors'].to_string(
@@ -256,7 +260,9 @@ class ReportView():
         centerColTxt.insert(END, '\n\n')
 
         # right panel
-        rightColTxt = self.unitFrm(self.reportFrm, 40, 0, 2)
+        w_height = data['mattypes'].shape[0]
+        w_height += data['mattypes_langs'].shape[0] + 8
+        rightColTxt = self.unitFrm(self.reportFrm, w_height, 0, 2)
 
         # material types
         rightColTxt.insert(END, 'material types\n', 'tag-header')
@@ -330,7 +336,7 @@ class ReportView():
 
         return rows, cols, heights
 
-    def preview(self):
+    def _preview(self):
         self.reportFrm = Frame(
             self.report_base)
         self.xscrollbar.config(command=self.report_base.xview)
@@ -341,7 +347,7 @@ class ReportView():
         self.reportFrm.bind("<Configure>", self.onFrameConfigure)
 
     def onFrameConfigure(self, event):
-        self.report_base.config(scrollregion=self.report_base.bbox('all'))
+        self.report_base.config(scrollregion=self.reportFrm.bbox('all'))
 
 
 class ReportWizView(Frame):

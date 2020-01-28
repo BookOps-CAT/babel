@@ -7,10 +7,10 @@ from matplotlib.figure import Figure
 def generate_fy_summary_by_user_chart(user_data, language_data):
     # try refactoring it with one figure and two subplots
     f1 = Figure(
-        figsize=(6.3, 4), dpi=100, tight_layout=True,
+        figsize=(7.3, 4), dpi=100, tight_layout=True,
         frameon=False)
     f2 = Figure(
-        figsize=(6.3, 4), dpi=100, tight_layout=True,
+        figsize=(7.3, 4), dpi=100, tight_layout=True,
         frameon=False)
     a = f1.add_subplot(111)
     b = f2.add_subplot(111)
@@ -73,7 +73,8 @@ def generate_fy_summary_for_display(df):
     # languages
     langs = []
     lang_time = dict()
-    for k, d in fdf.groupby('lang_name'):
+    for k, d in fdf.groupby('lang_code'):
+        print(f'language={k}')
         amount = (d['qty'] * d['price']).sum()
         langs.append(Series(dict(
             lang=k,
@@ -85,7 +86,7 @@ def generate_fy_summary_for_display(df):
             m_amount = (md['price'] * md['qty']).sum()
             pos = m.month
             if pos <= 6:
-                y[pos + 7] = m_amount
+                y[pos + 5] = m_amount
             else:
                 y[pos - 7] = m_amount
         lang_time[k] = y
@@ -129,7 +130,7 @@ def generate_fy_summary_for_display(df):
             amount = (md['price'] * md['qty']).sum()
             pos = m.month
             if pos <= 6:
-                y[pos + 7] = amount
+                y[pos + 5] = amount
             else:
                 y[pos - 7] = amount
         users[k] = y
