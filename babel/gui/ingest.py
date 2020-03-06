@@ -79,7 +79,7 @@ class ImportView(Frame):
         # validation of column comboboxes
         self.vlcl = (self.register(self.onValidateCol),
                      '%d', '%i', '%P', '%W')
-        self.vlen = (self.register(self.onValidateName),
+        self.vlen = (self.register(self.onValidateSheetName),
                      '%P')
         self.vlcn = (self.register(self.onValidateCartName),
                      '%P')
@@ -778,14 +778,16 @@ class ImportView(Frame):
             valid = False
         return valid
 
-    def onValidateName(self, P):
+    def onValidateSheetName(self, P):
         valid = True
-        if len(P) > 75:
+        if len(P) > 50:
             valid = False
         return valid
 
     def onValidateCartName(self, P):
-        valid = self.onValidateName(P)
+        valid = True
+        if len(P) > 75:
+            valid = False
         if ('(' in P or ')' in P):
             valid = False
         return valid
