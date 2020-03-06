@@ -137,7 +137,10 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
                     if shelf_with_audn:
                         loc_str = f'{branch}{order.audn}{shelfcode}/{loc.qty}'
                     else:
-                        loc_str = f'{branch}{shelfcode}/{loc.qty}'
+                        if shelfcode is None:
+                            loc_str = f'{branch}/{loc.qty}'
+                        else:
+                            loc_str = f'{branch}{shelfcode}/{loc.qty}'
                     locs.append(loc_str)
 
                     fund_str = f'{fund}/{loc.qty}'
