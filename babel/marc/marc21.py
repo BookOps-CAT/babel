@@ -172,7 +172,6 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     if oclc_code == 'BKL':
         # subfield_A = ['a', BPL_ORDERS['acqType']]  # set by load table
         subfield_C = ['c', selector_code]
-        subfield_D = ['d', order.audn]
         subfield_M = ['m', BPL_ORDERS['status']]
         subfield_N = ['n', BPL_ORDERS['tloc']]
         subfield_Z = ['z', BPL_ORDERS['currency']]
@@ -182,15 +181,15 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
         # subfield_A = ['a', NYPL_ORDERS['acqType']]  # set by load table
         subfield_D = ['d', library_code]
         subfield_E = ['e', order_code3]
-        subfield_F = ['f', order.audn]
         subfield_M = ['m', NYPL_ORDERS['status']]
         subfield_N = ['n', NYPL_ORDERS['tloc']]
         subfield_Y = ['y', NYPL_ORDERS['volumes']]
         subfield_Z = ['z', NYPL_ORDERS['currency']]
+        subfields.extend(subfield_D)
         subfields.extend(subfield_E)
-        subfields.extend(subfield_F)
         subfields.extend(subfield_Y)
 
+    subfield_F = ['f', order.audn]
     subfield_G = ['g', order.mat_ord]
     subfield_O = ['o', order.copies]
     subfield_Q = ['q', order.order_date]
@@ -200,7 +199,7 @@ def make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order):
     subfield_V = ['v', order.vendor]
     subfield_W = ['w', order.lang]
 
-    subfields.extend(subfield_D)
+    subfields.extend(subfield_F)
     subfields.extend(subfield_G)
     subfields.extend(subfield_M)
     subfields.extend(subfield_N)

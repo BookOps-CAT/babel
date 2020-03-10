@@ -1514,8 +1514,6 @@ class CartView(Frame):
         if messagebox.askokcancel('Deletion', msg):
             order_id = self.tracker[ntb.winfo_id()]['order']['order_id']
 
-            
-
             delete_data_by_did(Order, order_id)
             self.tracker.pop(ntb.winfo_id(), None)
             self.order_ids.remove(order_id)
