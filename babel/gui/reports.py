@@ -243,7 +243,8 @@ class ReportView():
         # center panel
         # vendors
         w_height = data['vendors'].shape[0]
-        w_height += data['funds'].shape[0] + 8
+        w_height += data['funds_langs'].shape[0]
+        w_height += data['funds'].shape[0] + 13
         centerColTxt = self.unitFrm(self.reportFrm, w_height, 0, 1)
 
         centerColTxt.insert(END, 'vendors\n', 'tag-header')
@@ -256,6 +257,13 @@ class ReportView():
         centerColTxt.insert(END, 'funds\n', 'tag-header')
         centerColTxt.insert(
             END, data['funds'].to_string(
+                index=False, justify='right'), 'tag-right')
+        centerColTxt.insert(END, '\n\n')
+
+        # funds and languages
+        centerColTxt.insert(END, 'funds and languages\n', 'tag-header')
+        centerColTxt.insert(
+            END, data['funds_langs'].to_string(
                 index=False, justify='right'), 'tag-right')
         centerColTxt.insert(END, '\n\n')
 

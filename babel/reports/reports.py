@@ -74,7 +74,6 @@ def generate_fy_summary_for_display(df):
     langs = []
     lang_time = dict()
     for k, d in fdf.groupby('lang_code'):
-        print(f'language={k}')
         amount = (d['qty'] * d['price']).sum()
         langs.append(Series(dict(
             lang=k,
@@ -217,6 +216,7 @@ def generate_detailed_breakdown(df, start_date, end_date):
 
     # funds
     funds = []
+    funds_langs = []
     for k, d in fdf.groupby('fund'):
         orders_qty = d['order_id'].nunique()
         copies_qty = d['qty'].sum()
@@ -227,7 +227,16 @@ def generate_detailed_breakdown(df, start_date, end_date):
             copies=copies_qty,
             amount=f'${amount:,.2f}')))
 
+        # breakdown by language
+        for lk, ld in d.groupby('lang_name'):
+            amount = (ld['price'] * ld['qty']).sum()
+            funds_langs.append(Series(dict(
+                fund=k,
+                lang=lk,
+                amount=f'${amount:,.2f}')))
+
     data['funds'] = DataFrame(funds)
+    data['funds_langs'] = DataFrame(funds_langs)
 
     # material types
     mattypes = []
