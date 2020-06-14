@@ -14,4 +14,5 @@ def mock_mac(monkeypatch):
 def mock_windows(monkeypatch):
     monkeypatch.setattr(os, "name", "nt")
     monkeypatch.setenv("USERNAME", "testuser")
-    monkeypatch.setenv("LOCALAPPDATA", "C:/Users/testuser/AppData/Local")
+    monkeypatch.setenv("LOCALAPPDATA", "C:\\Users\\testuser\\AppData\\Local")
+    monkeypatch.setenv("USERPROFILE", "C:\\Users\\testuser")
