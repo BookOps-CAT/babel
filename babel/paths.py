@@ -13,7 +13,6 @@ if os.name == "nt":
 
 # Mac
 elif os.name == "posix":
-    print(os.environ)
     USER_NAME = os.environ["USER"]
     APP_DIR = os.path.join(os.environ["HOME"], "Applications/Babel")
     APP_DATA_DIR = os.path.join(os.environ["HOME"], "AppData/Babel")
@@ -21,6 +20,3 @@ elif os.name == "posix":
     PROD_LOG_PATH = os.path.join(APP_DATA_DIR, "log/babellog.out")
     MY_DOCS = os.path.join(os.environ["HOME"], "Documents")
     USER_DATA = os.path.join(APP_DATA_DIR, "user_data")
-
-if __name__ == "__main__":
-    pass
