@@ -27,7 +27,9 @@ def save2marc(outfile, bib):
         writer = MARCWriter(open(outfile, 'ab'))
         writer.write(bib)
     except WindowsError:
-        raise WindowsError
+        raise
+    except OSError:
+        raise
     finally:
         writer.close()
 

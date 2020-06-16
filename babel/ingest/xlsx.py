@@ -321,6 +321,8 @@ def save2spreadsheet(fh, saving_status, system, data):
 
     except WindowsError as e:
         raise BabelError(e)
+    except OSError as e:
+        raise BabelError(e)
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()

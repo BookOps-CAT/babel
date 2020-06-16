@@ -70,6 +70,9 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
             except WindowsError as e:
                 raise BabelError(
                     f'File in use. Error: {e}')
+            except OSError as e:
+                raise BabelError(
+                    f"file in use. Error: {e}")
 
         with session_scope() as session:
             rec_count = count_records(session, Order, cart_id=cart_rec.did)

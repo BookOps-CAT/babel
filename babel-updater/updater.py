@@ -78,6 +78,9 @@ def run_update(src_directory, dst_directory):
                 except WindowsError:
                     untouchables.append(f)
                     ulogger.debug(f'WindowsError on {f}')
+                except OSError:
+                    untouchables.append(f)
+                    ulogger.debug(f"OSError on {f}")
             else:
                 print('Unrecognized entry: {}'.format(
                     os.path.join(dst_directory, f)))
