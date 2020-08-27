@@ -21,7 +21,7 @@ from paths import USER_DATA
 
 # set up application logger
 logging.config.dictConfig(PROD_LOGGING)
-logger = logging.getLogger('babel')
+logger = logging.getLogger("babel")
 
 # set the backend for credentials
 keyring.set_keyring(WinVaultKeyring())
@@ -29,7 +29,7 @@ keyring.set_keyring(WinVaultKeyring())
 user_data = shelve.open(USER_DATA)
 # determine if babelstore is connected and if not
 # launch setup
-if 'db_config' in user_data:
+if "db_config" in user_data:
     datastore_linked = True
 else:
     datastore_linked = False
@@ -39,10 +39,14 @@ if datastore_linked:
     local_version = determine_version(os.getcwd())
     app = Base()
     s = Style()
-    s.theme_use('xpnative')
-    s.configure('.', font=('device', 12))
-    app.iconbitmap('./icons/babel2.ico')
-    app.title('Babel v.{}'.format(local_version))
+    if os.name == "nt":
+        s.theme_use("xpnative")
+    elif os.name == "posix":
+        # s.theme_use("aqua")
+        pass
+    s.configure(".", font=("device", 12))
+    app.iconbitmap("./icons/babel2.ico")
+    app.title("Babel v.{}".format(local_version))
     app.mainloop()
 else:
     # widget displaying error msg?
