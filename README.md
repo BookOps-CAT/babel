@@ -49,6 +49,7 @@ Icons by
 * [Daniele De Santis](https://www.danieledesantis.net/) used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
 * [Icon Archive](http://www.iconarchive.com) used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
 * [Christopher Downer](http://christopherdowner.com/) used under [CC0 - Public Domain](https://creativecommons.org/publicdomain/zero/1.0/)
+* [Simiographics](https://www.iconarchive.com/artist/simiographics.html) used under [CC0 - Public Domain](https://creativecommons.org/publicdomain/zero/1.0/)
 
 ## Presentations
 
