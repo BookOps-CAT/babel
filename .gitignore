@@ -108,3 +108,5 @@ babel/temp.py
 work_notes.txt
 migration/
 babel-migration
+creds.json()
+creds.bin
