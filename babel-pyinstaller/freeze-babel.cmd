@@ -7,5 +7,6 @@ pyinstaller --clean --windowed ^
     --icon=".\icons\babel2.ico" ^
     --add-data="./icons;icons" ^
     --add-data="version.txt;." ^
+    --add-data="creds.bin;." ^
     --version-file=win_info.txt ^
     babel.py
