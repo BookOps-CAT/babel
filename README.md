@@ -1,4 +1,4 @@
-# Babel 2
+# Babel
 Is an Enhanced crosswalk to map data from a vendor spreadsheet to MARC21 format for Sierra ILS order records for the BookOps-NYPL and BPL technical services organization.
 Babel 2 is a complete rewrite of the previous Babel app. It is written in Python 3, and is still being actively developed.
 Some of the features are missing even though the interface suggest their presence. In coming weeks we are planning to tackle them one by one.
@@ -36,11 +36,11 @@ create_datastore(
 6. Test if executable file launches correctly
 7. Run freeze-babel.cmd shell scripts from the main babel folder
 8. Copy created updater.exe to distr directory of babel proper
-9. Zip dist folder and drop in appropriate locations on the shared drive (copy version.txt and put it along side zipped file)
-10. Run Babel Windows installer
-11. Add MySQL creds during installation
-12. Create desktop shortcut for babel.exe
-11. Launch babel to verify all is fine
+9. Encrypt MySQL creds using `credentials.enctrypt_file_data` and copy to distr directory
+11. Run Babel Windows installer
+12. Decrypt MySQL creds during installation
+13. Create desktop shortcut for babel.exe
+14. Launch babel to verify all is fine
 
 ## Icon Credits
 Icons by
