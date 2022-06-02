@@ -111,3 +111,4 @@ babel-migration
 creds.json()
 creds.bin
 temp.py
+venvcmd.sh
