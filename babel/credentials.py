@@ -4,6 +4,7 @@ Windows Credential Manager and managing their retrieval
 """
 import binascii
 import os.path
+import json
 import shelve
 from typing import Union
 
@@ -37,9 +38,9 @@ def encrypt_file_data(key: bytes, src_fh: str, dst_fh: str) -> None:
         dst.write(encrypted_data)
 
 
-def decrypt_file_data(key: Union[str, bytes], fh: str) -> bytes:
+def decrypt_file_data(key: Union[str, bytes], fh: str) -> dict:
     """
-    Decrypts encoded data in a file.
+    Decrypts encoded data in a JSON file.
 
     Args:
         key:            a secret key as bytes
@@ -53,12 +54,15 @@ def decrypt_file_data(key: Union[str, bytes], fh: str) -> bytes:
         with open(fh, "rb") as src:
             data = src.read()
             decrypted_data = f.decrypt(data)
+            structured_data = json.loads(decrypted_data)
 
-        return decrypted_data
+        return structured_data
     except FileNotFoundError:
-        raise BabelError("Unable to locate 'creds.bin' file.")
+        raise BabelError("Unable to locate a file for decoding.")
     except (binascii.Error, InvalidToken):
         raise BabelError("Invalid secret key provided.")
+    except json.decoder.JSONDecodeError:
+        raise BabelError("Decoded file has invalid format. Should be a JSON file.")
 
 
 def generate_key() -> bytes:

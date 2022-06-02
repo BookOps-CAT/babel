@@ -1,3 +1,4 @@
+import json
 import os
 
 from cryptography.fernet import Fernet
@@ -45,9 +46,24 @@ def test_decrypt_file_data(tmpdir):
     f = Fernet(key)
     fh = os.path.join(tmpdir, "src.bin")
     with open(fh, "wb") as src:
+        data_dict = {"foo": "spam"}
+        data = json.dumps(data_dict).encode("utf-8")
+        src.write(f.encrypt(data))
+
+    assert decrypt_file_data(key, fh) == {"foo": "spam"}
+
+
+def test_decrypt_file_data_invalid_format(tmpdir):
+    key = Fernet.generate_key()
+    f = Fernet(key)
+    fh = os.path.join(tmpdir, "src.bin")
+    with open(fh, "wb") as src:
         src.write(f.encrypt(b"spam"))
 
-    assert decrypt_file_data(key, fh) == b"spam"
+    with pytest.raises(BabelError) as exc:
+        decrypt_file_data(key, fh)
+
+    assert "Decoded file has invalid format. Should be a JSON file." in str(exc.value)
 
 
 def test_decrypt_file_data_file_not_found():
@@ -57,7 +73,7 @@ def test_decrypt_file_data_file_not_found():
     with pytest.raises(BabelError) as exc:
         decrypt_file_data(key, fh)
 
-    assert "Unable to locate 'creds.bin' file." in str(exc.value)
+    assert "Unable to locate a file for decoding." in str(exc.value)
 
 
 @pytest.mark.parametrize("arg", ["foo", "JPJxKI-lCp9NVkm4NyhZGyBDnGakjsIFv9E1z0X-8s4="])
