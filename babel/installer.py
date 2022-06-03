@@ -35,8 +35,8 @@ handler.setFormatter(formatter)
 ilogger.addHandler(handler)
 
 
-def has_db_config_in_user_data(user_data):
-    if "db_config" in user_data:
+def has_creds_config_in_user_data(user_data):
+    if "babel" in user_data and user_data["babel"]:
         return True
     else:
         return False
@@ -58,19 +58,15 @@ def is_configured():
     Determines if all requried components and credentials
     are present
     """
-
-    has_data_file = has_user_data_file()
-    ilogger.debug(f"Init: found data file: {has_data_file}")
+    has_data_file = has_data_file()
+    ilogger.debug(f"Init: user data file located: {has_data_file}")
 
     if has_data_file:
         user_data = shelve.open(USER_DATA)
-
-        has_db_config = has_db_config_in_user_data(user_data)
+        has_db_config = has_creds_config_in_user_data(user_data)
         ilogger.debug(f"Init: found database config data: {has_db_config}")
         try:
-            has_creds = has_creds_in_vault(
-                user_data["db_config"]["db_name"], user_data["db_config"]["user"]
-            )
+            has_creds = has_creds_in_vault("babelprod", user_data["babelprod"])
             ilogger.debug(f"Init: has credential stored in vault: {has_creds}")
         except KeyError:
             ilogger.error(f"Init: Malformed db_config in user_data.")
