@@ -108,7 +108,7 @@ babel/temp.py
 work_notes.txt
 migration/
 babel-migration
-creds.json()
+creds.json
 creds.bin
 temp.py
 venvcmd.sh
