@@ -531,6 +531,7 @@ def create_datastore(db_name=None, user=None, password=None, host=None, port=Non
     try:
         engine.execute("DROP DATABASE %s;" % db_name)
     except:
+        print("Unable to drop database.")
         pass
 
     engine.execute("CREATE DATABASE IF NOT EXISTS %s" % db_name)
@@ -601,7 +602,7 @@ def create_datastore(db_name=None, user=None, password=None, host=None, port=Non
                resource.price_disc as price,
                orderlocation.qty as qty, fund.code as fund,
                lang.name as lang, audn.name as audn,
-               vendor.name as vendor, matType.name as mattype,
+               vendor.name as vendor, mattype.name as mattype,
                branch.code as branch
         FROM cart
             JOIN `order` ON cart.did = `order`.cart_id
@@ -620,7 +621,7 @@ def create_datastore(db_name=None, user=None, password=None, host=None, port=Non
 
     print("inserting first wlo number")
     wlos = insert_or_ignore(
-        session, Wlos, did="wlo0000059511", timestamp=datetime.now()
+        session, Wlos, did="wlo0000059510", timestamp=datetime.now()
     )
     print(f"{wlos} inserted")
     session.commit()
