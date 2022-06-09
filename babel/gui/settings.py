@@ -33,11 +33,11 @@ class SettingsView(Frame):
         # local variables
         self.dialect = StringVar()
         self.driver = StringVar()
-        self.host = StringVar()
-        self.port = StringVar()
+        self.db_host = StringVar()
+        self.db_port = StringVar()
         self.db_name = StringVar()
-        self.user = StringVar()
-        self.passw = StringVar()
+        self.db_user = StringVar()
+        self.db_passw = StringVar()
         self.chr_enc = StringVar()
 
         # icons
@@ -60,13 +60,17 @@ class SettingsView(Frame):
         #     row=0, column=0, sticky='sw', padx=10, pady=5)
         # self.createToolTip(self.credsBtn, 'auto credentials')
 
-        self.editBtn = Button(self.mainFrm, image=editImg, command=self.edit_access)
-        self.editBtn.grid(row=1, column=0, sticky="sw", padx=10, pady=5)
-        self.createToolTip(self.editBtn, "edit database accesss")
+        self.editDbBtn = Button(
+            self.mainFrm, image=editImg, command=self.edit_db_access
+        )
+        self.editDbBtn.grid(row=1, column=0, sticky="sw", padx=10, pady=5)
+        self.createToolTip(self.editDbBtn, "edit database accesss")
 
-        self.saveBtn = Button(self.mainFrm, image=saveImg, command=self.save_access)
-        self.saveBtn.grid(row=2, column=0, sticky="sw", padx=10, pady=5)
-        self.createToolTip(self.saveBtn, "save changes")
+        self.saveDbBtn = Button(
+            self.mainFrm, image=saveImg, command=self.save_db_access
+        )
+        self.saveDbBtn.grid(row=2, column=0, sticky="sw", padx=10, pady=5)
+        self.createToolTip(self.saveDbBtn, "save changes")
 
         self.helpBtn = Button(self.mainFrm, image=helpImg, command=self.help)
         self.helpBtn.grid(row=3, column=0, sticky="sw", padx=10, pady=5)
@@ -92,14 +96,14 @@ class SettingsView(Frame):
         Label(self.detFrm, text="host:").grid(
             row=2, column=0, sticky="snw", padx=10, pady=4
         )
-        self.hostEnt = Entry(self.detFrm, font=RFONT, textvariable=self.host)
-        self.hostEnt.grid(row=2, column=1, sticky="snew", padx=10, pady=4)
+        self.db_hostEnt = Entry(self.detFrm, font=RFONT, textvariable=self.db_host)
+        self.db_hostEnt.grid(row=2, column=1, sticky="snew", padx=10, pady=4)
 
         Label(self.detFrm, text="port:").grid(
             row=3, column=0, sticky="snw", padx=10, pady=4
         )
-        self.portEnt = Entry(self.detFrm, font=RFONT, textvariable=self.port)
-        self.portEnt.grid(row=3, column=1, sticky="snew", padx=10, pady=4)
+        self.db_portEnt = Entry(self.detFrm, font=RFONT, textvariable=self.db_port)
+        self.db_portEnt.grid(row=3, column=1, sticky="snew", padx=10, pady=4)
 
         Label(self.detFrm, text="db name:").grid(
             row=4, column=0, sticky="snw", padx=10, pady=4
@@ -110,16 +114,16 @@ class SettingsView(Frame):
         Label(self.detFrm, text="user:").grid(
             row=5, column=0, sticky="snw", padx=10, pady=4
         )
-        self.userEnt = Entry(self.detFrm, font=RFONT, textvariable=self.user)
-        self.userEnt.grid(row=5, column=1, sticky="snew", padx=10, pady=4)
+        self.db_userEnt = Entry(self.detFrm, font=RFONT, textvariable=self.db_user)
+        self.db_userEnt.grid(row=5, column=1, sticky="snew", padx=10, pady=4)
 
         Label(self.detFrm, text="password:").grid(
             row=6, column=0, sticky="snw", padx=10, pady=4
         )
-        self.passwEnt = Entry(
-            self.detFrm, font=RFONT, show="*", textvariable=self.passw
+        self.db_passwEnt = Entry(
+            self.detFrm, font=RFONT, show="*", textvariable=self.db_passw
         )
-        self.passwEnt.grid(row=6, column=1, sticky="snew", padx=10, pady=4)
+        self.db_passwEnt.grid(row=6, column=1, sticky="snew", padx=10, pady=4)
 
         Label(self.detFrm, text="encoding:").grid(
             row=7, column=0, sticky="snw", padx=10, pady=4
@@ -127,34 +131,34 @@ class SettingsView(Frame):
         self.chrencCbx = Combobox(self.detFrm, font=RFONT, textvariable=self.chr_enc)
         self.chrencCbx.grid(row=7, column=1, sticky="snew", padx=10, pady=4)
 
-    def edit_access(self):
-        self.hostEnt["state"] = "!disable"
-        self.portEnt["state"] = "!disable"
+    def edit_db_access(self):
+        self.db_hostEnt["state"] = "!disable"
+        self.db_portEnt["state"] = "!disable"
         self.dbnameEnt["state"] = "!disable"
-        self.userEnt["state"] = "!disable"
-        self.passwEnt["state"] = "!disable"
-        self.passw.set("")
+        self.db_userEnt["state"] = "!disable"
+        self.db_passwEnt["state"] = "!disable"
+        self.db_passw.set("")
 
-    def save_access(self):
+    def save_db_access(self):
         missing = []
         if not self.db_name.get().strip():
             missing.append("db name")
-        if not self.user.get().strip():
+        if not self.db_user.get().strip():
             missing.append("user")
-        if not self.passw.get().strip():
+        if not self.db_passw.get().strip():
             missing.append("password")
-        if not self.host.get().strip():
+        if not self.db_host.get().strip():
             missing.append("host")
-        if not self.port.get().strip():
+        if not self.db_port.get().strip():
             missing.append("port")
 
         if not missing:
             user_data = shelve.open(USER_DATA)
             db_config = dict(
-                db_name=self.db_name.get().strip(),
-                user=self.user.get().strip(),
-                host=self.host.get().strip(),
-                port=self.port.get().strip(),
+                DB_NAME=self.db_name.get().strip(),
+                DB_USER=self.db_user.get().strip(),
+                DB_HOST=self.db_host.get().strip(),
+                DB_PORT=self.db_port.get().strip(),
             )
             user_data["db_config"] = db_config
             user_data.close()
@@ -162,9 +166,9 @@ class SettingsView(Frame):
             # save password
             try:
                 store_in_vault(
-                    self.db_name.get().strip(),
-                    self.user.get().strip(),
-                    self.passw.get().strip(),
+                    "babel_db",
+                    self.db_user.get().strip(),
+                    self.db_passw.get().strip(),
                 )
             except BabelError as e:
                 mlogger.error(f"DB store_in_vault error. Error: {e}")
@@ -188,12 +192,12 @@ class SettingsView(Frame):
             user_data = shelve.open(USER_DATA)
             db_config = user_data["db_config"]
             self.db_name.set(db_config["DB_NAME"])
-            self.user.set(db_config["DB_USER"])
-            self.host.set(db_config["DB_HOST"])
-            self.port.set(db_config["DB_PORT"])
+            self.db_user.set(db_config["DB_USER"])
+            self.db_host.set(db_config["DB_HOST"])
+            self.db_port.set(db_config["DB_PORT"])
             user_data.close()
 
-            self.passw.set("dummy passw")
+            self.db_passw.set("dummy passw")
 
             disable_widgets(self.detFrm.winfo_children())
 
