@@ -79,6 +79,7 @@ def is_configured():
             )
             ilogger.debug(f"Init: has credential stored in vault: {has_creds}")
         except KeyError:
+            has_creds = False
             ilogger.error(f"Init: Malformed db_config in user_data.")
 
         user_data.close()
