@@ -264,7 +264,7 @@ class SettingsView(Frame):
             )
 
     def help(self):
-        pass
+        open_url("https://github.com/BookOps-CAT/babel/wiki/Settings")
 
     def observer(self, *args):
         if self.activeW.get() == "SettingsView":
