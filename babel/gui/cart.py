@@ -58,9 +58,7 @@ from gui.utils import ToolTip, BusyManager, get_id_from_index, open_url
 from gui.edit_resource import EditResourceWidget
 from logging_settings import LogglyAdapter
 from reports.cart import tabulate_cart_data
-
-# from sierra_adapters.webpac_scraper import BPL_SEARCH_URL, NYPL_SEARCH_URL
-
+from sierra_adapters.middleware import *
 
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
 
@@ -1462,28 +1460,15 @@ class CartView(Frame):
         top = Toplevel(self)
         top.title("Duplicates search")
 
-        status = StringVar()
-        status.set("Click check button to begin.")
-
         frm = Frame(top)
         frm.grid(row=0, column=0, sticky="snew", padx=10, pady=10)
         frm.columnconfigure(0, minsize=120)
         frm.columnconfigure(1, minsize=120)
 
-        statusLbl = Label(frm, textvariable=status)
-        statusLbl.grid(row=0, column=0, columnspan=2, sticky="snew", padx=5, pady=5)
         progbar = Progressbar(frm, mode="determinate", orient=HORIZONTAL)
         progbar.grid(row=1, column=0, columnspan=2, sticky="snew", pady=5)
 
-        startBtn = Button(
-            frm,
-            image=self.saveImg,
-            command=lambda: self.run_duplicate_search(top, progbar, status),
-        )
-        startBtn.grid(row=2, column=0, sticky="sne", padx=10, pady=10)
-
-        cancelBtn = Button(frm, image=self.deleteImg, command=top.destroy)
-        cancelBtn.grid(row=2, column=1, sticky="snw", padx=10, pady=10)
+        self.run_duplicate_search(top, progbar)
 
     def help(self):
         # link to Github wiki with documentation here
@@ -1948,16 +1933,17 @@ class CartView(Frame):
         self.discountChb_var.set(0)
         self.funds_tally.set("")
 
-    def run_duplicate_search(self, top, progbar, status_var):
+    def run_duplicate_search(self, top, progbar):
         self.cur_manager.busy()
         try:
-            find_matches(self.cart_id.get(), progbar, status_var)
+            find_matches(self.cart_id.get(), progbar)
             self.cur_manager.notbusy()
         except BabelError as e:
             self.cur_manager.notbusy()
-            messagebox.showerror("Web scraping error", e, parent=top)
+            messagebox.showerror("Middleware error.", e, parent=top)
         finally:
             # update display
+            top.destroy()
             self.display_selected_orders(self.selected_order_ids)
 
     def save_cart(self):
