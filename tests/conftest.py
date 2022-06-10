@@ -1,6 +1,3 @@
-import os
-import shelve
-
 import pytest
 
 import keyring
@@ -26,3 +23,15 @@ def mock_no_vault(monkeypatch):
         return None
 
     monkeypatch.setattr("keyring.get_password", _patch)
+
+
+@pytest.fixture
+def mock_user_data(monkeypatch, tmpdir):
+    def _patch(*args, **kwargs):
+        user_data_fh = os.path.join(tmpdir, "user_data")
+        user_data = shelve.open()
+
+        user_data.close()
+        return user_data_fh
+
+    monkeypatch.setattr("babel.paths.get_user_data_handle", _patch)
