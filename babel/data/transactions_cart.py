@@ -419,11 +419,8 @@ def determine_needs_validation(cart_id):
             return True
 
 
-def find_matches(cart_id, progbar=None, status_var=None):
+def find_matches(cart_id, progbar=None):
     with session_scope() as session:
-
-        if status_var:
-            status_var.set("Searching...")
 
         if progbar:
             count = count_records(session, Order, cart_id=cart_id)
@@ -465,9 +462,6 @@ def find_matches(cart_id, progbar=None, status_var=None):
             if progbar:
                 progbar["value"] += 1
                 progbar.update()
-
-    if status_var:
-        status_var.set("Search completed.")
 
 
 @lru_cache(maxsize=24)
