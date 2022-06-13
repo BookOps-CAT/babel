@@ -1,0 +1,2063 @@
+{
+  "data": [
+    {
+      "id": "21776219",
+      "nyplSource": "sierra-nypl",
+      "nyplType": "bib",
+      "updatedDate": "2021-11-13T09:43:26-05:00",
+      "createdDate": "2019-04-11T14:08:06-04:00",
+      "deletedDate": null,
+      "deleted": false,
+      "locations": [
+        {
+          "code": "mal",
+          "name": "SASB - Service Desk Rm 315"
+        }
+      ],
+      "suppressed": false,
+      "lang": {
+        "code": "eng",
+        "name": "English"
+      },
+      "title": "The ABC of It : why children's books matter",
+      "author": "Marcus, Leonard S., 1950- author.",
+      "materialType": {
+        "code": "a  ",
+        "value": "BOOK/TEXT"
+      },
+      "bibLevel": {
+        "code": "m",
+        "value": "MONOGRAPH"
+      },
+      "publishYear": 2019,
+      "catalogDate": "2019-09-25",
+      "country": {
+        "code": "mnu",
+        "name": "Minnesota"
+      },
+      "normTitle": "abc of it why childrens books matter",
+      "normAuthor": "marcus leonard s 1950 author",
+      "standardNumbers": [
+        "9781517908010",
+        "1517908019"
+      ],
+      "controlNumber": "1076512835",
+      "fixedFields": {
+        "24": {
+          "label": "Language",
+          "value": "eng",
+          "display": "English"
+        },
+        "25": {
+          "label": "Skip",
+          "value": "4",
+          "display": null
+        },
+        "26": {
+          "label": "Location",
+          "value": "mal  ",
+          "display": "SASB - Service Desk Rm 315"
+        },
+        "27": {
+          "label": "COPIES",
+          "value": "1",
+          "display": null
+        },
+        "28": {
+          "label": "Cat. Date",
+          "value": "2019-09-25",
+          "display": null
+        },
+        "29": {
+          "label": "Bib Level",
+          "value": "m",
+          "display": "MONOGRAPH"
+        },
+        "30": {
+          "label": "Material Type",
+          "value": "a  ",
+          "display": "BOOK/TEXT"
+        },
+        "31": {
+          "label": "Bib Code 3",
+          "value": "-",
+          "display": null
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "b",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "21776219",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2019-04-11T14:08:06Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-11-13T09:43:26Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "9",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "89": {
+          "label": "Country",
+          "value": "mnu",
+          "display": "Minnesota"
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-26T02:00:31Z",
+          "display": null
+        },
+        "107": {
+          "label": "MARC Type",
+          "value": " ",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "a",
+          "marcTag": "100",
+          "ind1": "1",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Marcus, Leonard S.,"
+            },
+            {
+              "tag": "d",
+              "content": "1950-"
+            },
+            {
+              "tag": "e",
+              "content": "author."
+            }
+          ]
+        },
+        {
+          "fieldTag": "b",
+          "marcTag": "700",
+          "ind1": "1",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Von Drasek, Lisa"
+            },
+            {
+              "tag": "e",
+              "content": "writer of foreword."
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Children's literature"
+            },
+            {
+              "tag": "x",
+              "content": "History and criticism."
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Illustrated children's books"
+            },
+            {
+              "tag": "x",
+              "content": "History and criticism."
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "7",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Children's literature."
+            },
+            {
+              "tag": "2",
+              "content": "fast"
+            },
+            {
+              "tag": "0",
+              "content": "(OCoLC)fst01759351"
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "7",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Illustrated children's books."
+            },
+            {
+              "tag": "2",
+              "content": "fast"
+            },
+            {
+              "tag": "0",
+              "content": "(OCoLC)fst00967392"
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "655",
+          "ind1": " ",
+          "ind2": "7",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Criticism, interpretation, etc."
+            },
+            {
+              "tag": "2",
+              "content": "fast"
+            },
+            {
+              "tag": "0",
+              "content": "(OCoLC)fst01411635"
+            }
+          ]
+        },
+        {
+          "fieldTag": "i",
+          "marcTag": "020",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "9781517908010"
+            },
+            {
+              "tag": "q",
+              "content": "paperback"
+            },
+            {
+              "tag": "q",
+              "content": "alkaline paper"
+            }
+          ]
+        },
+        {
+          "fieldTag": "i",
+          "marcTag": "020",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "1517908019"
+            },
+            {
+              "tag": "q",
+              "content": "paperback"
+            },
+            {
+              "tag": "q",
+              "content": "alkaline paper"
+            }
+          ]
+        },
+        {
+          "fieldTag": "l",
+          "marcTag": "010",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "  2018055253"
+            }
+          ]
+        },
+        {
+          "fieldTag": "l",
+          "marcTag": "035",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "(OCoLC)1076512835"
+            }
+          ]
+        },
+        {
+          "fieldTag": "n",
+          "marcTag": "520",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "\"Original artwork and materials explore children's literature and its impact in society and culture over time. A favorite childhood book can leave a lasting impression, but as adults we tend to shelve such memories. For fourteen months beginning in June 2013, more than half a million visitors to the New York Public Library viewed an exhibition about the role that children's books play in world culture and in our lives. After the exhibition closed, attendees clamored for a catalog of The ABC of It as well as for children's literature historian Leonard S. Marcus's insightful, wry commentary about the objects on display. Now with this book, a collaboration between the University of Minnesota's Kerlan Collection of Children's Literature and Leonard Marcus, the nostalgia and vision of that exhibit can be experienced anywhere. The story of the origins of children's literature is a tale with memorable characters and deeds, from Hans Christian Andersen and Lewis Carroll to E. B. White and Madeleine L'Engle, who safeguarded a place for wonder in a world increasingly dominated by mechanistic styles of thought, to artists like Beatrix Potter and Maurice Sendak who devoted their extraordinary talents to revealing to children not only the exhilarating beauty of life but also its bracing intensity. Philosophers like John Locke and Jean-Jacques Rousseau and educators such as Johann Comenius and John Dewey were path-finding interpreters of the phenomenon of childhood, inspiring major strands of bookmaking and storytelling for the young. Librarians devised rigorous standards for evaluating children's books and effective ways of putting good books into children's hands, and educators proposed radically different ideas about what those books should include. Eventually, publishers came to embrace juvenile publishing as a core activity, and pioneering collectors of children's book art, manuscripts, correspondence, and ephemera appeared--the University of Minnesota's Dr. Irvin Kerlan being a superb example. Without the foresight and persistence of these collectors, much of this story would have been lost forever. Regarding children's literature as both a rich repository of collective memory and a powerful engine of cultural change is more important today than ever\" --"
+            },
+            {
+              "tag": "c",
+              "content": "Provided by publisher."
+            }
+          ]
+        },
+        {
+          "fieldTag": "n",
+          "marcTag": "504",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Includes bibliographical references."
+            }
+          ]
+        },
+        {
+          "fieldTag": "n",
+          "marcTag": "505",
+          "ind1": "0",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "t",
+              "content": "Visions of childhood :"
+            },
+            {
+              "tag": "t",
+              "content": "Sinful or pure?  the spiritual child --"
+            },
+            {
+              "tag": "t",
+              "content": "A blank slate: the rational child --"
+            },
+            {
+              "tag": "t",
+              "content": "A question of class --"
+            },
+            {
+              "tag": "t",
+              "content": "From rote to rhyme --"
+            },
+            {
+              "tag": "t",
+              "content": "The work of play: the progressive child --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Goodnight Moon --"
+            },
+            {
+              "tag": "t",
+              "content": "Building citizens: the patriotic child --"
+            },
+            {
+              "tag": "t",
+              "content": "Down the rabbit hole --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Alice around the world --"
+            },
+            {
+              "tag": "t",
+              "content": "In nature's classroom:  The romantic child --"
+            },
+            {
+              "tag": "t",
+              "content": "A great Dane: Hans Christian Andersen --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Tenggren tells-it-again --"
+            },
+            {
+              "tag": "t",
+              "content": "Off the shelf : giving and getting books:"
+            },
+            {
+              "tag": "t",
+              "content": "Gift books: Visual splendor --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : The poky little puppy --"
+            },
+            {
+              "tag": "t",
+              "content": "\"Write\" off the assembly line --"
+            },
+            {
+              "tag": "t",
+              "content": "No dogs or children allowed --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Meeting Beatrix Potter --"
+            },
+            {
+              "tag": "t",
+              "content": "Storyteller en la Biblioteca: Pura Belpré --"
+            },
+            {
+              "tag": "t",
+              "content": "Book week --"
+            },
+            {
+              "tag": "t",
+              "content": "Lights out: reading under the covers --"
+            },
+            {
+              "tag": "t",
+              "content": "Censorship: raising a ruckus --"
+            },
+            {
+              "tag": "g",
+              "content": "The art of the picture book :"
+            },
+            {
+              "tag": "t",
+              "content": "A master of motion: Randolph Caldecott --"
+            },
+            {
+              "tag": "t",
+              "content": "A homespun expressionist: Wanga Gág --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Millions of cats --"
+            },
+            {
+              "tag": "t",
+              "content": "The size and shape of things --"
+            },
+            {
+              "tag": "t",
+              "content": "The new Leonardo: Bruno Munari --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Virginia Lee Burton's Little House --"
+            },
+            {
+              "tag": "t",
+              "content": "Pop culture --"
+            },
+            {
+              "tag": "t",
+              "content": "Humpty Dumpty --"
+            },
+            {
+              "tag": "t",
+              "content": "Mary Poppins --"
+            },
+            {
+              "tag": "t",
+              "content": "The secret garden --"
+            },
+            {
+              "tag": "t",
+              "content": "The Wizard of Oz --"
+            },
+            {
+              "tag": "t",
+              "content": "The story of Ferdinand --"
+            },
+            {
+              "tag": "t",
+              "content": "Harry Potter --"
+            },
+            {
+              "tag": "t",
+              "content": "Comics grow up: Graphic novels --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Baby Mouse: Queen of the World! --"
+            },
+            {
+              "tag": "t",
+              "content": "Storied city: New York."
+            }
+          ]
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": "001",
+          "ind1": " ",
+          "ind2": " ",
+          "content": "1076512835",
+          "subfields": null
+        },
+        {
+          "fieldTag": "p",
+          "marcTag": "264",
+          "ind1": " ",
+          "ind2": "1",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Minneapolis :"
+            },
+            {
+              "tag": "b",
+              "content": "University of Minnesota Press,"
+            },
+            {
+              "tag": "c",
+              "content": "[2019]"
+            }
+          ]
+        },
+        {
+          "fieldTag": "q",
+          "marcTag": "852",
+          "ind1": "8",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "h",
+              "content": "JFE 19-8008"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "300",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "vii, 231 pages :"
+            },
+            {
+              "tag": "b",
+              "content": "illustrations (chiefly color) ;"
+            },
+            {
+              "tag": "c",
+              "content": "25 x 20 cm"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "336",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "text"
+            },
+            {
+              "tag": "b",
+              "content": "txt"
+            },
+            {
+              "tag": "2",
+              "content": "rdacontent"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "336",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "still image"
+            },
+            {
+              "tag": "b",
+              "content": "sti"
+            },
+            {
+              "tag": "2",
+              "content": "rdacontent"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "337",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "unmediated"
+            },
+            {
+              "tag": "b",
+              "content": "n"
+            },
+            {
+              "tag": "2",
+              "content": "rdamedia"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "338",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "volume"
+            },
+            {
+              "tag": "b",
+              "content": "nc"
+            },
+            {
+              "tag": "2",
+              "content": "rdacarrier"
+            }
+          ]
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": "245",
+          "ind1": "1",
+          "ind2": "4",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "The ABC of It :"
+            },
+            {
+              "tag": "b",
+              "content": "why children's books matter /"
+            },
+            {
+              "tag": "c",
+              "content": "Leonard S. Marcus ; foreword by Lisa Von Drasek."
+            }
+          ]
+        },
+        {
+          "fieldTag": "u",
+          "marcTag": "246",
+          "ind1": "3",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Why children's books matter"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "003",
+          "ind1": " ",
+          "ind2": " ",
+          "content": "OCoLC",
+          "subfields": null
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "005",
+          "ind1": " ",
+          "ind2": " ",
+          "content": "20190925103157.0",
+          "subfields": null
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "008",
+          "ind1": " ",
+          "ind2": " ",
+          "content": "190202s2019    mnua     b   s000 0 eng  cam i ",
+          "subfields": null
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "040",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "DLC"
+            },
+            {
+              "tag": "b",
+              "content": "eng"
+            },
+            {
+              "tag": "e",
+              "content": "rda"
+            },
+            {
+              "tag": "c",
+              "content": "DLC"
+            },
+            {
+              "tag": "d",
+              "content": "BDX"
+            },
+            {
+              "tag": "d",
+              "content": "MNU"
+            },
+            {
+              "tag": "d",
+              "content": "OCP"
+            },
+            {
+              "tag": "d",
+              "content": "YDXIT"
+            },
+            {
+              "tag": "d",
+              "content": "MNE"
+            },
+            {
+              "tag": "d",
+              "content": "YDX"
+            },
+            {
+              "tag": "d",
+              "content": "OCLCO"
+            },
+            {
+              "tag": "d",
+              "content": "NYP"
+            },
+            {
+              "tag": "d",
+              "content": "HIR"
+            },
+            {
+              "tag": "d",
+              "content": "SFR"
+            },
+            {
+              "tag": "d",
+              "content": "YDX"
+            },
+            {
+              "tag": "d",
+              "content": "OCLCF"
+            },
+            {
+              "tag": "d",
+              "content": "NYP"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "042",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "pcc"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "049",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "NYPP"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "050",
+          "ind1": "0",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "PN1009.A1"
+            },
+            {
+              "tag": "b",
+              "content": "M285 2019"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "082",
+          "ind1": "0",
+          "ind2": "4",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "809/.89282"
+            },
+            {
+              "tag": "2",
+              "content": "23"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "082",
+          "ind1": "0",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "398.809"
+            },
+            {
+              "tag": "2",
+              "content": "23"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "901",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "MARS"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "084",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "LIT009000"
+            },
+            {
+              "tag": "a",
+              "content": "ART015000"
+            },
+            {
+              "tag": "a",
+              "content": "SOC022000"
+            },
+            {
+              "tag": "2",
+              "content": "bisacsh"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "908",
+          "ind1": "0",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "PN1009.A1"
+            },
+            {
+              "tag": "b",
+              "content": "M285 2019"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "901",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "tas"
+            },
+            {
+              "tag": "b",
+              "content": "CATRL"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "945",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": ".b217762190"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "946",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "m"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "949",
+          "ind1": " ",
+          "ind2": "1",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "z",
+              "content": "8528"
+            },
+            {
+              "tag": "a",
+              "content": "JFE 19-8008"
+            },
+            {
+              "tag": "i",
+              "content": "33433129260000"
+            },
+            {
+              "tag": "l",
+              "content": "mal82"
+            },
+            {
+              "tag": "s",
+              "content": "b"
+            },
+            {
+              "tag": "t",
+              "content": "055"
+            },
+            {
+              "tag": "h",
+              "content": "33"
+            },
+            {
+              "tag": "o",
+              "content": "1"
+            },
+            {
+              "tag": "v",
+              "content": "CATRL/tas"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "910",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "RL"
+            }
+          ]
+        },
+        {
+          "fieldTag": "_",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "00000cam a2200517 i 4500",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "id": "21742979",
+      "nyplSource": "sierra-nypl",
+      "nyplType": "bib",
+      "updatedDate": "2022-02-07T03:33:12-05:00",
+      "createdDate": "2019-02-13T16:29:19-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "locations": [
+        {
+          "code": "fta",
+          "name": "53rd Street Adult"
+        },
+        {
+          "code": "fea",
+          "name": "58th Street Adult"
+        },
+        {
+          "code": "ssa",
+          "name": "67th Street Adult"
+        },
+        {
+          "code": "bca",
+          "name": "Bronx Library Center Adult"
+        },
+        {
+          "code": "bta",
+          "name": "Battery Park Adult "
+        },
+        {
+          "code": "dya",
+          "name": "Spuyten Duyvil Adult "
+        },
+        {
+          "code": "epa",
+          "name": "Epiphany Adult"
+        },
+        {
+          "code": "hka",
+          "name": "Huguenot Park Adult"
+        },
+        {
+          "code": "mla",
+          "name": "Mulberry Street Adult"
+        },
+        {
+          "code": "moa",
+          "name": "Mosholu Adult"
+        },
+        {
+          "code": "nda",
+          "name": "New Dorp Adult"
+        },
+        {
+          "code": "pka",
+          "name": "Parkchester Adult"
+        },
+        {
+          "code": "rsa",
+          "name": "Riverside Adult"
+        },
+        {
+          "code": "rta",
+          "name": "Richmondtown Adult"
+        },
+        {
+          "code": "sga",
+          "name": "St. George Adult"
+        },
+        {
+          "code": "tha",
+          "name": "Todt Hill-Westerleigh Adult"
+        },
+        {
+          "code": "tsa",
+          "name": "Tompkins Square Adult"
+        },
+        {
+          "code": "wla",
+          "name": "Woodlawn Heights Adult"
+        },
+        {
+          "code": "sna",
+          "name": "Stavros Niarchos Foundation Library - Adult Collection"
+        }
+      ],
+      "suppressed": false,
+      "lang": {
+        "code": "eng",
+        "name": "English"
+      },
+      "title": "The ABC of It : why children's books matter",
+      "author": "Marcus, Leonard S., 1950- author.",
+      "materialType": {
+        "code": "a  ",
+        "value": "BOOK/TEXT"
+      },
+      "bibLevel": {
+        "code": "m",
+        "value": "MONOGRAPH"
+      },
+      "publishYear": 2019,
+      "catalogDate": "2019-03-25",
+      "country": {
+        "code": "mnu",
+        "name": "Minnesota"
+      },
+      "normTitle": "abc of it why childrens books matter",
+      "normAuthor": "marcus leonard s 1950 author",
+      "standardNumbers": [
+        "9781517908010",
+        "1517908019"
+      ],
+      "controlNumber": "1076512835",
+      "fixedFields": {
+        "24": {
+          "label": "Language",
+          "value": "eng",
+          "display": "English"
+        },
+        "25": {
+          "label": "Skip",
+          "value": "4",
+          "display": null
+        },
+        "26": {
+          "label": "Location",
+          "value": "multi",
+          "display": null
+        },
+        "27": {
+          "label": "COPIES",
+          "value": "24",
+          "display": null
+        },
+        "28": {
+          "label": "Cat. Date",
+          "value": "2019-03-25",
+          "display": null
+        },
+        "29": {
+          "label": "Bib Level",
+          "value": "m",
+          "display": "MONOGRAPH"
+        },
+        "30": {
+          "label": "Material Type",
+          "value": "a  ",
+          "display": "BOOK/TEXT"
+        },
+        "31": {
+          "label": "Bib Code 3",
+          "value": "-",
+          "display": null
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "b",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "21742979",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2019-02-13T16:29:19Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2022-02-07T03:33:12Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "67",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "89": {
+          "label": "Country",
+          "value": "mnu",
+          "display": "Minnesota"
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2022-02-06T20:34:32Z",
+          "display": null
+        },
+        "107": {
+          "label": "MARC Type",
+          "value": " ",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "a",
+          "marcTag": "100",
+          "ind1": "1",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Marcus, Leonard S.,"
+            },
+            {
+              "tag": "d",
+              "content": "1950-"
+            },
+            {
+              "tag": "e",
+              "content": "author."
+            }
+          ]
+        },
+        {
+          "fieldTag": "b",
+          "marcTag": "700",
+          "ind1": "1",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Von Drasek, Lisa,"
+            },
+            {
+              "tag": "e",
+              "content": "writer of foreword."
+            }
+          ]
+        },
+        {
+          "fieldTag": "c",
+          "marcTag": "091",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "809.8928"
+            },
+            {
+              "tag": "c",
+              "content": "M"
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Children's literature"
+            },
+            {
+              "tag": "x",
+              "content": "History and criticism."
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Illustrated children's books"
+            },
+            {
+              "tag": "x",
+              "content": "History and criticism."
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "7",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "LITERARY CRITICISM / Children's Literature."
+            },
+            {
+              "tag": "2",
+              "content": "bisacsh"
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "7",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "ART / History / General."
+            },
+            {
+              "tag": "2",
+              "content": "bisacsh"
+            }
+          ]
+        },
+        {
+          "fieldTag": "d",
+          "marcTag": "650",
+          "ind1": " ",
+          "ind2": "7",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "SOCIAL SCIENCE / Popular Culture."
+            },
+            {
+              "tag": "2",
+              "content": "bisacsh"
+            }
+          ]
+        },
+        {
+          "fieldTag": "i",
+          "marcTag": "020",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "9781517908010"
+            },
+            {
+              "tag": "q",
+              "content": "(paperback : alk. paper)"
+            }
+          ]
+        },
+        {
+          "fieldTag": "i",
+          "marcTag": "020",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "1517908019"
+            }
+          ]
+        },
+        {
+          "fieldTag": "l",
+          "marcTag": "010",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "  2018055253"
+            }
+          ]
+        },
+        {
+          "fieldTag": "l",
+          "marcTag": "035",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "(OCoLC)1076512835"
+            }
+          ]
+        },
+        {
+          "fieldTag": "n",
+          "marcTag": "520",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "\"Original artwork and materials explore children's literature and its impact in society and culture over time. A favorite childhood book can leave a lasting impression, but as adults we tend to shelve such memories. For fourteen months beginning in June 2013, more than half a million visitors to the New York Public Library viewed an exhibition about the role that children's books play in world culture and in our lives. After the exhibition closed, attendees clamored for a catalog of The ABC of It as well as for children's literature historian Leonard S. Marcus's insightful, wry commentary about the objects on display. Now with this book, a collaboration between the University of Minnesota's Kerlan Collection of Children's Literature and Leonard Marcus, the nostalgia and vision of that exhibit can be experienced anywhere. The story of the origins of children's literature is a tale with memorable characters and deeds, from Hans Christian Andersen and Lewis Carroll to E. B. White and Madeleine L'Engle, who safeguarded a place for wonder in a world increasingly dominated by mechanistic styles of thought, to artists like Beatrix Potter and Maurice Sendak who devoted their extraordinary talents to revealing to children not only the exhilarating beauty of life but also its bracing intensity. Philosophers like John Locke and Jean-Jacques Rousseau and educators such as Johann Comenius and John Dewey were path-finding interpreters of the phenomenon of childhood, inspiring major strands of bookmaking and storytelling for the young. Librarians devised rigorous standards for evaluating children's books and effective ways of putting good books into children's hands, and educators proposed radically different ideas about what those books should include. Eventually, publishers came to embrace juvenile publishing as a core activity, and pioneering collectors of children's book art, manuscripts, correspondence, and ephemera appeared--the University of Minnesota's Dr. Irvin Kerlan being a superb example. Without the foresight and persistence of these collectors, much of this story would have been lost forever. Regarding children's literature as both a rich repository of collective memory and a powerful engine of cultural change is more important today than ever\" --"
+            },
+            {
+              "tag": "c",
+              "content": "Provided by publisher."
+            }
+          ]
+        },
+        {
+          "fieldTag": "n",
+          "marcTag": "504",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Includes bibliographical references."
+            }
+          ]
+        },
+        {
+          "fieldTag": "n",
+          "marcTag": "505",
+          "ind1": "0",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "t",
+              "content": "Visions of childhood :"
+            },
+            {
+              "tag": "t",
+              "content": "Sinful or pure?  the spiritual child --"
+            },
+            {
+              "tag": "t",
+              "content": "A blank slate: the rational child --"
+            },
+            {
+              "tag": "t",
+              "content": "A question of class --"
+            },
+            {
+              "tag": "t",
+              "content": "From rote to rhyme --"
+            },
+            {
+              "tag": "t",
+              "content": "The work of play: the progressive child --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Goodnight Moon --"
+            },
+            {
+              "tag": "t",
+              "content": "Building citizens: the patriotic child --"
+            },
+            {
+              "tag": "t",
+              "content": "Down the rabbit hole --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Alice around the world --"
+            },
+            {
+              "tag": "t",
+              "content": "In nature's classroom:  The romantic child --"
+            },
+            {
+              "tag": "t",
+              "content": "A great Dane: Hans Christian Andersen --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Tenggren tells-it-again --"
+            },
+            {
+              "tag": "t",
+              "content": "Off the shelf : giving and getting books:"
+            },
+            {
+              "tag": "t",
+              "content": "Gift books: Visual splendor --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : The poky little puppy --"
+            },
+            {
+              "tag": "t",
+              "content": "\"Write\" off the assembly line --"
+            },
+            {
+              "tag": "t",
+              "content": "No dogs or children allowed --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Meeting Beatrix Potter --"
+            },
+            {
+              "tag": "t",
+              "content": "Storyteller en la Biblioteca: Pura Belpré --"
+            },
+            {
+              "tag": "t",
+              "content": "Book week --"
+            },
+            {
+              "tag": "t",
+              "content": "Lights out: reading under the covers --"
+            },
+            {
+              "tag": "t",
+              "content": "Censorship: raising a ruckus --"
+            },
+            {
+              "tag": "g",
+              "content": "The art of the picture book :"
+            },
+            {
+              "tag": "t",
+              "content": "A master of motion: Randolph Caldecott --"
+            },
+            {
+              "tag": "t",
+              "content": "A homespun expressionist: Wanga Gág --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Millions of cats --"
+            },
+            {
+              "tag": "t",
+              "content": "The size and shape of things --"
+            },
+            {
+              "tag": "t",
+              "content": "The new Leonardo: Bruno Munari --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Virginia Lee Burton's Little House --"
+            },
+            {
+              "tag": "t",
+              "content": "Pop culture --"
+            },
+            {
+              "tag": "t",
+              "content": "Humpty Dumpty --"
+            },
+            {
+              "tag": "t",
+              "content": "Mary Poppins --"
+            },
+            {
+              "tag": "t",
+              "content": "The secret garden --"
+            },
+            {
+              "tag": "t",
+              "content": "The Wizard of Oz --"
+            },
+            {
+              "tag": "t",
+              "content": "The story of Ferdinand --"
+            },
+            {
+              "tag": "t",
+              "content": "Harry Potter --"
+            },
+            {
+              "tag": "t",
+              "content": "Comics grow up: Graphic novels --"
+            },
+            {
+              "tag": "t",
+              "content": "Kerlan features : Baby Mouse: Queen of the World! --"
+            },
+            {
+              "tag": "t",
+              "content": "Storied city: New York."
+            }
+          ]
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": "001",
+          "ind1": " ",
+          "ind2": " ",
+          "content": "1076512835",
+          "subfields": null
+        },
+        {
+          "fieldTag": "p",
+          "marcTag": "264",
+          "ind1": " ",
+          "ind2": "1",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "Minneapolis :"
+            },
+            {
+              "tag": "b",
+              "content": "University of Minnesota Press,"
+            },
+            {
+              "tag": "c",
+              "content": "[2019]"
+            }
+          ]
+        },
+        {
+          "fieldTag": "p",
+          "marcTag": "264",
+          "ind1": " ",
+          "ind2": "4",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "c",
+              "content": "©2019"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "300",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "vii, 231 pages :"
+            },
+            {
+              "tag": "b",
+              "content": "chiefly color illustrations ;"
+            },
+            {
+              "tag": "c",
+              "content": "24 cm"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "336",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "text"
+            },
+            {
+              "tag": "b",
+              "content": "txt"
+            },
+            {
+              "tag": "2",
+              "content": "rdacontent"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "337",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "unmediated"
+            },
+            {
+              "tag": "b",
+              "content": "n"
+            },
+            {
+              "tag": "2",
+              "content": "rdamedia"
+            }
+          ]
+        },
+        {
+          "fieldTag": "r",
+          "marcTag": "338",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "volume"
+            },
+            {
+              "tag": "b",
+              "content": "nc"
+            },
+            {
+              "tag": "2",
+              "content": "rdacarrier"
+            }
+          ]
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": "245",
+          "ind1": "1",
+          "ind2": "4",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "The ABC of It :"
+            },
+            {
+              "tag": "b",
+              "content": "why children's books matter /"
+            },
+            {
+              "tag": "c",
+              "content": "Leonard S. Marcus ; foreword by Lisa Von Drasek."
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "003",
+          "ind1": " ",
+          "ind2": " ",
+          "content": "OCoLC",
+          "subfields": null
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "005",
+          "ind1": " ",
+          "ind2": " ",
+          "content": "20190325013846.0",
+          "subfields": null
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "008",
+          "ind1": " ",
+          "ind2": " ",
+          "content": "190202t20192019mnua     b   s000 0 eng  cam8i ",
+          "subfields": null
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "040",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "DLC"
+            },
+            {
+              "tag": "b",
+              "content": "eng"
+            },
+            {
+              "tag": "e",
+              "content": "rda"
+            },
+            {
+              "tag": "c",
+              "content": "DLC"
+            },
+            {
+              "tag": "d",
+              "content": "BDX"
+            },
+            {
+              "tag": "d",
+              "content": "MNU"
+            },
+            {
+              "tag": "d",
+              "content": "OCP"
+            },
+            {
+              "tag": "d",
+              "content": "YDXIT"
+            },
+            {
+              "tag": "d",
+              "content": "MNE"
+            },
+            {
+              "tag": "d",
+              "content": "YDX"
+            },
+            {
+              "tag": "d",
+              "content": "OCLCO"
+            },
+            {
+              "tag": "d",
+              "content": "NYP"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "042",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "pcc"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "049",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "NYPP"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "050",
+          "ind1": "0",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "PN1009.A1"
+            },
+            {
+              "tag": "b",
+              "content": "M285 2019"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "082",
+          "ind1": "0",
+          "ind2": "4",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "809/.89282"
+            },
+            {
+              "tag": "2",
+              "content": "23"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "082",
+          "ind1": "0",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "398.809"
+            },
+            {
+              "tag": "2",
+              "content": "23"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "901",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "MARS"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "908",
+          "ind1": "0",
+          "ind2": "0",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "PN1009.A1"
+            },
+            {
+              "tag": "b",
+              "content": "M285 2019"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "901",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "wch"
+            },
+            {
+              "tag": "b",
+              "content": "CATBL"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "945",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": ".b217429798"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "946",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "m"
+            }
+          ]
+        },
+        {
+          "fieldTag": "y",
+          "marcTag": "910",
+          "ind1": " ",
+          "ind2": " ",
+          "content": null,
+          "subfields": [
+            {
+              "tag": "a",
+              "content": "BL"
+            }
+          ]
+        },
+        {
+          "fieldTag": "_",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "00000cam a22004818i 4500",
+          "subfields": null
+        }
+      ]
+    }
+  ],
+  "count": 2,
+  "totalCount": 0,
+  "statusCode": 200,
+  "debugInfo": []
+}

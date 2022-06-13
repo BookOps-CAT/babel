@@ -1,0 +1,5943 @@
+{
+  "data": [
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305229",
+      "nyplType": "item",
+      "updatedDate": "2022-03-21T13:56:59-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "sgj0v",
+        "name": "St. George Children's Non-Print Media"
+      },
+      "status": {
+        "code": "c",
+        "display": "CLOSED BRANCH",
+        "duedate": null
+      },
+      "barcode": "33333291169072",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "d",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "28",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2020-12-23T16:21:37Z",
+          "display": null
+        },
+        "69": {
+          "label": "Inventory Date",
+          "value": "2022-03-21T08:00:00Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "28",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "29",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "21",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2020-12-15T21:10:41Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "sgj0v",
+          "display": "St. George Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305229",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2022-03-21T13:56:59Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "149",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "c",
+          "display": "CLOSED BRANCH"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2022-03-20T21:18:35Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "1",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169072",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "sgj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS gk to sg",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305235",
+      "nyplType": "item",
+      "updatedDate": "2021-07-29T20:12:25-04:00",
+      "createdDate": "2012-03-06T16:48:00-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "bcj0v",
+        "name": "Bronx Library Center Children's Non-Print Media"
+      },
+      "status": {
+        "code": "t",
+        "display": "IN TRANSIT",
+        "duedate": null
+      },
+      "barcode": "33333291169130",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "-",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "6",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2019-07-31T19:27:09Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "6",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "47",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "20",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2019-07-31T19:15:49Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "bcj0v",
+          "display": "Bronx Library Center Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305235",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:00Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-07-29T20:12:25Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "204",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "t",
+          "display": "IN TRANSIT"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2020-07-26T22:57:56Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169130",
+          "subfields": null
+        },
+        {
+          "fieldTag": "m",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Mon Aug 05 2019 10:24AM: IN TRANSIT from circct to bcj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "bcj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS be to bc",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305344",
+      "nyplType": "item",
+      "updatedDate": "2021-07-29T20:12:25-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "whj0v",
+        "name": "Washington Heights Children's Non-Print Media"
+      },
+      "status": {
+        "code": "w",
+        "display": "WITHDRAWN",
+        "duedate": null
+      },
+      "barcode": "33333291170229",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "w",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "800",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2020-03-10T16:31:48Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "52",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "65",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "41",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2020-02-28T21:40:35Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "whj0v",
+          "display": "Washington Heights Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305344",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-07-29T20:12:25Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "272",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "w",
+          "display": "WITHDRAWN"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-02-24T14:58:02Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291170229",
+          "subfields": null
+        },
+        {
+          "fieldTag": "m",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Fri Feb 05 2021 02:00PM: IN TRANSIT from lyngsoe to inj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "inj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS rs to in",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "CLOSED BRANCH SUPPRESS MARCH 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305319",
+      "nyplType": "item",
+      "updatedDate": "2020-08-19T16:40:59-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "baj0v",
+        "name": "Baychester Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169973",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "0",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "0",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "0",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "0",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "baj0v",
+          "display": "Baychester Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305319",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2020-08-19T16:40:59Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "12",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2020-06-24T21:06:00Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169973",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "baj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS rd to ba",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305211",
+      "nyplType": "item",
+      "updatedDate": "2021-10-03T23:30:55-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "gdj0v",
+        "name": "Grand Concourse Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291168892",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "12",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "2",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "2",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-03-19T14:45:55Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "gdj0v",
+          "display": "Grand Concourse Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305211",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-03T23:30:55Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "19",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291168892",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "gdj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305213",
+      "nyplType": "item",
+      "updatedDate": "2021-10-03T23:30:55-04:00",
+      "createdDate": "2012-03-06T16:48:00-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "hgj0v",
+        "name": "Hamilton Grange Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291168918",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "47",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "8",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "5",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-12-17T19:41:29Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "hgj0v",
+          "display": "Hamilton Grange Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305213",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:00Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-03T23:30:55Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "42",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291168918",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "hgj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305233",
+      "nyplType": "item",
+      "updatedDate": "2021-10-03T23:30:55-04:00",
+      "createdDate": "2012-03-06T16:48:00-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "gdj0v",
+        "name": "Grand Concourse Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169114",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "12",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "14",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "4",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-12-04T22:46:38Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "gdj0v",
+          "display": "Grand Concourse Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305233",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:00Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-03T23:30:55Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "52",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169114",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "gdj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Wed May 30 2012: Claimed returned on Wed May 30 2012 by .p4674223",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305299",
+      "nyplType": "item",
+      "updatedDate": "2021-10-03T23:30:55-04:00",
+      "createdDate": "2012-03-06T16:48:00-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "nbj0v",
+        "name": "West New Brighton Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169775",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "73",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "39",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "32",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2015-12-11T20:45:16Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "nbj0v",
+          "display": "West New Brighton Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305299",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:00Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-03T23:30:55Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "190",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169775",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "nbj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305333",
+      "nyplType": "item",
+      "updatedDate": "2021-10-03T23:30:55-04:00",
+      "createdDate": "2012-03-06T16:48:00-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "bcj0v",
+        "name": "Bronx Library Center Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291170112",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "33",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "17",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "18",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2013-11-02T20:52:04Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "bcj0v",
+          "display": "Bronx Library Center Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305333",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:00Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-03T23:30:55Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "109",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291170112",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "bcj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305386",
+      "nyplType": "item",
+      "updatedDate": "2021-10-03T23:30:55-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "bcj0v",
+        "name": "Bronx Library Center Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291170641",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "30",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "8",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "1",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-10-27T17:41:47Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "bcj0v",
+          "display": "Bronx Library Center Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305386",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-03T23:30:55Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "39",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-03T21:59:33Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291170641",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "bcj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305154",
+      "nyplType": "item",
+      "updatedDate": "2021-08-04T08:51:03-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "hlj0v",
+        "name": "Harlem Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291168322",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "800",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-08-04T07:46:25Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "11",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "9",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-08-23T19:29:22Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "hlj0v",
+          "display": "Harlem Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305154",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-08-04T08:51:03Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "55",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-08-04T07:46:25Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291168322",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "hlj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305234",
+      "nyplType": "item",
+      "updatedDate": "2021-10-01T07:18:10-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "hpj0v",
+        "name": "Hudson Park Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169122",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "800",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "6",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "4",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-10-25T16:32:26Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "hpj0v",
+          "display": "Hudson Park Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305234",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-01T07:18:10Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "44",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169122",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "hpj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305245",
+      "nyplType": "item",
+      "updatedDate": "2020-07-09T22:08:10-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "huj0v",
+        "name": "115th Street Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169239",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "0",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "0",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "0",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "0",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "huj0v",
+          "display": "115th Street Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305245",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2020-07-09T22:08:10Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "9",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2020-06-10T13:28:18Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169239",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "huj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "30978857",
+      "nyplType": "item",
+      "updatedDate": "2021-04-22T19:05:24-04:00",
+      "createdDate": "2013-10-17T13:59:41-04:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "sgj0v",
+        "name": "St. George Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333301014300",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "1",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "79",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2019-01-16T19:42:05Z",
+          "display": null
+        },
+        "69": {
+          "label": "Inventory Date",
+          "value": "2021-04-22T08:00:00Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "79",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "30",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "9",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2019-01-09T22:07:55Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "sgj0v",
+          "display": "St. George Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "30978857",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2013-10-17T13:59:41Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-04-22T19:05:24Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "126",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-04-01T18:32:00Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333301014300",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "sgj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o17302912",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS Inventory 4-1-2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305247",
+      "nyplType": "item",
+      "updatedDate": "2021-10-01T07:18:10-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "whj0v",
+        "name": "Washington Heights Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169254",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "52",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "10",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "1",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-06-26T18:43:50Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "whj0v",
+          "display": "Washington Heights Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305247",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-01T07:18:10Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "35",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169254",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "inj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305255",
+      "nyplType": "item",
+      "updatedDate": "2021-10-01T07:18:10-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "gcj0v",
+        "name": "Grand Central Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169338",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "88",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "16",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "2",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2014-09-02T19:48:01Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "gcj0v",
+          "display": "Grand Central Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305255",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-01T07:18:10Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "58",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169338",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "gcj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305238",
+      "nyplType": "item",
+      "updatedDate": "2021-10-01T07:18:10-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "hsj0v",
+        "name": "Hunt's Point Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169163",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "14",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "3",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "0",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-03-31T16:58:56Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "hsj0v",
+          "display": "Hunt's Point Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305238",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-01T07:18:10Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "20",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169163",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "hsj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305223",
+      "nyplType": "item",
+      "updatedDate": "2020-06-30T14:32:51-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "thj0v",
+        "name": "Todt Hill-Westerleigh Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169015",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "0",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "0",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "0",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "0",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "thj0v",
+          "display": "Todt Hill-Westerleigh Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305223",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2020-06-30T14:32:51Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "11",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2020-06-08T22:00:38Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169015",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "thj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS hf to th",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305243",
+      "nyplType": "item",
+      "updatedDate": "2021-10-01T07:18:10-04:00",
+      "createdDate": "2012-03-06T16:48:00-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "mnj0v",
+        "name": "Mariner's Harbor Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169213",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "94",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "38",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "5",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2017-08-30T18:46:17Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "mnj0v",
+          "display": "Mariner's Harbor Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305243",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:00Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-01T07:18:10Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "143",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169213",
+          "subfields": null
+        },
+        {
+          "fieldTag": "m",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "CHECK CONDITION UPON RETURN- GRUBBY CHECK",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "mnj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305298",
+      "nyplType": "item",
+      "updatedDate": "2021-10-01T07:18:10-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "sgj0v",
+        "name": "St. George Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169767",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "79",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "14",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "20",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2013-04-08T17:18:46Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "sgj0v",
+          "display": "St. George Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305298",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-01T07:18:10Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "86",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169767",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "sgj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305346",
+      "nyplType": "item",
+      "updatedDate": "2022-03-21T13:56:59-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "sgj0v",
+        "name": "St. George Children's Non-Print Media"
+      },
+      "status": {
+        "code": "c",
+        "display": "CLOSED BRANCH",
+        "duedate": null
+      },
+      "barcode": "33333291170245",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "d",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "800",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-09-14T21:36:24Z",
+          "display": null
+        },
+        "69": {
+          "label": "Inventory Date",
+          "value": "2022-03-21T08:00:00Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "49",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "47",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "28",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2021-08-30T19:41:58Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "sgj0v",
+          "display": "St. George Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305346",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2022-03-21T13:56:59Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "222",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "c",
+          "display": "CLOSED BRANCH"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2022-03-20T21:18:35Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "1",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291170245",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "sgj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305273",
+      "nyplType": "item",
+      "updatedDate": "2020-06-24T21:06:30-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "bcj0v",
+        "name": "Bronx Library Center Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291169510",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "0",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "0",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "0",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "0",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "bcj0v",
+          "display": "Bronx Library Center Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305273",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2020-06-24T21:06:30Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "11",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2020-06-12T09:12:11Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169510",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "bcj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS mh to bc",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305341",
+      "nyplType": "item",
+      "updatedDate": "2021-10-01T07:18:11-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "mnj0v",
+        "name": "Mariner's Harbor Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291170195",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "94",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "69": {
+          "label": "Inventory Date",
+          "value": "2013-01-08T20:19:39Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "37",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "6",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2015-11-14T18:42:57Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "mnj0v",
+          "display": "Mariner's Harbor Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305341",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-10-01T07:18:11Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "137",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-10-01T02:18:47Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291170195",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "mnj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "ILS FINES 2021",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305320",
+      "nyplType": "item",
+      "updatedDate": "2022-03-07T14:18:08-05:00",
+      "createdDate": "2012-03-06T16:48:00-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "hgj0v",
+        "name": "Hamilton Grange Children's Non-Print Media"
+      },
+      "status": {
+        "code": "w",
+        "display": "WITHDRAWN",
+        "duedate": null
+      },
+      "barcode": "33333291169981",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "47",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2020-01-04T16:55:49Z",
+          "display": null
+        },
+        "69": {
+          "label": "Inventory Date",
+          "value": "2022-03-07T09:00:00Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "47",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "47",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "31",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2019-12-28T17:29:33Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "hgj0v",
+          "display": "Hamilton Grange Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305320",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:00Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2022-03-07T14:18:08Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "220",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "w",
+          "display": "WITHDRAWN"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2022-02-23T18:49:53Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291169981",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "hgj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        }
+      ]
+    },
+    {
+      "nyplSource": "sierra-nypl",
+      "bibIds": [
+        "19541524"
+      ],
+      "id": "28305148",
+      "nyplType": "item",
+      "updatedDate": "2021-08-04T08:51:03-04:00",
+      "createdDate": "2012-03-06T16:48:11-05:00",
+      "deletedDate": null,
+      "deleted": false,
+      "location": {
+        "code": "bcj0v",
+        "name": "Bronx Library Center Children's Non-Print Media"
+      },
+      "status": {
+        "code": "m",
+        "display": "MISSING",
+        "duedate": null
+      },
+      "barcode": "33333291168264",
+      "callNumber": "J DVD TV ELMO",
+      "itemType": null,
+      "fixedFields": {
+        "57": {
+          "label": "BIB HOLD",
+          "value": "false",
+          "display": null
+        },
+        "58": {
+          "label": "Copy No.",
+          "value": "1",
+          "display": null
+        },
+        "59": {
+          "label": "Item Code 1",
+          "value": "0",
+          "display": null
+        },
+        "60": {
+          "label": "Item Code 2",
+          "value": "s",
+          "display": null
+        },
+        "61": {
+          "label": "Item Type",
+          "value": "206",
+          "display": "J DVD"
+        },
+        "62": {
+          "label": "Price",
+          "value": "1499.000000",
+          "display": null
+        },
+        "64": {
+          "label": "Checkout Location",
+          "value": "210",
+          "display": null
+        },
+        "68": {
+          "label": "Last Checkin",
+          "value": "2021-08-04T07:46:25Z",
+          "display": null
+        },
+        "70": {
+          "label": "Checkin Location",
+          "value": "999",
+          "display": null
+        },
+        "74": {
+          "label": "Item Use 3",
+          "value": "0",
+          "display": null
+        },
+        "76": {
+          "label": "Total Checkouts",
+          "value": "26",
+          "display": null
+        },
+        "77": {
+          "label": "Total Renewals",
+          "value": "8",
+          "display": null
+        },
+        "78": {
+          "label": "Last Checkout Date",
+          "value": "2012-11-16T21:17:21Z",
+          "display": null
+        },
+        "79": {
+          "label": "Location",
+          "value": "bcj0v",
+          "display": "Bronx Library Center Children's Non-Print Media"
+        },
+        "80": {
+          "label": "Record Type",
+          "value": "i",
+          "display": null
+        },
+        "81": {
+          "label": "Record Number",
+          "value": "28305148",
+          "display": null
+        },
+        "83": {
+          "label": "Created Date",
+          "value": "2012-03-06T16:48:11Z",
+          "display": null
+        },
+        "84": {
+          "label": "Updated Date",
+          "value": "2021-08-04T08:51:03Z",
+          "display": null
+        },
+        "85": {
+          "label": "No. of Revisions",
+          "value": "95",
+          "display": null
+        },
+        "86": {
+          "label": "Agency",
+          "value": "1",
+          "display": null
+        },
+        "88": {
+          "label": "Status",
+          "value": "m",
+          "display": "MISSING"
+        },
+        "93": {
+          "label": "Inhouse Use",
+          "value": "0",
+          "display": null
+        },
+        "94": {
+          "label": "Copy Use",
+          "value": "0",
+          "display": null
+        },
+        "97": {
+          "label": "Item Message",
+          "value": "-",
+          "display": null
+        },
+        "98": {
+          "label": "PDATE",
+          "value": "2021-08-04T07:46:25Z",
+          "display": null
+        },
+        "108": {
+          "label": "OPAC Message",
+          "value": "-",
+          "display": "---"
+        },
+        "109": {
+          "label": "Year-to-Date Circ",
+          "value": "0",
+          "display": null
+        },
+        "110": {
+          "label": "Last Year Circ",
+          "value": "0",
+          "display": null
+        },
+        "127": {
+          "label": "Item Agency",
+          "value": "0",
+          "display": "Undefined"
+        },
+        "161": {
+          "label": "VI Central",
+          "value": "0",
+          "display": null
+        },
+        "162": {
+          "label": "IR Dist Learn Same Site",
+          "value": "0",
+          "display": null
+        },
+        "264": {
+          "label": "Holdings Item Tag",
+          "value": "6",
+          "display": null
+        },
+        "265": {
+          "label": "Inherit Location",
+          "value": "false",
+          "display": null
+        },
+        "306": {
+          "label": "Sticky Status",
+          "value": "",
+          "display": null
+        }
+      },
+      "varFields": [
+        {
+          "fieldTag": "b",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "33333291168264",
+          "subfields": null
+        },
+        {
+          "fieldTag": "o",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "bcj0v",
+          "subfields": null
+        },
+        {
+          "fieldTag": "t",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "Midwest",
+          "subfields": null
+        },
+        {
+          "fieldTag": "x",
+          "marcTag": null,
+          "ind1": null,
+          "ind2": null,
+          "content": "o14844710",
+          "subfields": null
+        }
+      ]
+    }
+  ],
+  "count": 25,
+  "totalCount": 0,
+  "statusCode": 200,
+  "debugInfo": []
+}
