@@ -1,7 +1,14 @@
-import pytest
+import os
+import shelve
 
+import pytest
 import keyring
 from keyring.backends.Windows import WinVaultKeyring
+import requests
+
+from babel.sierra_adapters.middleware import NypPlatform
+
+from babel import paths
 
 
 @pytest.fixture
@@ -29,12 +36,18 @@ def mock_no_vault(monkeypatch):
 def mock_user_data(monkeypatch, tmpdir):
     def _patch(*args, **kwargs):
         user_data_fh = os.path.join(tmpdir, "user_data")
-        user_data = shelve.open()
-
+        user_data = shelve.open(user_data_fh)
+        user_data["db_config"] = dict(
+            DB_NAME="babeltest", DB_HOST="localhost", DB_USER="test", DB_PORT="3306"
+        )
+        user_data["nyp_platform"] = dict(
+            PLATFORM_OAUTH_SERVER="oauth_server", PLATFORM_CLIENT_ID="platform-client"
+        )
+        user_data["bpl_solr"] = dict(SOLR_ENDPOINT="solr_url")
         user_data.close()
         return user_data_fh
 
-    monkeypatch.setattr("babel.paths.get_user_data_handle", _patch)
+    monkeypatch.setattr(paths, "get_user_data_handle", _patch)
 
 
 # NYPL Platform fixtures
@@ -231,3 +244,11 @@ def mock_platform_session_response_404http_not_found(monkeypatch):
         return MockPlatformSessionResponseNotFound()
 
     monkeypatch.setattr(requests.Session, "get", mock_api_response)
+
+
+@pytest.fixture
+def mock_platform(
+    mock_user_data, mock_vault, mock_platform_post_token_response_200http
+):
+    with NypPlatform("branch") as middleware:
+        yield middleware

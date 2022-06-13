@@ -4,7 +4,7 @@ any duplicates in the ILS.
 """
 import os
 import shelve
-from typing import Optional
+from typing import Optional, Union
 
 
 from bookops_bpl_solr import SolrSession
@@ -16,12 +16,17 @@ try:
     from credentials import get_from_vault
 except ImportError:
     # tests
-    from babel.paths import get_user_data_handle
+    from babel import paths
     from babel.credentials import get_from_vault
 
 
-def catalog_match(system_id, keyword):
-    pass
+def catalog_match(middleware: Union[PlatformSession, SolrSession], keywords: list[str]):
+    catalog_dup = None
+    dup_bibs = []
+
+    catalog_dup, dup_bibs = middleware.search(keywords)
+
+    return catalog_dup, dup_bibs
 
 
 class NypPlatform(PlatformSession):
@@ -36,15 +41,16 @@ class NypPlatform(PlatformSession):
         self.library = library  # branch or research
         if self.library not in ("branch", "research", None):
             raise ValueError("Invalid library argument passed.")
+        self.agent = "BookOps/Babel"
 
         client_id, client_secret, oauth_server = self._get_credentials()
-        # token = self._get_token(client_id, client_secret, oauth_server)
-        agent = f"BookOps/Babel"
+        token = self._get_token(client_id, client_secret, oauth_server)
 
-        # super().__init__(authorization=token, agent=agent)
+        super().__init__(authorization=token, agent=self.agent)
 
-    def _get_credentials(self):
-        user_data_handle = get_user_data_handle()
+    def _get_credentials(self) -> tuple[str, str, str]:
+        """Retrieves NYPL Platform credentials from user_data and vault"""
+        user_data_handle = paths.get_user_data_handle()
         user_data = shelve.open(user_data_handle)
 
         config = user_data["nyp_platform"]
@@ -59,4 +65,18 @@ class NypPlatform(PlatformSession):
     def _get_token(
         self, client_id: str, client_secret: str, oauth_server: str
     ) -> Optional[PlatformToken]:
+        """Obtains NYPL Platform access token"""
+        token = PlatformToken(client_id, client_secret, oauth_server, self.agent)
+        return token
+
+    def _parse_response(self, response) -> tuple[Optional[str], Optiona[str]]:
+        pass
+
+    def search(self, keywords: list[str]) -> response[Response]:
+        response = self.get_bib_list(standard_number=keywords)
+        catalog_dup, dup_bibs = self._parse_response(response)
+
+
+class BplSolr(SolrSession):
+    def __init__(self):
         pass
