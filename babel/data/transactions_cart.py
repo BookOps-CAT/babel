@@ -429,7 +429,26 @@ def find_matches(cart_id, progbar=None):
 
         cart_rec = retrieve_record(session, Cart, did=cart_id)
         ord_recs = retrieve_records(session, Order, cart_id=cart_id)
+
+        # determine appropriate middleware to query for dups in the catalog
+        if cart_id.system_id == 1:
+            # BPL Solr
+            middleware = BplSolr()
+        elif cart_id.system_id == 2:
+            # NYPL Platform
+            if cart_id.library == 1:
+                library = "branch"
+            elif cart_id.library == 2:
+                library = "research"
+            else:
+                library = None
+            middleware = NypPlatform(library)
+        else:
+            middleware = None
+
         for rec in ord_recs:
+
+            # check for internal duplicates
             keyword = None
             if rec.resource.isbn:
                 keyword = rec.resource.isbn
@@ -440,28 +459,42 @@ def find_matches(cart_id, progbar=None):
                 keyword = rec.resource.upc
                 babel_dup = babel_resource_match(upc=keyword)
             else:
-                catalog_dup = False
                 babel_dup = False
 
-            catalog_dup = catalog_match(cart_rec.system_id, keyword)
+            # check for duplicates in the catalog
+            if middleware is not None:
+                catalog_dup, dup_bibs = catalog_match(
+                    middleware, cart_rec.system_id, keyword
+                )
 
-            mlogger.debug(
-                f"Found following order matches: catalog={catalog_dup}, "
-                f"babel={babel_dup}"
-            )
+                mlogger.debug(
+                    f"Found following order matches: catalog={catalog_dup}, "
+                    f"babel={babel_dup}"
+                )
+            else:
+                catalog_dup = None
+                dup_bibs = None
 
             update_record(
                 session,
                 Resource,
                 rec.resource.did,
-                dup_catalog=catalog_dup,
                 dup_babel=babel_dup,
+                dup_catalog=catalog_dup,
+                dup_catalog_bibs=dub_bibs,
                 dup_timestamp=datetime.now(),
             )
 
             if progbar:
                 progbar["value"] += 1
                 progbar.update()
+
+        # close session with middleware
+        if middleware is not None:
+            try:
+                middleware.close()
+            except:
+                pass
 
 
 @lru_cache(maxsize=24)
