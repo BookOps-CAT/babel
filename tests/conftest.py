@@ -2,6 +2,7 @@ import os
 import shelve
 
 from bookops_nypl_platform import PlatformToken
+from bookops_nypl_platform.errors import BookopsPlatformError
 import pytest
 import keyring
 from keyring.backends.Windows import WinVaultKeyring
@@ -58,6 +59,11 @@ def dummy_user_data(dummy_user_data_handle, mock_platform_post_token_response_20
 # NYPL Platform fixtures
 
 
+class MockPlatformException:
+    def __init__(self, *args, **kwargs):
+        raise BookopsPlatformError
+
+
 class MockPlatformAuthServerResponseSuccess:
     """Simulates oauth server response to successful token request"""
 
@@ -82,116 +88,6 @@ class MockPlatformAuthServerResponseFailure:
 
     def json(self):
         return {"error": "No grant_type specified", "error_description": None}
-
-
-class MockPlatformSessionGetBibResponseSuccess:
-    """Simulates NYPL Platform query successful response"""
-
-    def __init__(self):
-        self.status_code = 200
-        self.url = "request_url_here"
-
-    def json(self):
-        return {
-            "data": {
-                "id": "18578797",
-                "deleted": False,
-                "suppressed": False,
-                "title": "Zendegi",
-                "author": "Egan, Greg, 1961-",
-                "standardNumbers": ["9781597801744", "1597801747"],
-                "controlNumber": "2010074825",
-                "fixedFields": {
-                    "24": {"label": "Language", "value": "eng", "display": "English"},
-                    "107": {"label": "MARC Type", "value": " ", "display": None},
-                },
-                "varFields": [
-                    {
-                        "fieldTag": "c",
-                        "marcTag": "091",
-                        "ind1": " ",
-                        "ind2": " ",
-                        "content": None,
-                        "subfields": [
-                            {"tag": "a", "content": "SCI-FI"},
-                            {"tag": "c", "content": "EGAN"},
-                        ],
-                    },
-                    {
-                        "fieldTag": "o",
-                        "marcTag": "001",
-                        "ind1": " ",
-                        "ind2": " ",
-                        "content": "2010074825",
-                        "subfields": None,
-                    },
-                    {
-                        "fieldTag": "t",
-                        "marcTag": "245",
-                        "ind1": "1",
-                        "ind2": "0",
-                        "content": None,
-                        "subfields": [
-                            {"tag": "a", "content": "Zendegi /"},
-                            {"tag": "c", "content": "Greg Egan."},
-                        ],
-                    },
-                    {
-                        "fieldTag": "y",
-                        "marcTag": "003",
-                        "ind1": " ",
-                        "ind2": " ",
-                        "content": "OCoLC",
-                        "subfields": None,
-                    },
-                ],
-            },
-            "count": 1,
-            "totalCount": 0,
-            "statusCode": 200,
-            "debugInfo": [],
-        }
-
-
-class MockPlatformSessionGetBibResponseDeletedRecord:
-    """Simulates NYPL Platform query response for deleted record"""
-
-    def __init__(self):
-        self.status_code = 200
-        self.url = "request_url_here"
-
-    def json(self):
-        return {
-            "data": {
-                "id": "19099433",
-                "nyplSource": "sierra-nypl",
-                "nyplType": "bib",
-                "updatedDate": None,
-                "createdDate": "2017-08-23T17:59:35-04:00",
-                "deletedDate": "2011-09-15",
-                "deleted": True,
-                "locations": [],
-                "suppressed": None,
-                "lang": None,
-                "title": None,
-                "author": None,
-                "materialType": None,
-                "bibLevel": None,
-                "publishYear": None,
-                "catalogDate": None,
-                "country": None,
-                "normTitle": None,
-                "normAuthor": None,
-                "standardNumbers": [],
-                "controlNumber": "",
-                "fixedFields": [],
-                "varFields": [],
-            },
-            "count": 1,
-            "totalCount": 0,
-            "statusCode": 200,
-            "debugInfo": [],
-        }
 
 
 class MockPlatformSessionGetListResponseSuccess:
@@ -406,6 +302,24 @@ class MockPlatformSessionGetListResponseSuccess:
         }
 
 
+class MockPlatformSessionIsResearchResponseSuccessTrue:
+    def __init__(self):
+        self.status_code = 200
+        self.url = "request_url_here"
+
+    def json(self):
+        return {"nyplSource": "sierra-nypl", "id": "21776219", "isResearch": True}
+
+
+class MockPlatformSessionIsResearchResponseSuccessFalse:
+    def __init__(self):
+        self.status_code = 200
+        self.url = "request_url_here"
+
+    def json(self):
+        return {"nyplSource": "sierra-nypl", "id": "21742979", "isResearch": False}
+
+
 class MockPlatformSessionResponseNotFound:
     """Simulates NYPL Platform failed query response"""
 
@@ -440,17 +354,25 @@ def mock_platform_post_token_response_400http(monkeypatch):
 
 
 @pytest.fixture
-def mock_platform_session_get_bib_response_200http(monkeypatch):
+def mock_platform_session_get_list_response_200http(monkeypatch):
     def mock_api_response(*args, **kwargs):
-        return MockPlatformSessionGetBibResponseSuccess()
+        return MockPlatformSessionGetListResponseSuccess()
 
     monkeypatch.setattr(requests.Session, "get", mock_api_response)
 
 
 @pytest.fixture
-def mock_platform_session_get_bib_response_200http_deleted_record(monkeypatch):
+def mock_platform_session_is_research_response_200http_true(monkeypatch):
     def mock_api_response(*args, **kwargs):
-        return MockPlatformSessionGetBibResponseDeletedRecord()
+        return MockPlatformSessionIsResearchResponseSuccessTrue()
+
+    monkeypatch.setattr(requests.Session, "get", mock_api_response)
+
+
+@pytest.fixture
+def mock_platform_session_is_research_response_200http_false(monkeypatch):
+    def mock_api_response(*args, **kwargs):
+        return MockPlatformSessionIsResearchResponseSuccessFalse()
 
     monkeypatch.setattr(requests.Session, "get", mock_api_response)
 
@@ -464,8 +386,43 @@ def mock_platform_session_response_404http_not_found(monkeypatch):
 
 
 @pytest.fixture
+def mock_platform_error(monkeypatch):
+    monkeypatch.setattr(requests.Session, "get", MockPlatformException)
+
+
+@pytest.fixture
 def mock_platform(
     dummy_user_data, mock_vault, mock_platform_post_token_response_200http
 ):
-    with NypPlatform("branch", dummy_user_data) as middleware:
+    with NypPlatform("branches", dummy_user_data) as middleware:
         yield middleware
+
+
+@pytest.fixture
+def mock_platform_determine_library_matches(monkeypatch):
+    def _patch(*args, **kwargs):
+        return ["21742979"]
+
+    monkeypatch.setattr(
+        "babel.sierra_adapters.middleware.NypPlatform._determine_library_matches",
+        _patch,
+    )
+
+
+@pytest.fixture
+def mock_platform_determine_library_matches_none(monkeypatch):
+    def _patch(*args, **kwargs):
+        return []
+
+    monkeypatch.setattr(
+        "babel.sierra_adapters.middleware.NypPlatform._determine_library_matches",
+        _patch,
+    )
+
+
+@pytest.fixture
+def mock_platform_determine_library_matches_error(monkeypatch):
+    monkeypatch.setattr(
+        "babel.sierra_adapters.middleware.NypPlatform._determine_library_matches",
+        MockPlatformException,
+    )

@@ -11,6 +11,7 @@ from typing import Optional, Union
 
 from bookops_bpl_solr import SolrSession
 from bookops_nypl_platform import PlatformToken, PlatformSession
+from bookops_nypl_platform.errors import BookopsPlatformError
 
 
 try:
@@ -42,15 +43,15 @@ class NypPlatform(PlatformSession):
         Relies on credentials stores in Windows Credential Manager.
 
         Args:
-                library:            'branch' or 'research'
+                library:            'branches' or 'research'
                 creds_fh:           path to user_data `shelve.BsdDbShelf` instance
         """
         mlogger.info("Initiating session with Platform.")
 
-        self.library = library  # branch or research
+        self.library = library  # branches or research
         self.creds_fh = creds_fh
 
-        if self.library not in ("branch", "research", None):
+        if self.library not in ("branches", "research", None):
             mlogger.error(
                 "Invalid library argument passed to NypPlatform. Unable to open Platfrom session."
             )
@@ -124,17 +125,32 @@ class NypPlatform(PlatformSession):
         Returns:
             bib_nos:                list of bib numbers as strings
         """
-        bib_nos = []
-        data = response.json()["data"]
-        for bib in data:
-            bib_nos.append(bib["id"])
+        return [bib["id"] for bib in response.json()["data"]]
 
-        return bib_nos
+    def _is_library_match(self, is_research: bool) -> bool:
+        """
+        Determines if cart library matches library on matching Platform bib
 
-    def _find_library_matches(self, bib_nos: list[str]) -> list[str]:
+        Args:
+            is_research:            Platform's `is_research` bib field value
+
+        Returns:
+            bool
+        """
+
+        if self.library is None:
+            return True
+        elif self.library == "research" and is_research:
+            return True
+        elif self.library == "branches" and not is_research:
+            return True
+        else:
+            return False
+
+    def _determine_library_matches(self, bib_nos: list[str]) -> list[str]:
         """
         Performs a search to determine if bib on the provided list
-        matches library.
+        matches proper NYPL library (branches or research).
 
         Args:
             bib_nos:                list of Sierra bib numbers as strings
@@ -143,25 +159,14 @@ class NypPlatform(PlatformSession):
             library_bib_nos
         """
         matches = []
-        if self.library is None:
-            return matches
-        else:
-            for bib_no in bib_nos:
-                try:
-                    response = self.check_bib_is_research(id=bib_no)
-                    if response.status_code == 200:
-                        if (
-                            self.library == "research"
-                            and response.json()["is_research"]
-                        ):
-                            matches.append(bib_no)
-                        elif (
-                            self.library == "branch"
-                            and not response.json()["is_research"]
-                        ):
-                            matches.append(bib_no)
-                except BookopsPlatformError as exc:
-                    pass
+
+        for bib_no in bib_nos:
+            response = self.check_bib_is_research(id=bib_no)
+            if response.status_code == 200 and self._is_library_match(
+                response.json()["isResearch"]
+            ):
+                matches.append(bib_no)
+
         return matches
 
     def search(self, keywords: list[str]) -> tuple[bool, str]:
@@ -179,14 +184,18 @@ class NypPlatform(PlatformSession):
             response = self.search_standardNos(keywords=keywords, deleted=False)
             if response.status_code == 200:
                 bib_nos = self._get_bib_nos(response)
-                library_matches = self._find_library_matches(bib_nos)
+                library_matches = self._determine_library_matches(bib_nos)
                 if library_matches:
                     catalog_dup = True
-                    dup_bibs = ",".join(ibrary_matches)
+                    dup_bibs = ",".join(library_matches)
+                else:
+                    catalog_dup = False
+                    dup_bibs = None
             else:
-                catalog_dup = None
+                catalog_dup = False
                 dup_bibs = None
         except BookopsPlatformError:
+            mlogger.warning("Encountered problem with Platform request. Skipping.")
             catalog_dup = None
             dup_bibs = None
 
