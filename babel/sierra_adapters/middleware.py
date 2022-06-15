@@ -27,10 +27,19 @@ except ImportError:
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
 
 
-def catalog_match(middleware: Union[PlatformSession, SolrSession], keywords: list[str]):
-    catalog_dup = None
-    dup_bibs = []
+def catalog_match(
+    middleware: Union[PlatformSession, SolrSession], keywords: list[str]
+) -> tuple[bool, str]:
+    """
+    Performs a search in given middleware for given keywords (ISBN, UPC)
 
+    Args:
+        middleware:                 `NypPlatform` or `BplSolr` instance
+        keywords:                   list of ISBNs or UPC to search middleware
+
+    Returns:
+        bool, bib#s as comma separated string
+    """
     catalog_dup, dup_bibs = middleware.search(keywords)
 
     return catalog_dup, dup_bibs
