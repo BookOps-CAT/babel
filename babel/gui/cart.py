@@ -57,6 +57,7 @@ from gui.fonts import RFONT, RBFONT, LFONT
 from gui.utils import ToolTip, BusyManager, get_id_from_index, open_url
 from gui.edit_resource import EditResourceWidget
 from logging_settings import LogglyAdapter
+from paths import get_user_data_handle
 from reports.cart import tabulate_cart_data
 from sierra_adapters.middleware import *
 
@@ -1936,7 +1937,8 @@ class CartView(Frame):
     def run_duplicate_search(self, top, progbar):
         self.cur_manager.busy()
         try:
-            find_matches(self.cart_id.get(), progbar)
+            creds_fh = get_user_data_handle()
+            find_matches(self.cart_id.get(), creds_fh, progbar)
             self.cur_manager.notbusy()
         except BabelError as e:
             self.cur_manager.notbusy()

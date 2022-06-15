@@ -23,7 +23,7 @@ from gui.settings import SettingsView
 from gui.update import UpdateWidget
 from gui.utils import open_url, enable_widgets, disable_widgets
 from logging_settings import LogglyAdapter
-from paths import USER_DATA
+from paths import get_user_data_handle
 
 
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
@@ -132,7 +132,6 @@ class Base(Tk):
 
         help_menu = Menu(menubar, tearoff=0)
         help_menu.add_command(label="Help index", command=self.open_help)
-        help_menu.add_command(label="Updates", command=self.check_for_updates)
         help_menu.add_separator()
         help_menu.add_command(label="About", command=self.open_about)
         menubar.add_cascade(label="Help", menu=help_menu)
@@ -143,7 +142,8 @@ class Base(Tk):
         self.profile_idx = create_name_index(User)
 
         # profile & system
-        user_data = shelve.open(USER_DATA)
+        user_data_fh = get_user_data_handle()
+        user_data = shelve.open(user_data_fh)
         try:
             self.profile.set(user_data["profile"])
             self.system.set(user_data["system"])
@@ -302,7 +302,8 @@ class Base(Tk):
 
         # check if newer available
         update_prompt = False
-        user_data = shelve.open(USER_DATA)
+        user_data_fh = get_user_data_handle()
+        user_data = shelve.open(user_data_fh)
         if "update_dir" in user_data:
             remote_version = determine_version(user_data["update_dir"])
             if local_version != remote_version:
@@ -340,12 +341,14 @@ class Base(Tk):
 
     def profile_observer(self, *args):
         if self.profile.get() != "All users":
-            user_data = shelve.open(USER_DATA)
+            user_data_fh = get_user_data_handle()
+            user_data = shelve.open(user_data_fh)
             user_data["profile"] = self.profile.get()
             user_data.close()
 
     def system_observer(self, *args):
-        user_data = shelve.open(USER_DATA)
+        user_data_fh = get_user_data_handle()
+        user_data = shelve.open(user_data_fh)
         user_data["system"] = self.system.get()
         user_data.close()
 
