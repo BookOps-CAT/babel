@@ -48,7 +48,7 @@ from data.transactions_carts import get_cart_details_as_dataframe
 from data.wlo_generator import wlo_pool
 from gui.utils import get_id_from_index
 from logging_settings import format_traceback, LogglyAdapter
-from sierra_adapters.middleware import catalog_match
+from sierra_adapters.middleware import catalog_match, NypPlatform, BplSolr
 
 
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
@@ -419,7 +419,7 @@ def determine_needs_validation(cart_id):
             return True
 
 
-def find_matches(cart_id, progbar=None):
+def find_matches(cart_id, creds_fh, progbar=None):
     with session_scope() as session:
 
         if progbar:
@@ -431,49 +431,53 @@ def find_matches(cart_id, progbar=None):
         ord_recs = retrieve_records(session, Order, cart_id=cart_id)
 
         # determine appropriate middleware to query for dups in the catalog
-        if cart_id.system_id == 1:
+        if cart_rec.system_id == 1:
             # BPL Solr
-            middleware = BplSolr()
-        elif cart_id.system_id == 2:
+            middleware = BplSolr(creds_fh)
+        elif cart_rec.system_id == 2:
             # NYPL Platform
-            if cart_id.library == 1:
-                library = "branch"
-            elif cart_id.library == 2:
+            if cart_rec.library_id == 1:
+                library = "branches"
+            elif cart_rec.library_id == 2:
                 library = "research"
             else:
                 library = None
-            middleware = NypPlatform(library)
+            middleware = NypPlatform(library, creds_fh)
         else:
             middleware = None
 
         for rec in ord_recs:
 
             # check for internal duplicates
-            keyword = None
+            keywords = []
             if rec.resource.isbn:
-                keyword = rec.resource.isbn
+                keywords.append(rec.resource.isbn)
                 babel_dup = babel_resource_match(
-                    session, cart_rec.system_id, cart_rec.library_id, isbn=keyword
+                    session,
+                    cart_rec.system_id,
+                    cart_rec.library_id,
+                    isbn=rec.resource.isbn,
                 )
             elif rec.resource.upc:
-                keyword = rec.resource.upc
-                babel_dup = babel_resource_match(upc=keyword)
+                keywords.append(rec.resource.upc)
+                babel_dup = babel_resource_match(upc=rec.resource.upc)
             else:
                 babel_dup = False
 
             # check for duplicates in the catalog
-            if middleware is not None:
-                catalog_dup, dup_bibs = catalog_match(
-                    middleware, cart_rec.system_id, keyword
-                )
-
-                mlogger.debug(
-                    f"Found following order matches: catalog={catalog_dup}, "
-                    f"babel={babel_dup}"
-                )
+            mlogger.debug(
+                f"Identified following keywords for middleware query: {keywords}"
+            )
+            if middleware is not None and keywords:
+                catalog_dup, dup_bibs = catalog_match(middleware, keywords)
             else:
                 catalog_dup = None
                 dup_bibs = None
+
+            mlogger.debug(
+                f"Found following order matches: babel={babel_dup}, catalog={catalog_dup}, "
+                f"dub_bibs={dup_bibs}."
+            )
 
             update_record(
                 session,
@@ -481,7 +485,7 @@ def find_matches(cart_id, progbar=None):
                 rec.resource.did,
                 dup_babel=babel_dup,
                 dup_catalog=catalog_dup,
-                dup_catalog_bibs=dub_bibs,
+                dup_bibs=dup_bibs,
                 dup_timestamp=datetime.now(),
             )
 
