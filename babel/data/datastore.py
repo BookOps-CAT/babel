@@ -300,7 +300,7 @@ class Resource(Base):
     misc = Column(String(250))
     dup_babel = Column(Boolean)
     dup_catalog = Column(Boolean)
-    dup_catalog_bibs = Column(String)
+    dup_bibs = Column(String(length=200, collation="utf8_bin"))
     dup_timestamp = Column(DateTime)
 
     order = relationship("Order", back_populates="resource", lazy="joined")
