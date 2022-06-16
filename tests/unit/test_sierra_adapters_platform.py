@@ -11,7 +11,43 @@ from babel.errors import BabelError
 from babel.sierra_adapters.middleware import NypPlatform
 
 
-from tests.conftest import MockPlatformSessionGetListResponseSuccess
+from tests.conftest import (
+    MockPlatformSessionGetListResponseSuccess,
+    MockPlatformSessionGetBibResponseSuccess,
+    MockPlatformSessionGetItemsResponseSuccess,
+)
+
+
+def test_closing_platform_session(
+    dummy_user_data_handle,
+    dummy_user_data,
+    mock_platform_post_token_response_200http,
+    mock_vault,
+):
+    user_data = shelve.open(dummy_user_data_handle)
+    user_data.pop("platform_token", None)
+    user_data.close()
+
+    with NypPlatform("branches", dummy_user_data) as platform:
+        pass
+
+    user_data = shelve.open(dummy_user_data_handle)
+    assert isinstance(user_data["platform_token"], PlatformToken)
+    user_data.close()
+
+
+@pytest.mark.parametrize("arg", ["", "foo", 1])
+def test_invalid_library_arg(caplog, arg, dummy_user_data, mock_vault):
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(BabelError) as exc:
+            NypPlatform(arg, dummy_user_data)
+
+        assert "Invalid library argument passed" in str(exc.value)
+
+    assert (
+        f"Invalid library argument passed to NypPlatform. Unable to open Platfrom session."
+        in caplog.text
+    )
 
 
 @pytest.mark.parametrize("arg", [None, "branches", "research"])
@@ -32,20 +68,6 @@ def test_valid_library_arg(
             session.close()
 
     assert "Initiating session with Platform." in caplog.text
-
-
-@pytest.mark.parametrize("arg", ["", "foo", 1])
-def test_invalid_library_arg(caplog, arg, dummy_user_data, mock_vault):
-    with caplog.at_level(logging.ERROR):
-        with pytest.raises(BabelError) as exc:
-            NypPlatform(arg, dummy_user_data)
-
-        assert "Invalid library argument passed" in str(exc.value)
-
-    assert (
-        f"Invalid library argument passed to NypPlatform. Unable to open Platfrom session."
-        in caplog.text
-    )
 
 
 def test_get_credentials(caplog, dummy_user_data, mock_platform):
@@ -224,19 +246,83 @@ def test_store_token(mock_platform, dummy_user_data_handle):
     user_data.close()
 
 
-def test_closing_platform_session(
-    dummy_user_data_handle,
-    dummy_user_data,
-    mock_platform_post_token_response_200http,
-    mock_vault,
+def test_parse_bibliographic_data(mock_platform):
+    response = MockPlatformSessionGetBibResponseSuccess()
+    data = response.json()
+
+    assert mock_platform._parse_bibliographic_data(data) == dict(
+        bibNo="21742979",
+        title="The ABC of It : why children's books matter",
+        author="Marcus, Leonard S., 1950- author.",
+        pubDate=2019,
+        pubPlace="Minnesota",
+    )
+
+
+def test_get_bib_success(mock_platform, mock_platform_session_get_bib_response_200http):
+    result = mock_platform._get_bib("21742979")
+    assert isinstance(result, dict)
+
+
+def test_get_bib_failure(
+    mock_platform, mock_platform_session_response_404http_not_found
 ):
-    user_data = shelve.open(dummy_user_data_handle)
-    user_data.pop("platform_token", None)
-    user_data.close()
+    result = mock_platform._get_bib("21742979")
+    assert result is None
 
-    with NypPlatform("branches", dummy_user_data) as platform:
-        pass
 
-    user_data = shelve.open(dummy_user_data_handle)
-    assert isinstance(user_data["platform_token"], PlatformToken)
-    user_data.close()
+def test_get_bib_exception(mock_platform, mock_platform_error):
+    with does_not_raise():
+        result = mock_platform._get_bib("21742979")
+    assert result is None
+
+
+def test_parse_item_data(mock_platform):
+    response = MockPlatformSessionGetItemsResponseSuccess()
+    data = response.json()
+
+    result = mock_platform._parse_item_data(data)
+
+    assert isinstance(result, list)
+    for item in result:
+        assert isinstance(item, dict)
+
+        assert sorted(item.keys()) == sorted(
+            ["locCode", "locName", "status", "circ", "lastCheck"]
+        )
+
+    item = result[0]
+    assert item["locCode"] == "sgj0v"
+    assert item["locName"] == "St. George Children's Non-Print Media"
+    assert item["status"] == "CLOSED BRANCH"
+    assert item["circ"] == "29+21"
+    assert item["lastCheck"] == "2020-12-15"
+
+
+def test_get_items_success(
+    mock_platform, mock_platform_session_get_items_response_200http
+):
+    result = mock_platform._get_items("21742979")
+
+    assert isinstance(result, dict)
+
+
+def test_get_items_failed(
+    mock_platform, mock_platform_session_response_404http_not_found
+):
+    result = mock_platform._get_items("21742979")
+
+    assert result is None
+
+
+def test_get_items_exception(caplog, mock_platform, mock_platform_error):
+    with caplog.at_level(logging.WARNING):
+        with does_not_raise():
+            result = mock_platform._get_items("21742979")
+
+    assert result is None
+    assert "Unable to retrieve bib 21742979 item data from Platform." in caplog.text
+
+
+def test_get_bib_and_item_data():
+    pass

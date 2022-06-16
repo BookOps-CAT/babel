@@ -1,6 +1,9 @@
 """
 This modules handles calls to particular Sierra middleware to discover
 any duplicates in the ILS.
+
+Retireved and passed along data to other modules should be already sanitized
+on this stage.
 """
 import os
 import logging
@@ -27,6 +30,22 @@ except ImportError:
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
 
 
+def catalog_lookup(middleware: Union[PlatformSession, SolrSession], sierra_number: str):
+    """
+    Looks up bibliographic and item data in Sierra.
+    Makes two requests: first to obtain bib data then second to obtain its items data
+
+    Args:
+        middleware:                 `NypPlatform` or `BplSolr` instance
+        sierra_number:              Sierra bib number, 8 digits without b prefix
+
+    Returns:
+
+    """
+    bib_data, item_data = middleware.get_bib_and_item_data(siera_number)
+    return bib_data, item_data
+
+
 def catalog_match(
     middleware: Union[PlatformSession, SolrSession], keywords: list[str]
 ) -> tuple[bool, str]:
@@ -43,21 +62,6 @@ def catalog_match(
     catalog_dup, dup_bibs = middleware.search(keywords)
 
     return catalog_dup, dup_bibs
-
-
-def catalog_lookup(middleware: Union[PlatformSession, SolrSession], sierra_number: str):
-    """
-    Looks up bibliographic and item data in Sierra.
-    Makes two requests: first to obtain bib data then second to obtain its items data
-
-    Args:
-        middleware:                 `NypPlatform` or `BplSolr` instance
-        sierra_number:              Sierra bib number, 8 digits without b prefix
-
-    Returns:
-
-    """
-    pass
 
 
 class NypPlatform(PlatformSession):
@@ -224,6 +228,113 @@ class NypPlatform(PlatformSession):
             dup_bibs = None
 
         return catalog_dup, dup_bibs
+
+    def get_bib_and_item_data(
+        self, sierra_number: str
+    ) -> tuple[Optional[dict], Optional[dict]]:
+        """
+        Retrieves from the Platform bib bibliographic and item data.
+
+        Args:
+            sierra_number:          sierra 8 digit bib number
+
+        Returns:
+            tuple of two dictionaries (bib_data, item_data)
+        """
+        bib = self._get_bib(sierra_number)
+        bib_data = self._parse_bibliographic_data(bib)
+        item = self._get_items(sierra_number)
+        item_data = self._parse_item_data(bib)
+
+        return bib_data, item_data
+
+    def _parse_bibliographic_data(self, data: dict) -> dict:
+        """
+        Parses Platform response of the /bibs/{nyplSource}/{id} endpoint
+
+        Args:
+            data:                   Platform response as dictionary
+
+        Returns:
+            bib#, author, title, pub data as dictionary
+        """
+        data = data["data"]
+        return dict(
+            bibNo=data["id"],
+            title=data["title"],
+            author=data["author"],
+            pubDate=data["publishYear"],
+            pubPlace=data["country"]["name"],
+        )
+
+    def _parse_item_data(self, data: dict) -> list[dict]:
+        """
+        Parses Platform response of the bibs/{nyplSource}/{id}/items endpoint.
+
+        Args:
+            data:                   Platform response as dictionary
+
+        Returns:
+            list of dict with loc_code, loc_name, status, circ, last_check
+        """
+        items = []
+        for item in data["data"]:
+            items.append(
+                dict(
+                    locCode=item["location"]["code"],
+                    locName=item["location"]["name"],
+                    status=item["status"]["display"],
+                    circ=f"{item['fixedFields']['76']['value']}+{item['fixedFields']['77']['value']}",
+                    lastCheck=f"{item['fixedFields']['78']['value'][:10]}",
+                )
+            )
+        return items
+
+    def _get_bib(self, sierra_number: str) -> Optional[dict]:
+        """
+        Makes a request for given Sierra record.
+
+        Args:
+            sierra_number:          sierra 8 digit bib number
+
+        Returns:
+            json response as dict
+        """
+        try:
+            response = self.get_bib(id=sierra_number)
+        except BookopsPlatformError:
+            mlogger.warning(
+                f"Unable to retireve {sierra_number} bib data from Platform."
+            )
+            response = None
+
+        if response and response.status_code == 200:
+            return response.json()
+        else:
+            return None
+
+    def _get_items(self, sierra_number: str) -> Optional[dict]:
+        """
+        Makes a request for items attached to given sierra bib nubmer.
+
+        Args:
+            sierra_number:          sierra 8 digit bib number
+
+        Returns:
+            json response as dict
+        """
+        try:
+            response = self.get_bib_items(id=sierra_number)
+        except BookopsPlatformError:
+            mlogger.warning(
+                f"Unable to retrieve {sierra_number} item data from Platform."
+            )
+            response = None
+
+        if response and response.status_code == 200:
+            return response.json()
+        else:
+            return None
 
     def _store_token(self):
         if isinstance(self.authorization, PlatformToken):
