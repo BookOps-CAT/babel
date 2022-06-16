@@ -304,7 +304,7 @@ class NypPlatform(PlatformSession):
             response = self.get_bib(id=sierra_number)
         except BookopsPlatformError:
             mlogger.warning(
-                f"Unable to retireve {sierra_number} bib data from Platform."
+                f"Unable to retireve bib {sierra_number} data from Platform."
             )
             response = None
 
@@ -327,7 +327,7 @@ class NypPlatform(PlatformSession):
             response = self.get_bib_items(id=sierra_number)
         except BookopsPlatformError:
             mlogger.warning(
-                f"Unable to retrieve {sierra_number} item data from Platform."
+                f"Unable to retrieve bib {sierra_number} item data from Platform."
             )
             response = None
 

@@ -271,10 +271,13 @@ def test_get_bib_failure(
     assert result is None
 
 
-def test_get_bib_exception(mock_platform, mock_platform_error):
-    with does_not_raise():
-        result = mock_platform._get_bib("21742979")
+def test_get_bib_exception(caplog, mock_platform, mock_platform_error):
+    with caplog.at_level(logging.WARNING):
+        with does_not_raise():
+            result = mock_platform._get_bib("21742979")
+
     assert result is None
+    assert "Unable to retireve bib 21742979 data from Platform."
 
 
 def test_parse_item_data(mock_platform):
