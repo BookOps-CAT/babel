@@ -7,9 +7,6 @@ import logging
 import sys
 
 from sqlalchemy import and_
-
-# from sqlalchemy.dialects import mysql
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import text
 

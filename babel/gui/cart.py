@@ -59,7 +59,6 @@ from gui.edit_resource import EditResourceWidget
 from logging_settings import LogglyAdapter
 from paths import get_user_data_handle
 from reports.cart import tabulate_cart_data
-from sierra_adapters.middleware import *
 
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
 
