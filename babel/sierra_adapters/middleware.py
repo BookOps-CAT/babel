@@ -45,6 +45,21 @@ def catalog_match(
     return catalog_dup, dup_bibs
 
 
+def catalog_lookup(middleware: Union[PlatformSession, SolrSession], sierra_number: str):
+    """
+    Looks up bibliographic and item data in Sierra.
+    Makes two requests: first to obtain bib data then second to obtain its items data
+
+    Args:
+        middleware:                 `NypPlatform` or `BplSolr` instance
+        sierra_number:              Sierra bib number, 8 digits without b prefix
+
+    Returns:
+
+    """
+    pass
+
+
 class NypPlatform(PlatformSession):
     def __init__(self, library: str, creds_fh: str) -> None:
         """
