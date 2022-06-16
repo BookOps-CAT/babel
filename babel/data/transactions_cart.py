@@ -475,8 +475,8 @@ def find_matches(cart_id, creds_fh, progbar=None):
                 dup_bibs = None
 
             mlogger.debug(
-                f"Found following order matches: babel={babel_dup}, catalog={catalog_dup}, "
-                f"dub_bibs={dup_bibs}."
+                f"Found following order matches for {keywords}: babel={babel_dup}, "
+                f"catalog={catalog_dup}, dub_bibs={dup_bibs}."
             )
 
             update_record(
