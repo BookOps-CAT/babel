@@ -45,7 +45,7 @@ from data.transactions_carts import get_cart_details_as_dataframe
 from data.wlo_generator import wlo_pool
 from gui.utils import get_id_from_index
 from logging_settings import format_traceback, LogglyAdapter
-from sierra_adapters.comms import catalog_match
+from sierra_adapters.comms import catalog_dup_search
 from sierra_adapters.platform import NypPlatform
 from sierra_adapters.solr import BplSolr
 
@@ -468,7 +468,7 @@ def find_matches(cart_id, creds_fh, progbar=None):
                 f"Identified following keywords for middleware query: {keywords}"
             )
             if middleware is not None and keywords:
-                catalog_dup, dup_bibs = catalog_match(middleware, keywords)
+                catalog_dup, dup_bibs = catalog_dup_search(middleware, keywords)
             else:
                 catalog_dup = None
                 dup_bibs = None

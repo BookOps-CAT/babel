@@ -19,11 +19,11 @@ def catalog_lookup(middleware: Union[PlatformSession, SolrSession], sierra_numbe
     Returns:
 
     """
-    bib_data, item_data = middleware.get_bib_and_item_data(siera_number)
+    bib_data, item_data = middleware.get_bib_and_item_data(sierra_number)
     return bib_data, item_data
 
 
-def catalog_match(
+def catalog_dup_search(
     middleware: Union[PlatformSession, SolrSession], keywords: list[str]
 ) -> tuple[bool, str]:
     """
