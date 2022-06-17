@@ -1,6 +1,5 @@
 """
-This modules handles calls to particular Sierra middleware to discover
-any duplicates in the ILS.
+This modules handles calls to NYPL Sierra middleware called Platform.
 
 Retireved and passed along data to other modules should be already sanitized
 on this stage.
@@ -9,10 +8,9 @@ import os
 import logging
 from requests import Response
 import shelve
-from typing import Optional, Union
+from typing import Optional
 
 
-from bookops_bpl_solr import SolrSession
 from bookops_nypl_platform import PlatformToken, PlatformSession
 from bookops_nypl_platform.errors import BookopsPlatformError
 
@@ -28,40 +26,6 @@ except ImportError:
     from babel.logging_settings import LogglyAdapter
 
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
-
-
-def catalog_lookup(middleware: Union[PlatformSession, SolrSession], sierra_number: str):
-    """
-    Looks up bibliographic and item data in Sierra.
-    Makes two requests: first to obtain bib data then second to obtain its items data
-
-    Args:
-        middleware:                 `NypPlatform` or `BplSolr` instance
-        sierra_number:              Sierra bib number, 8 digits without b prefix
-
-    Returns:
-
-    """
-    bib_data, item_data = middleware.get_bib_and_item_data(siera_number)
-    return bib_data, item_data
-
-
-def catalog_match(
-    middleware: Union[PlatformSession, SolrSession], keywords: list[str]
-) -> tuple[bool, str]:
-    """
-    Performs a search in given middleware for given keywords (ISBN, UPC)
-
-    Args:
-        middleware:                 `NypPlatform` or `BplSolr` instance
-        keywords:                   list of ISBNs or UPC to search middleware
-
-    Returns:
-        bool, bib#s as comma separated string
-    """
-    catalog_dup, dup_bibs = middleware.search(keywords)
-
-    return catalog_dup, dup_bibs
 
 
 class NypPlatform(PlatformSession):
@@ -242,9 +206,16 @@ class NypPlatform(PlatformSession):
             tuple of two dictionaries (bib_data, item_data)
         """
         bib = self._get_bib(sierra_number)
-        bib_data = self._parse_bibliographic_data(bib)
-        item = self._get_items(sierra_number)
-        item_data = self._parse_item_data(bib)
+        if bib:
+            bib_data = self._parse_bibliographic_data(bib)
+        else:
+            bib_data = None
+
+        items = self._get_items(sierra_number)
+        if items:
+            item_data = self._parse_item_data(items)
+        else:
+            item_data = None
 
         return bib_data, item_data
 
@@ -347,8 +318,3 @@ class NypPlatform(PlatformSession):
         self._store_token()
         for v in self.adapters.values():
             v.close()
-
-
-class BplSolr(SolrSession):
-    def __init__(self):
-        pass

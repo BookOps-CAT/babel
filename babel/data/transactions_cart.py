@@ -45,7 +45,9 @@ from data.transactions_carts import get_cart_details_as_dataframe
 from data.wlo_generator import wlo_pool
 from gui.utils import get_id_from_index
 from logging_settings import format_traceback, LogglyAdapter
-from sierra_adapters.middleware import catalog_match, NypPlatform, BplSolr
+from sierra_adapters.comms import catalog_match
+from sierra_adapters.platform import NypPlatform
+from sierra_adapters.solr import BplSolr
 
 
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
