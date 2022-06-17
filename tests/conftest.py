@@ -668,3 +668,30 @@ def mock_platform_determine_library_matches_error(monkeypatch):
         "babel.sierra_adapters.middleware.NypPlatform._determine_library_matches",
         MockPlatformException,
     )
+
+
+@pytest.fixture
+def mock_platform_get_bib_success(monkeypatch):
+    def _patch(*args, **kwargs):
+        return MockPlatformSessionGetBibResponseSuccess().json()
+
+    monkeypatch.setattr("babel.sierra_adapters.middleware.NypPlatform._get_bib", _patch)
+
+
+@pytest.fixture
+def mock_platform_get_items_not_found(monkeypatch):
+    def _patch(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        "babel.sierra_adapters.middleware.NypPlatform._get_items",
+        _patch,
+    )
+
+
+@pytest.fixture
+def mock_platform_get_bib_not_found(monkeypatch):
+    def _patch(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr("babel.sierra_adapters.middleware.NypPlatform._get_bib", _patch)

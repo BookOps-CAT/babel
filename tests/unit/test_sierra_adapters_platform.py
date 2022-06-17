@@ -327,5 +327,41 @@ def test_get_items_exception(caplog, mock_platform, mock_platform_error):
     assert "Unable to retrieve bib 21742979 item data from Platform." in caplog.text
 
 
-def test_get_bib_and_item_data():
-    pass
+def test_get_bib_and_item_data_success(
+    mock_platform,
+    mock_platform_get_bib_success,
+    mock_platform_session_get_items_response_200http,
+):
+    result = mock_platform.get_bib_and_item_data("21742979")
+    assert isinstance(result, tuple)
+    assert isinstance(result[0], dict)
+    assert isinstance(result[1], list)
+    for item in result[1]:
+        assert isinstance(item, dict)
+
+
+def test_get_bib_and_item_data_no_items(
+    mock_platform,
+    mock_platform_session_get_bib_response_200http,
+    mock_platform_get_items_not_found,
+):
+    result = mock_platform.get_bib_and_item_data("21742979")
+    assert isinstance(result, tuple)
+    assert isinstance(result[0], dict)
+    assert result[1] is None
+
+
+def test_get_bib_and_item_data_no_bib(
+    mock_platform,
+    mock_platform_get_bib_not_found,
+    mock_platform_session_get_items_response_200http,
+):
+    result = mock_platform.get_bib_and_item_data("21742979")
+    assert isinstance(result, tuple)
+    assert result[0] is None
+
+
+def test_get_bib_and_item_data_error(mock_platform, mock_platform_error):
+    with does_not_raise():
+        result = mock_platform.get_bib_and_item_data("21742979")
+        assert result == (None, None)
