@@ -43,7 +43,7 @@ class NypPlatform(PlatformSession):
         self.library = library  # branches or research
         self.creds_fh = creds_fh
 
-        if self.library not in ("branches", "research", None):
+        if self.library not in ("branches", "research", None, ""):
             mlogger.error(
                 "Invalid library argument passed to NypPlatform. Unable to open Platfrom session."
             )
@@ -130,7 +130,7 @@ class NypPlatform(PlatformSession):
             bool
         """
 
-        if self.library is None:
+        if not self.library:
             return True
         elif self.library == "research" and is_research:
             return True
@@ -250,13 +250,17 @@ class NypPlatform(PlatformSession):
         """
         items = []
         for item in data["data"]:
+            try:
+                lastCheck = f"{item['fixedFields']['78']['value'][:10]}"
+            except KeyError:
+                lastCheck = "-"
             items.append(
                 dict(
                     locCode=item["location"]["code"],
                     locName=item["location"]["name"],
                     status=item["status"]["display"],
                     circ=f"{item['fixedFields']['76']['value']}+{item['fixedFields']['77']['value']}",
-                    lastCheck=f"{item['fixedFields']['78']['value'][:10]}",
+                    lastCheck=lastCheck,
                 )
             )
         return items

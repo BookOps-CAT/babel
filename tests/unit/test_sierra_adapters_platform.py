@@ -36,7 +36,7 @@ def test_closing_platform_session(
     user_data.close()
 
 
-@pytest.mark.parametrize("arg", ["", "foo", 1])
+@pytest.mark.parametrize("arg", [[], "foo", 1])
 def test_invalid_library_arg(caplog, arg, dummy_user_data, mock_vault):
     with caplog.at_level(logging.ERROR):
         with pytest.raises(BabelError) as exc:
@@ -50,7 +50,7 @@ def test_invalid_library_arg(caplog, arg, dummy_user_data, mock_vault):
     )
 
 
-@pytest.mark.parametrize("arg", [None, "branches", "research"])
+@pytest.mark.parametrize("arg", [None, "", "branches", "research"])
 def test_valid_library_arg(
     caplog,
     arg,
