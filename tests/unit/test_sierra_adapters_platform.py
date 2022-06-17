@@ -8,7 +8,7 @@ from bookops_nypl_platform import PlatformToken
 
 from babel import paths
 from babel.errors import BabelError
-from babel.sierra_adapters.middleware import NypPlatform
+from babel.sierra_adapters.platform import NypPlatform
 
 
 from tests.conftest import (

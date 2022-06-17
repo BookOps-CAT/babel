@@ -8,7 +8,7 @@ import keyring
 from keyring.backends.Windows import WinVaultKeyring
 import requests
 
-from babel.sierra_adapters.middleware import NypPlatform
+from babel.sierra_adapters.platform import NypPlatform
 
 from babel import paths
 
@@ -646,7 +646,7 @@ def mock_platform_determine_library_matches(monkeypatch):
         return ["21742979"]
 
     monkeypatch.setattr(
-        "babel.sierra_adapters.middleware.NypPlatform._determine_library_matches",
+        "babel.sierra_adapters.platform.NypPlatform._determine_library_matches",
         _patch,
     )
 
@@ -657,7 +657,7 @@ def mock_platform_determine_library_matches_none(monkeypatch):
         return []
 
     monkeypatch.setattr(
-        "babel.sierra_adapters.middleware.NypPlatform._determine_library_matches",
+        "babel.sierra_adapters.platform.NypPlatform._determine_library_matches",
         _patch,
     )
 
@@ -665,7 +665,7 @@ def mock_platform_determine_library_matches_none(monkeypatch):
 @pytest.fixture
 def mock_platform_determine_library_matches_error(monkeypatch):
     monkeypatch.setattr(
-        "babel.sierra_adapters.middleware.NypPlatform._determine_library_matches",
+        "babel.sierra_adapters.platform.NypPlatform._determine_library_matches",
         MockPlatformException,
     )
 
@@ -675,7 +675,15 @@ def mock_platform_get_bib_success(monkeypatch):
     def _patch(*args, **kwargs):
         return MockPlatformSessionGetBibResponseSuccess().json()
 
-    monkeypatch.setattr("babel.sierra_adapters.middleware.NypPlatform._get_bib", _patch)
+    monkeypatch.setattr("babel.sierra_adapters.platform.NypPlatform._get_bib", _patch)
+
+
+@pytest.fixture
+def mock_platform_get_items_success(monkeypatch):
+    def _patch(*args, **kwargs):
+        return MockPlatformSessionGetItemsResponseSuccess().json()
+
+    monkeypatch.setattr("babel.sierra_adapters.platform.NypPlatform._get_items", _patch)
 
 
 @pytest.fixture
@@ -684,7 +692,7 @@ def mock_platform_get_items_not_found(monkeypatch):
         return None
 
     monkeypatch.setattr(
-        "babel.sierra_adapters.middleware.NypPlatform._get_items",
+        "babel.sierra_adapters.platform.NypPlatform._get_items",
         _patch,
     )
 
@@ -694,4 +702,4 @@ def mock_platform_get_bib_not_found(monkeypatch):
     def _patch(*args, **kwargs):
         return None
 
-    monkeypatch.setattr("babel.sierra_adapters.middleware.NypPlatform._get_bib", _patch)
+    monkeypatch.setattr("babel.sierra_adapters.platform.NypPlatform._get_bib", _patch)
