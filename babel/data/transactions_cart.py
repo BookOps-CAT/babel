@@ -418,7 +418,7 @@ def determine_needs_validation(cart_id):
             return True
 
 
-def find_matches(cart_id, creds_fh, progbar=None):
+def find_matches(cart_id, creds_fh, middleware, progbar=None):
     with session_scope() as session:
 
         if progbar:
@@ -428,22 +428,6 @@ def find_matches(cart_id, creds_fh, progbar=None):
 
         cart_rec = retrieve_record(session, Cart, did=cart_id)
         ord_recs = retrieve_records(session, Order, cart_id=cart_id)
-
-        # determine appropriate middleware to query for dups in the catalog
-        if cart_rec.system_id == 1:
-            # BPL Solr
-            middleware = BplSolr(creds_fh)
-        elif cart_rec.system_id == 2:
-            # NYPL Platform
-            if cart_rec.library_id == 1:
-                library = "branches"
-            elif cart_rec.library_id == 2:
-                library = "research"
-            else:
-                library = None
-            middleware = NypPlatform(library, creds_fh)
-        else:
-            middleware = None
 
         for rec in ord_recs:
 
@@ -491,13 +475,6 @@ def find_matches(cart_id, creds_fh, progbar=None):
             if progbar:
                 progbar["value"] += 1
                 progbar.update()
-
-        # close session with middleware
-        if middleware is not None:
-            try:
-                middleware.close()
-            except:
-                pass
 
 
 @lru_cache(maxsize=24)

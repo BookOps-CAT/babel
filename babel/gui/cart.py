@@ -43,6 +43,7 @@ from data.datastore import (
     Status,
     Library,
 )
+from gui.catalog_dups import CatalogDupWidget
 from gui.carts import CopyCartWidget
 from gui.data_retriever import (
     get_names,
@@ -59,6 +60,7 @@ from gui.edit_resource import EditResourceWidget
 from logging_settings import LogglyAdapter
 from paths import get_user_data_handle
 from reports.cart import tabulate_cart_data
+from sierra_adapters.comms import select_middleware, catalog_lookup
 
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
 
@@ -591,6 +593,9 @@ class CartView(Frame):
         self.profile.trace("w", self.profile_observer)
         max_height = int((self.winfo_screenheight() - 200))
         self.cur_manager = BusyManager(self)
+
+        # middleware session
+        self.middleware = None
 
         # local variables
         self.cart_name = StringVar()
@@ -1319,16 +1324,13 @@ class CartView(Frame):
             res_dup_msg = "no dups in catalog"
             catalogImg = self.notfoundImg
 
-        if resource.isbn:
-            keyword = resource.isbn
-        elif resource.upc:
-            keyword = resource.upc
-        else:
-            keyword = None
-            res_dup_msg = "unable to search catalog"
+        if not resource.isbn and not resource.upc:
+            res_dup_msg = "no identifiers to search catalog"
 
         catalogBtn = Button(
-            resourceFrm, image=catalogImg, command=lambda: self.show_in_catalog(keyword)
+            resourceFrm,
+            image=catalogImg,
+            command=lambda: self.show_in_catalog(resource.dup_bibs),
         )
         catalogBtn.grid(row=0, column=0, sticky="nw", padx=2, pady=5)
         self._createToolTip(catalogBtn, res_dup_msg)
@@ -1935,15 +1937,30 @@ class CartView(Frame):
 
     def run_duplicate_search(self, top, progbar):
         self.cur_manager.busy()
+
+        creds_fh = get_user_data_handle()
+
+        if self.middleware is None:
+            try:
+                self.middleware = select_middleware(
+                    creds_fh, self.system.get(), self.library.get()
+                )
+            except BabelError as e:
+                self.cur_manager.not_busy()
+                messagebox.showerror(
+                    "Unable to connect to Sierra's middlware.", e, parent=top
+                )
+
         try:
-            creds_fh = get_user_data_handle()
-            find_matches(self.cart_id.get(), creds_fh, progbar)
+            find_matches(self.cart_id.get(), creds_fh, self.middleware, progbar)
             self.cur_manager.notbusy()
         except BabelError as e:
             self.cur_manager.notbusy()
             messagebox.showerror("Middleware error.", e, parent=top)
         finally:
             # update display
+            self.middleware.close()
+            self.middleware = None
             top.destroy()
             self.display_selected_orders(self.selected_order_ids)
 
@@ -2254,10 +2271,26 @@ class CartView(Frame):
             for code in sorted(self.fund_idx.values()):
                 listbox.insert(END, code)
 
-    def show_in_catalog(self, keyword):
+    def show_in_catalog(self, sierra_numbers):
         # replace with a widget showing summary of existing orders
 
-        pass
+        dups_data = []
+        sierra_numbers_lst = sierra_numbers.split(",")
+
+        if sierra_numbers_lst:
+
+            if self.middleware is None:
+                user_data = get_user_data_handle()
+                self.middleware = select_middleware(
+                    user_data, self.system.get(), self.library.get()
+                )
+            for sierra_number in sierra_numbers_lst:
+                bib_data = catalog_lookup(self.middleware, sierra_number)
+                dups_data.append(bib_data)
+
+            # when to close middleware session?
+
+        CatalogDupWidget(self, dups_data)
 
     def tabulate_cart_widget(self):
         """
