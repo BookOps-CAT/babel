@@ -168,7 +168,7 @@ class NypPlatform(PlatformSession):
         Searches NYPL Platform for given ISBNs or UPCs.
 
         Args:
-            keywords:               list or comma separated string of ISBNs
+            keywords:               list of ISBNs or UPCs
                                     or UPCs to search Sierra
             keyword_type:           "isbn" or "upc", not used for NYPL since
                                     standardNumber index used for searching
