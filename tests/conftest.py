@@ -703,3 +703,88 @@ def mock_platform_get_bib_not_found(monkeypatch):
         return None
 
     monkeypatch.setattr("babel.sierra_adapters.platform.NypPlatform._get_bib", _patch)
+
+
+# BPL Solr fixtures
+
+
+class MockSolrSessionResponseSuccess:
+    """Simulates BPL Solr search successful response"""
+
+    def __init__(self):
+        self.status_code = 200
+        self.url = "request_url_here"
+
+    def json(self):
+        return {
+            "response": {
+                "numFound": 1,
+                "start": 0,
+                "numFoundExact": True,
+                "docs": [
+                    {
+                        "id": "11499389",
+                        "title": "Harry Potter and the half-blood prince",
+                        "author_raw": "",
+                        "author": "",
+                        "opac_label": "",
+                        "suppressed": False,
+                        "deleted": False,
+                        "publishYear": 2009,
+                        "isbn": ["1419864173", "9781419864179", "978-1419864179"],
+                        "publisher": "[Burbank, Calif.] : Warner Home Video, [2009] ©2009 ",
+                        "sm_item_data": [
+                            '{"id":"21222725","updatedDate":"2021-12-21T20:34:19Z","createdDate":"2009-12-04T18:25:00Z","deleted":false,"suppressed":true,"bibIds":["11499389"],"location":{"code":"61jdv","name":"Wash Irving Juv DVD"},"status":{"code":"d","display":"DELETE"},"volumes":[],"barcode":"34444856451372","callNumber":"DVD J MOVIE HARRY","varFields":[{"fieldTag":"b","content":"34444856451372"},{"fieldTag":"x","content":"MWT"}],"opacLabel":""}',
+                            '{"id":"21222754","updatedDate":"2021-12-21T20:34:20Z","createdDate":"2009-12-04T18:25:00Z","deleted":false,"suppressed":true,"bibIds":["11499389"],"location":{"code":"32jdv","name":"Coney Isl J DVD"},"status":{"code":"d","display":"DELETE"},"volumes":[],"barcode":"34444856446976","callNumber":"DVD J MOVIE HARRY","varFields":[{"fieldTag":"b","content":"34444856446976"},{"fieldTag":"x","content":"MWT"}],"opacLabel":""}',
+                        ],
+                        "ss_marc_tag_001": "200800068",
+                        "sm_marc_tag_024_a": ["085391200390"],
+                    },
+                    {
+                        "id": "11499399",
+                        "title": "Harry Potter and the half-blood prince",
+                        "author_raw": "",
+                        "author": "",
+                        "opac_label": "",
+                        "suppressed": False,
+                        "deleted": False,
+                        "publishYear": 2009,
+                        "isbn": ["1419864173", "9781419864179", "978-1419864179"],
+                        "publisher": "[Burbank, Calif.] : Warner Home Video, [2009] ©2009 ",
+                        "sm_item_data": [
+                            '{"id":"21222725","updatedDate":"2021-12-21T20:34:19Z","createdDate":"2009-12-04T18:25:00Z","deleted":false,"suppressed":true,"bibIds":["11499389"],"location":{"code":"61jdv","name":"Wash Irving Juv DVD"},"status":{"code":"d","display":"DELETE"},"volumes":[],"barcode":"34444856451372","callNumber":"DVD J MOVIE HARRY","varFields":[{"fieldTag":"b","content":"34444856451372"},{"fieldTag":"x","content":"MWT"}],"opacLabel":""}',
+                            '{"id":"21222754","updatedDate":"2021-12-21T20:34:20Z","createdDate":"2009-12-04T18:25:00Z","deleted":false,"suppressed":true,"bibIds":["11499389"],"location":{"code":"32jdv","name":"Coney Isl J DVD"},"status":{"code":"d","display":"DELETE"},"volumes":[],"barcode":"34444856446976","callNumber":"DVD J MOVIE HARRY","varFields":[{"fieldTag":"b","content":"34444856446976"},{"fieldTag":"x","content":"MWT"}],"opacLabel":""}',
+                        ],
+                        "ss_marc_tag_001": "200800068",
+                        "sm_marc_tag_024_a": ["085391200390"],
+                    },
+                ],
+            }
+        }
+
+
+class MockSolrSessionResponseNotFound:
+    def __init__(self):
+        self.status_code = 200
+        self.url = "query_url_here"
+
+    def json(self):
+        return {
+            "response": {"numFound": 0, "start": 0, "numFoundExact": True, "docs": []}
+        }
+
+
+@pytest.fixture
+def mock_solr_search_success(monkeypatch):
+    def _patch(*args, **kwargs):
+        return MockSolrSessionResponseSuccess()
+
+    monkeypatch.setattr(requests.Session, "get", _patch)
+
+
+@pytest.fixture
+def mock_solr_search_not_found(monkeypatch):
+    def _patch(*args, **kwargs):
+        return MockSolrSessionResponseNotFound()
+
+    monkeypatch.setattr(requests.Session, "get", _patch)
