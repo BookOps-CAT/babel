@@ -66,9 +66,7 @@ DEV_LOGGING = {
             "backupCount": 5,
         },
     },
-    "loggers": {
-        "babel": {"handlers": ["console", "file"], "level": "DEBUG", "propagate": True}
-    },
+    "loggers": {"babel": {"handlers": ["file"], "level": "DEBUG", "propagate": True}},
 }
 
 
