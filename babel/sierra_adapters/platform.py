@@ -38,7 +38,7 @@ class NypPlatform(PlatformSession):
                 library:            'branches' or 'research'
                 creds_fh:           path to user_data `shelve.BsdDbShelf` instance
         """
-        mlogger.info("Initiating session with Platform.")
+        mlogger.info(f"Initiating session with Platform for {library}.")
 
         self.library = library  # branches or research
         self.creds_fh = creds_fh
@@ -319,6 +319,7 @@ class NypPlatform(PlatformSession):
 
     def close(self):
         # store token for future use before closing the session
+        mlogger.info("Closing Platform session.")
         self._store_token()
         for v in self.adapters.values():
             v.close()

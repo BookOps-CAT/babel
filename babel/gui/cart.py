@@ -610,6 +610,7 @@ class CartView(Frame):
         self.glob_grid_template = StringVar()
         self.new_grid = StringVar()
         self.library = StringVar()
+        self.library.trace("w", self.library_observer)
         self.status = StringVar()
         self.lang = StringVar()
         self.lang.set("keep current")
@@ -1476,6 +1477,15 @@ class CartView(Frame):
         # link to Github wiki with documentation here
         open_url("https://github.com/BookOps-CAT/babel/wiki/Cart")
 
+    def library_observer(self, *args):
+        mlogger.debug("Library change: closing current middleware session.")
+        try:
+            self.middleware.close()
+        except:
+            pass
+
+        self.middleware = None
+
     def more_tab_widget(self, tab, resource):
         title = f"{resource.title} / {resource.author}."
         Label(tab, text=title, font=RBFONT).grid(
@@ -2275,22 +2285,30 @@ class CartView(Frame):
         # replace with a widget showing summary of existing orders
 
         dups_data = []
-        sierra_numbers_lst = sierra_numbers.split(",")
+        try:
+            sierra_numbers_lst = sierra_numbers.split(",")
+        except AttributeError:
+            sierra_numbers_lst = []
 
         if sierra_numbers_lst:
 
-            if self.middleware is None:
-                user_data = get_user_data_handle()
-                self.middleware = select_middleware(
-                    user_data, self.system.get(), self.library.get()
-                )
+            user_data = get_user_data_handle()
+            self.middleware = select_middleware(
+                user_data, self.system.get(), self.library.get()
+            )
+
             for sierra_number in sierra_numbers_lst:
                 bib_data = catalog_lookup(self.middleware, sierra_number)
                 dups_data.append(bib_data)
 
-            # when to close middleware session?
+            CatalogDupWidget(self, dups_data)
 
-        CatalogDupWidget(self, dups_data)
+            try:
+                self.middleware.close()
+            except:
+                pass
+
+            self.middleware = None
 
     def tabulate_cart_widget(self):
         """

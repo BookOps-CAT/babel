@@ -25,6 +25,7 @@ class CatalogDupWidget:
 
         self.top = Toplevel(master=self.parent)
         self.top.title("Sierra duplicates")
+        self.top.iconbitmap("./icons/playstation-circle-icon.ico")
         self.cur_manager = BusyManager(self.top)
 
         # pass resource.did to be able to retrieve it's data
@@ -35,13 +36,13 @@ class CatalogDupWidget:
 
         self.resultsTxt = Text(
             frm,
-            width=65,
+            width=125,
             state=("disabled"),
-            wrap=WORD,
+            # wrap=WORD,
             background="SystemButtonFace",
             borderwidth=0,
         )
-        self.resultsTxt.grid(row=0, column=0, sticky="nsw")
+        self.resultsTxt.grid(row=0, column=0, sticky="nsw", padx=20, pady=20)
 
         scrollbar = Scrollbar(frm, orient=VERTICAL)
         scrollbar.grid(row=0, column=1, sticky="snw")
@@ -53,11 +54,40 @@ class CatalogDupWidget:
 
     def display_data(self):
         self.resultsTxt["state"] = "normal"
-        for bib_data, items_data in self.dups_data:
-            self.resultsTxt.insert(END, f"{bib_data['bibNo']}\n")
-            self.resultsTxt.insert(END, f"{bib_data['title']} / {bib_data['author']}\n")
+        row = 1
+        for bib, items in self.dups_data:
+            self.resultsTxt.insert(END, f"b{bib['bibNo']}a\n")
+            self.resultsTxt.tag_add("bibNo", f"{row}.0", f"{row}.end")
+            self.resultsTxt.insert(END, f"{bib['title']} / {bib['author']}\n")
+            self.resultsTxt.tag_add("title", f"{row+1}.0", f"{row+1}.end")
+            self.resultsTxt.insert(END, f"{bib['pubPlace']} - {bib['pubDate']}\n")
             self.resultsTxt.insert(
-                END, f"{bib_data['pubPlace']} - {bib_data['pubDate']}"
+                END,
+                "\t{0:^5s} | {1:^60s} | {2:^20s} | {3:^7s} | {4:^10s}\n".format(
+                    "code", "location", "status", "circ", "lastCheck"
+                ),
             )
+            self.resultsTxt.insert(END, "\t" + "-" * 114 + "\n")
+            row += 6
+            if items:
+                for i in items:
+                    row += 1
+                    self.resultsTxt.insert(
+                        END,
+                        "\t{0:<5s} | {1:<60s} | {2:<20s} | {3:<7s} | {4:<10s}\n".format(
+                            i["locCode"],
+                            i["locName"],
+                            i["status"],
+                            i["circ"],
+                            i["lastCheck"],
+                        ),
+                    )
+                self.resultsTxt.insert(END, "\n")
 
+        self.resultsTxt.tag_config(
+            "bibNo", font=("device", "10", "bold"), foreground="blue2"
+        )
+        self.resultsTxt.tag_config(
+            "title", font=("device", "10", "bold"), foreground="black"
+        )
         self.resultsTxt["state"] = "disable"
