@@ -67,7 +67,7 @@ def test_valid_library_arg(
 
             session.close()
 
-    assert "Initiating session with Platform." in caplog.text
+    assert f"Initiating session with Platform for {arg}." in caplog.text
 
 
 def test_get_credentials(caplog, dummy_user_data, mock_platform):
