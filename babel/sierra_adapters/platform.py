@@ -161,13 +161,18 @@ class NypPlatform(PlatformSession):
 
         return matches
 
-    def search(self, keywords: list[str]) -> tuple[bool, str]:
+    def search(
+        self, keywords: list[str], keyword_type: Optional[str] = None
+    ) -> tuple[bool, str]:
         """
         Searches NYPL Platform for given ISBNs or UPCs.
 
         Args:
             keywords:               list or comma separated string of ISBNs
                                     or UPCs to search Sierra
+            keyword_type:           "isbn" or "upc", not used for NYPL since
+                                    standardNumber index used for searching
+                                    combines both.
 
         Returns:
             catalog_dup & dup_bibs
