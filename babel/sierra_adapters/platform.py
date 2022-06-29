@@ -215,7 +215,7 @@ class NypPlatform(PlatformSession):
             data:                   Platform response as dictionary
 
         Returns:
-            bib#, author, title, pub data as dictionary
+            bibNo, author, title, pub data as dictionary
         """
         data = data["data"]
         return dict(
@@ -234,7 +234,7 @@ class NypPlatform(PlatformSession):
             data:                   Platform response as dictionary
 
         Returns:
-            list of dict with loc_code, loc_name, status, circ, last_check
+            list of dict with locCode, locName, status, circ, lastCheck
         """
         items = []
         for item in data["data"]:
