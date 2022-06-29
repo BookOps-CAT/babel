@@ -3,12 +3,14 @@ import shelve
 
 from bookops_nypl_platform import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
+from bookops_bpl_solr.session import BookopsSolrError
 import pytest
 import keyring
 from keyring.backends.Windows import WinVaultKeyring
 import requests
 
 from babel.sierra_adapters.platform import NypPlatform
+from babel.sierra_adapters.solr import BplSolr
 
 from babel import paths
 
@@ -718,7 +720,7 @@ class MockSolrSessionResponseSuccess:
     def json(self):
         return {
             "response": {
-                "numFound": 1,
+                "numFound": 2,
                 "start": 0,
                 "numFoundExact": True,
                 "docs": [
@@ -774,6 +776,11 @@ class MockSolrSessionResponseNotFound:
         }
 
 
+class MockSolrException:
+    def __init(self, *args, **kwargs):
+        raise BookopsSolrError
+
+
 @pytest.fixture
 def mock_solr_search_success(monkeypatch):
     def _patch(*args, **kwargs):
@@ -788,3 +795,14 @@ def mock_solr_search_not_found(monkeypatch):
         return MockSolrSessionResponseNotFound()
 
     monkeypatch.setattr(requests.Session, "get", _patch)
+
+
+@pytest.fixture
+def mock_solr_error(monkeypatch):
+    monkeypatch.setattr(requests.Session, "get", MockSolrException)
+
+
+@pytest.fixture
+def dummy_solr(dummy_user_data, mock_vault):
+    with BplSolr(dummy_user_data) as solr:
+        return solr

@@ -4,7 +4,6 @@ import shelve
 
 import pytest
 
-
 from babel.sierra_adapters.solr import BplSolr
 from babel.errors import BabelError
 
@@ -69,13 +68,70 @@ def test_get_creds_missing_client_key_in_vault(caplog, dummy_user_data, mock_no_
         assert "Unable to obtain BPL Solr credentials." in str(exc.value)
 
 
-def test_get_bib_nos_success(dummy_user_data):
+def test_get_bib(dummy_solr, mock_solr_search_success):
+    result = dummy_solr._get_bib("11499389")
+
+    assert isinstance(result, dict)
+
+
+def test_get_bib_solr_error(caplog, dummy_solr, mock_solr_error):
+    with caplog.at_level(logging.WARNING):
+        with does_not_raise():
+            result = dummy_solr._get_bib("11499389")
+
+    assert result is None
+    assert "Unable to retrieve bib 11499389 data from Solr." in caplog.text
+
+
+def test_get_bib_nos_success(dummy_solr):
     response = MockSolrSessionResponseSuccess()
-    solr = BplSolr(dummy_user_data)
 
-    assert solr._get_bib_nos(response) == ["11499389", "11499399"]
+    assert dummy_solr._get_bib_nos(response) == ["11499389", "11499399"]
 
-    solr.close()
+
+@pytest.mark.parametrize(
+    "arg,expectation",
+    [
+        (
+            "880-04 al-Qāhirah : Dār al-Shurūq, 2014.",
+            "al-Qāhirah : Dār al-Shurūq, 2014.",
+        ),
+        (
+            "880-03 al-Qāhirah : Dār al-Shurūq, 2014.",
+            "al-Qāhirah : Dār al-Shurūq, 2014.",
+        ),
+        ("New York: Tor, 2016.", "New York: Tor, 2016."),
+    ],
+)
+def test_normalize_publisher(dummy_solr, arg, expectation):
+    assert dummy_solr._normalize_publisher(arg) == expectation
+
+
+def test_parse_bibliographic_data(dummy_solr):
+    data = MockSolrSessionResponseSuccess().json()
+    assert dummy_solr._parse_bibliographic_data(data) == {
+        "bibNo": "11499389",
+        "title": "Harry Potter and the half-blood prince",
+        "author": "",
+        "pubDate": "",
+        "pubPlace": "[Burbank, Calif.] : Warner Home Video, [2009] ©2009 ",
+    }
+
+
+def test_parse_item_data(dummy_solr):
+    data = MockSolrSessionResponseSuccess().json()
+    results = dummy_solr._parse_item_data(data)
+
+    assert isinstance(results, list)
+
+    item = results[0]
+    assert item == {
+        "locCode": "61jdv",
+        "locName": "Wash Irving Juv DVD",
+        "status": "DELETE",
+        "circ": "n/a",
+        "lastCheck": "n/a",
+    }
 
 
 @pytest.mark.parametrize("arg", ["isbn"])
