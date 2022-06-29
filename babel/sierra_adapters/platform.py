@@ -61,6 +61,64 @@ class NypPlatform(PlatformSession):
 
         super().__init__(authorization=token, agent=self.agent)
 
+    def _determine_library_matches(self, bib_nos: list[str]) -> list[str]:
+        """
+        Performs a search to determine if bib on the provided list
+        matches proper NYPL library (branches or research).
+
+        Args:
+            bib_nos:                list of Sierra bib numbers as strings
+
+        Returns:
+            library_bib_nos
+        """
+        matches = []
+
+        for bib_no in bib_nos:
+            response = self.check_bib_is_research(id=bib_no)
+            if response.status_code == 200 and self._is_library_match(
+                response.json()["isResearch"]
+            ):
+                matches.append(bib_no)
+
+        return matches
+
+    def _get_bib_nos(self, response: Response) -> list[str]:
+        """
+        Parses Platform response and provides list of Sierra bib numbers of the
+        matches.
+
+        Args:
+            response:               `requests.Response` object
+
+        Returns:
+            bib_nos:                list of bib numbers as strings
+        """
+        return [bib["id"] for bib in response.json()["data"]]
+
+    def _get_bib(self, sierra_number: str) -> Optional[dict]:
+        """
+        Makes a request for given Sierra record.
+
+        Args:
+            sierra_number:          sierra 8 digit bib number
+
+        Returns:
+            json response as dict
+        """
+        try:
+            response = self.get_bib(id=sierra_number)
+        except BookopsPlatformError:
+            mlogger.warning(
+                f"Unable to retireve bib {sierra_number} data from Platform."
+            )
+            response = None
+
+        if response and response.status_code == 200:
+            return response.json()
+        else:
+            return None
+
     def _get_credentials(
         self, user_data: shelve.BsdDbShelf
     ) -> tuple[Optional[str], Optional[str], Optional[str]]:
@@ -80,6 +138,29 @@ class NypPlatform(PlatformSession):
         client_secret = get_from_vault("babel_platform", client_id)
 
         return client_id, client_secret, oauth_server
+
+    def _get_items(self, sierra_number: str) -> Optional[dict]:
+        """
+        Makes a request for items attached to given sierra bib nubmer.
+
+        Args:
+            sierra_number:          sierra 8 digit bib number
+
+        Returns:
+            json response as dict
+        """
+        try:
+            response = self.get_bib_items(id=sierra_number)
+        except BookopsPlatformError:
+            mlogger.warning(
+                f"Unable to retrieve bib {sierra_number} item data from Platform."
+            )
+            response = None
+
+        if response and response.status_code == 200:
+            return response.json()
+        else:
+            return None
 
     def _get_token(self) -> Optional[PlatformToken]:
         """Obtains NYPL Platform access token"""
@@ -106,19 +187,6 @@ class NypPlatform(PlatformSession):
         user_data.close()
         return token
 
-    def _get_bib_nos(self, response: Response) -> list[str]:
-        """
-        Parses Platform response and provides list of Sierra bib numbers of the
-        matches.
-
-        Args:
-            response:               `requests.Response` object
-
-        Returns:
-            bib_nos:                list of bib numbers as strings
-        """
-        return [bib["id"] for bib in response.json()["data"]]
-
     def _is_library_match(self, is_research: bool) -> bool:
         """
         Determines if cart library matches library on matching Platform bib
@@ -138,91 +206,6 @@ class NypPlatform(PlatformSession):
             return True
         else:
             return False
-
-    def _determine_library_matches(self, bib_nos: list[str]) -> list[str]:
-        """
-        Performs a search to determine if bib on the provided list
-        matches proper NYPL library (branches or research).
-
-        Args:
-            bib_nos:                list of Sierra bib numbers as strings
-
-        Returns:
-            library_bib_nos
-        """
-        matches = []
-
-        for bib_no in bib_nos:
-            response = self.check_bib_is_research(id=bib_no)
-            if response.status_code == 200 and self._is_library_match(
-                response.json()["isResearch"]
-            ):
-                matches.append(bib_no)
-
-        return matches
-
-    def search(
-        self, keywords: list[str], keyword_type: Optional[str] = None
-    ) -> tuple[bool, str]:
-        """
-        Searches NYPL Platform for given ISBNs or UPCs.
-
-        Args:
-            keywords:               list of ISBNs or UPCs
-                                    or UPCs to search Sierra
-            keyword_type:           "isbn" or "upc", not used for NYPL since
-                                    standardNumber index used for searching
-                                    combines both.
-
-        Returns:
-            catalog_dup & dup_bibs
-        """
-        try:
-            response = self.search_standardNos(keywords=keywords, deleted=False)
-            if response.status_code == 200:
-                bib_nos = self._get_bib_nos(response)
-                library_matches = self._determine_library_matches(bib_nos)
-                if library_matches:
-                    catalog_dup = True
-                    dup_bibs = ",".join(library_matches)
-                else:
-                    catalog_dup = False
-                    dup_bibs = None
-            else:
-                catalog_dup = False
-                dup_bibs = None
-        except BookopsPlatformError:
-            mlogger.warning("Encountered problem with Platform request. Skipping.")
-            catalog_dup = None
-            dup_bibs = None
-
-        return catalog_dup, dup_bibs
-
-    def get_bib_and_item_data(
-        self, sierra_number: str
-    ) -> tuple[Optional[dict], Optional[dict]]:
-        """
-        Retrieves from the Platform bib bibliographic and item data.
-
-        Args:
-            sierra_number:          sierra 8 digit bib number
-
-        Returns:
-            tuple of two dictionaries (bib_data, item_data)
-        """
-        bib = self._get_bib(sierra_number)
-        if bib:
-            bib_data = self._parse_bibliographic_data(bib)
-        else:
-            bib_data = None
-
-        items = self._get_items(sierra_number)
-        if items:
-            item_data = self._parse_item_data(items)
-        else:
-            item_data = None
-
-        return bib_data, item_data
 
     def _parse_bibliographic_data(self, data: dict) -> dict:
         """
@@ -270,57 +253,74 @@ class NypPlatform(PlatformSession):
             )
         return items
 
-    def _get_bib(self, sierra_number: str) -> Optional[dict]:
-        """
-        Makes a request for given Sierra record.
-
-        Args:
-            sierra_number:          sierra 8 digit bib number
-
-        Returns:
-            json response as dict
-        """
-        try:
-            response = self.get_bib(id=sierra_number)
-        except BookopsPlatformError:
-            mlogger.warning(
-                f"Unable to retireve bib {sierra_number} data from Platform."
-            )
-            response = None
-
-        if response and response.status_code == 200:
-            return response.json()
-        else:
-            return None
-
-    def _get_items(self, sierra_number: str) -> Optional[dict]:
-        """
-        Makes a request for items attached to given sierra bib nubmer.
-
-        Args:
-            sierra_number:          sierra 8 digit bib number
-
-        Returns:
-            json response as dict
-        """
-        try:
-            response = self.get_bib_items(id=sierra_number)
-        except BookopsPlatformError:
-            mlogger.warning(
-                f"Unable to retrieve bib {sierra_number} item data from Platform."
-            )
-            response = None
-
-        if response and response.status_code == 200:
-            return response.json()
-        else:
-            return None
-
     def _store_token(self):
         if isinstance(self.authorization, PlatformToken):
             user_data = shelve.open(self.creds_fh)
             user_data["platform_token"] = self.authorization
             user_data.close()
+
+    def get_bib_and_item_data(
+        self, sierra_number: str
+    ) -> tuple[Optional[dict], Optional[dict]]:
+        """
+        Retrieves from the Platform bib bibliographic and item data.
+
+        Args:
+            sierra_number:          sierra 8 digit bib number
+
+        Returns:
+            tuple of two dictionaries (bib_data, item_data)
+        """
+        bib = self._get_bib(sierra_number)
+        if bib:
+            bib_data = self._parse_bibliographic_data(bib)
+        else:
+            bib_data = None
+
+        items = self._get_items(sierra_number)
+        if items:
+            item_data = self._parse_item_data(items)
+        else:
+            item_data = None
+
+        return bib_data, item_data
+
+    def search(
+        self, keywords: list[str], keyword_type: Optional[str] = None
+    ) -> tuple[bool, str]:
+        """
+        Searches NYPL Platform for given ISBNs or UPCs.
+
+        Args:
+            keywords:               list of ISBNs or UPCs
+                                    or UPCs to search Sierra
+            keyword_type:           "isbn" or "upc", not used for NYPL since
+                                    standardNumber index used for searching
+                                    combines both.
+
+        Returns:
+            catalog_dup & dup_bibs
+        """
+        try:
+            response = self.search_standardNos(keywords=keywords, deleted=False)
+            if response.status_code == 200:
+                bib_nos = self._get_bib_nos(response)
+                library_matches = self._determine_library_matches(bib_nos)
+                if library_matches:
+                    catalog_dup = True
+                    dup_bibs = ",".join(library_matches)
+                else:
+                    catalog_dup = False
+                    dup_bibs = None
+            else:
+                catalog_dup = False
+                dup_bibs = None
+        except BookopsPlatformError:
+            mlogger.warning("Encountered problem with Platform request. Skipping.")
+            catalog_dup = None
+            dup_bibs = None
+
+        return catalog_dup, dup_bibs
 
     def close(self):
         # store token for future use before closing the session
