@@ -16,10 +16,10 @@ numpy = "^1.22.3"
 pandas = "^1.4.2"
 matplotlib = "^3.5.1"
 loggly-python-handler = "^1.0.1"
-bookops-bpl-solr = {git = "https://github.com/BookOps-CAT/bookops-bpl-solr", rev = "v0.2.0"}
 bookops-nypl-platform = {git = "https://github.com/BookOps-CAT/bookops-nypl-platform", rev = "v0.3.0"}
 keyring = "^23.5.0"
 cryptography = "^36.0.2"
+bookops-bpl-solr = {git = "https://github.com/BookOps-CAT/bookops-bpl-solr", rev = "v0.3.0"}
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
