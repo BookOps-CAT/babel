@@ -6,18 +6,33 @@ import os
 import sys
 
 from pandas import read_sql
-# from sqlalchemy.sql.expression import between
 
-
-from data.datastore import (session_scope, Audn, Branch, Cart, Fund, Order,
-                            Lang, Library, MatType, Resource,
-                            ShelfCode, User, Vendor)
-from data.datastore_worker import (count_records, get_cart_data_view_records,
-                                   insert,
-                                   retrieve_record, retrieve_records,
-                                   retrieve_cart_details_view_stmn,
-                                   update_record, retrieve_first_record,
-                                   retrieve_last_record_filtered)
+from data.datastore import (
+    session_scope,
+    Audn,
+    Branch,
+    Cart,
+    Fund,
+    Order,
+    Lang,
+    Library,
+    MatType,
+    Resource,
+    ShelfCode,
+    User,
+    Vendor,
+)
+from data.datastore_worker import (
+    count_records,
+    get_cart_data_view_records,
+    insert,
+    retrieve_record,
+    retrieve_records,
+    retrieve_cart_details_view_stmn,
+    update_record,
+    retrieve_first_record,
+    retrieve_last_record_filtered,
+)
 from errors import BabelError
 from logging_settings import format_traceback
 from gui.utils import get_id_from_index
@@ -25,34 +40,32 @@ from ingest.sierra_exports import get_sierra_ids
 from marc.marc21 import make_bib
 
 
-mlogger = logging.getLogger('babel')
+mlogger = logging.getLogger("babel")
 
 
-def get_carts_data(
-        system_id, user='All users', status=''):
+def get_carts_data(system_id, user="All users", status=""):
     data = []
 
     try:
         with session_scope() as session:
-            recs = get_cart_data_view_records(
-                session,
-                system_id, user, status)
+            recs = get_cart_data_view_records(session, system_id, user, status)
             for r in recs:
-                data.append([
-                    r.cart_id,
-                    r.cart_name,
-                    f'{r.cart_date:%y-%m-%d %H:%M}',
-                    r.cart_status,
-                    r.cart_owner,
-                    r.linked])
+                data.append(
+                    [
+                        r.cart_id,
+                        r.cart_name,
+                        f"{r.cart_date:%y-%m-%d %H:%M}",
+                        r.cart_status,
+                        r.cart_owner,
+                        r.linked,
+                    ]
+                )
         return data
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
-        mlogger.error(
-            'Unhandled error on cart data retrieval.'
-            f'Traceback: {tb}')
+        mlogger.error("Unhandled error on cart data retrieval." f"Traceback: {tb}")
         raise BabelError(exc)
 
 
@@ -61,41 +74,37 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
     # and easier to maintain
 
     try:
-        progbar['value'] = 0
+        progbar["value"] = 0
 
         # overwrite existing files
         if os.path.isfile(fh):
             try:
                 os.remove(fh)
             except WindowsError as e:
-                raise BabelError(
-                    f'File in use. Error: {e}')
+                raise BabelError(f"File in use. Error: {e}")
 
         with session_scope() as session:
             rec_count = count_records(session, Order, cart_id=cart_rec.did)
-            progbar['maximum'] = rec_count
+            progbar["maximum"] = rec_count
 
-            selector = retrieve_record(
-                session, User, did=cart_rec.user_id)
+            selector = retrieve_record(session, User, did=cart_rec.user_id)
             blanketPO = cart_rec.blanketPO
             # determine some global values
             if cart_rec.system_id == 1:
-                oclc_code = 'BKL'
+                oclc_code = "BKL"
                 selector_code = selector.bpl_code
 
             elif cart_rec.system_id == 2:
-                oclc_code = 'NYP'
+                oclc_code = "NYP"
                 selector_code = selector.nyp_code
 
-            lib_rec = retrieve_record(
-                session, Library, did=cart_rec.library_id)
+            lib_rec = retrieve_record(session, Library, did=cart_rec.library_id)
             library_code = lib_rec.code
 
             ord_recs = retrieve_records(session, Order, cart_id=cart_rec.did)
 
             for order in ord_recs:
-                mat_rec = retrieve_record(
-                    session, MatType, did=order.matType_id)
+                mat_rec = retrieve_record(session, MatType, did=order.matType_id)
                 ven_rec = retrieve_record(session, Vendor, did=order.vendor_id)
 
                 if cart_rec.system_id == 1:
@@ -120,51 +129,46 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
                     rec = retrieve_record(session, Branch, did=loc.branch_id)
                     branch = rec.code
                     try:
-                        rec = retrieve_record(
-                            session, ShelfCode, did=loc.shelfcode_id)
+                        rec = retrieve_record(session, ShelfCode, did=loc.shelfcode_id)
                         shelfcode = rec.code
                         shelf_with_audn = rec.includes_audn
                     except AttributeError:
-                        shelfcode = ''
+                        shelfcode = ""
                         shelf_with_audn = False
                     try:
                         rec = retrieve_record(session, Fund, did=loc.fund_id)
                         fund = rec.code
                     except AttributeError:
-                        fund = ''
+                        fund = ""
                     copies += loc.qty
 
                     if shelf_with_audn:
-                        loc_str = f'{branch}{order.audn}{shelfcode}/{loc.qty}'
+                        loc_str = f"{branch}{order.audn}{shelfcode}/{loc.qty}"
                     else:
                         if shelfcode is None:
-                            loc_str = f'{branch}/{loc.qty}'
+                            loc_str = f"{branch}/{loc.qty}"
                         else:
-                            loc_str = f'{branch}{shelfcode}/{loc.qty}'
+                            loc_str = f"{branch}{shelfcode}/{loc.qty}"
                     locs.append(loc_str)
 
-                    fund_str = f'{fund}/{loc.qty}'
+                    fund_str = f"{fund}/{loc.qty}"
                     funds.append(fund_str)
 
                 order.copies = str(copies)
-                order.locs = ','.join(locs)
-                order.funds = ','.join(funds)
-                order.order_date = datetime.strftime(date.today(), '%m-%d-%Y')
+                order.locs = ",".join(locs)
+                order.funds = ",".join(funds)
+                order.order_date = datetime.strftime(date.today(), "%m-%d-%Y")
 
-                make_bib(
-                    fh, oclc_code, library_code, blanketPO,
-                    selector_code, order)
-                progbar['value'] += 1
+                make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order)
+                progbar["value"] += 1
                 progbar.update()
 
-        saving_status.set('Data saved to MARC file successfully.')
+        saving_status.set("Data saved to MARC file successfully.")
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
-        mlogger.error(
-            'Unhandled error on saving to MARC.'
-            f'Traceback: {tb}')
+        mlogger.error("Unhandled error on saving to MARC." f"Traceback: {tb}")
         raise BabelError(exc)
 
 
@@ -192,7 +196,7 @@ def get_cart_data_for_order_sheet(cart_id):
                 for loc in rec.locations:
                     total_cost += loc.qty * rec.resource.price_disc
                     total_qty += loc.qty
-                data.append(f'{rec.resource.price_disc:.2f}')
+                data.append(f"{rec.resource.price_disc:.2f}")
                 data.append(total_qty)
                 data.append(total_cost)
                 data.append(rec.oid)
@@ -205,9 +209,7 @@ def get_cart_data_for_order_sheet(cart_id):
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
-        mlogger.error(
-            'Unhandled error cart data retrieval.'
-            f'Traceback: {tb}')
+        mlogger.error("Unhandled error cart data retrieval." f"Traceback: {tb}")
         raise BabelError(exc)
 
 
@@ -225,43 +227,42 @@ def create_cart_copy(cart_id, system, user, profile_idx, cart_name, status):
     valid = True
     if not cart_id:
         valid = False
-        status.set('Invalid cart id')
+        status.set("Invalid cart id")
     elif not system:
         valid = False
-        status.set('Failed. Missing system parameter.')
+        status.set("Failed. Missing system parameter.")
     elif not user:
         valid = False
-        status.set('Failed. Missing profile prameter.')
+        status.set("Failed. Missing profile prameter.")
     elif not cart_name:
         valid = False
-        status.set('Failed. Missing new cart name.')
+        status.set("Failed. Missing new cart name.")
 
     try:
         with session_scope() as session:
             if cart_id and system and user and cart_name:
                 # verify name/user not used:
-                if system == 'BPL':
+                if system == "BPL":
                     system_id = 1
-                elif system == 'NYPL':
+                elif system == "NYPL":
                     system_id = 2
 
                 rec = retrieve_record(
-                    session, Cart,
+                    session,
+                    Cart,
                     system_id=system_id,
-                    user_id=get_id_from_index(
-                        user, profile_idx),
-                    name=cart_name)
+                    user_id=get_id_from_index(user, profile_idx),
+                    name=cart_name,
+                )
                 if rec:
                     valid = False
                     status.set(
-                        'Failed. A cart with the same name'
-                        'already exists.\nPlease change the name.')
+                        "Failed. A cart with the same name"
+                        "already exists.\nPlease change the name."
+                    )
             if valid:
                 # create copy of the original cart
-                old_orders = retrieve_records(
-                    session,
-                    Order,
-                    cart_id=cart_id)
+                old_orders = retrieve_records(session, Order, cart_id=cart_id)
 
                 new_orders = []
                 for order in old_orders:
@@ -280,7 +281,8 @@ def create_cart_copy(cart_id, system, user, profile_idx, cart_name, status):
                         price_list=order.resource.price_list,
                         price_disc=order.resource.price_disc,
                         desc_url=order.resource.desc_url,
-                        misc=order.resource.misc)
+                        misc=order.resource.misc,
+                    )
 
                     new_orders.append(
                         Order(
@@ -291,25 +293,25 @@ def create_cart_copy(cart_id, system, user, profile_idx, cart_name, status):
                             poPerLine=order.poPerLine,
                             note=order.note,
                             comment=order.comment,
-                            resource=resource))
+                            resource=resource,
+                        )
+                    )
 
                 insert(
                     session,
                     Cart,
                     name=cart_name,
-                    user_id=get_id_from_index(
-                        user, profile_idx),
+                    user_id=get_id_from_index(user, profile_idx),
                     system_id=system_id,
-                    orders=new_orders)
+                    orders=new_orders,
+                )
 
-                status.set('Cart copied successfully.')
+                status.set("Cart copied successfully.")
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
-        mlogger.error(
-            'Unhandled error on cart copy.'
-            f'Traceback: {tb}')
+        mlogger.error("Unhandled error on cart copy." f"Traceback: {tb}")
         raise BabelError(exc)
 
 
@@ -321,7 +323,7 @@ def determine_carts_linked(session, cart_ids):
         cart_ids: list of cart_ids that had their orders updated with oid
     """
 
-    mlogger.debug('Updating carts linked status.')
+    mlogger.debug("Updating carts linked status.")
 
     # determine time period when wlos were assigned
     for cart_id in cart_ids:
@@ -331,24 +333,20 @@ def determine_carts_linked(session, cart_ids):
             linked = True
             for o in cart_rec.orders:
                 if o.oid is None:
-                    mlogger.debug(
-                        f'Order did={o.did} missing oid.')
+                    mlogger.debug(f"Order did={o.did} missing oid.")
                     linked = False
 
             if linked:
-                mlogger.debug(
-                    f'Cart {cart_rec.name} (did={cart_rec.did}) linked.')
+                mlogger.debug(f"Cart {cart_rec.name} (did={cart_rec.did}) linked.")
                 update_record(session, Cart, cart_rec.did, linked=True)
             else:
-                mlogger.debug(
-                    f'Cart {cart_rec.name} (did={cart_rec.did}) not linked.')
+                mlogger.debug(f"Cart {cart_rec.name} (did={cart_rec.did}) not linked.")
         else:
-            mlogger.debug(
-                f'Cart with did={cart_id} not linked (missing record).')
+            mlogger.debug(f"Cart with did={cart_id} not linked (missing record).")
 
 
 def add_sierra_ids_to_orders(source_fh, system_id):
-    mlogger.debug(f'Linking IDs initiated system_id-{system_id}.')
+    mlogger.debug(f"Linking IDs initiated system_id-{system_id}.")
     sids = get_sierra_ids(source_fh, system_id)
     try:
         unique_carts = set()
@@ -360,31 +358,28 @@ def add_sierra_ids_to_orders(source_fh, system_id):
                     # record affected cart_id
                     unique_carts.add(ord_rec.cart_id)
                     # update ord rec
-                    update_record(
-                        session, Order, ord_rec.did, oid=oid, bid=bid)
+                    update_record(session, Order, ord_rec.did, oid=oid, bid=bid)
                     mlogger.debug(
-                        f'Record updated: order_id={ord_rec.did}, '
-                        f'wlo={wlo}, oid={oid}, bid={bid}')
+                        f"Record updated: order_id={ord_rec.did}, "
+                        f"wlo={wlo}, oid={oid}, bid={bid}"
+                    )
 
             session.flush()
             # check which carts are linked
             determine_carts_linked(session, unique_carts)
 
-        mlogger.debug('Linking completed.')
+        mlogger.debug("Linking completed.")
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
-        mlogger.error(
-            'Unhandled error on linking IDs.'
-            f'Traceback: {tb}')
+        mlogger.error("Unhandled error on linking IDs." f"Traceback: {tb}")
         raise BabelError(exc)
 
 
 def get_cart_id_ranges(cart_id):
     with session_scope() as session:
         first_ord = retrieve_first_record(session, Order, cart_id=cart_id)
-        last_ord = retrieve_last_record_filtered(
-            session, Order, cart_id=cart_id)
+        last_ord = retrieve_last_record_filtered(session, Order, cart_id=cart_id)
 
         return ((first_ord.wlo, last_ord.wlo), (first_ord.oid, last_ord.oid))

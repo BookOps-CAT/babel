@@ -1,5 +1,4 @@
 import ast
-import json
 import logging
 import os
 import time
@@ -15,14 +14,19 @@ from PIL import Image, ImageTk
 try:
     from errors import BabelError
     from gui.utils import BusyManager
-    from credentials import get_from_vault, decrypt_file_data, store_in_vault
+    from credentials import (
+        get_from_vault,
+        decrypt_file_data,
+        store_in_vault,
+        delete_from_vault,
+    )
     from paths import USER_DATA, APP_DATA_DIR, PROD_LOG_PATH
 except ImportError:
     # needed for pytest
-    from .errors import BabelError
-    from .gui.utils import BusyManager
-    from .credentials import get_from_vault
-    from .paths import USER_DATA, APP_DATA_DIR, PROD_LOG_PATH
+    from babel.errors import BabelError
+    from babel.gui.utils import BusyManager
+    from babel.credentials import get_from_vault, delete_from_vault
+    from babel.paths import USER_DATA, APP_DATA_DIR, PROD_LOG_PATH
 
 
 ilogger = logging.getLogger()
@@ -35,8 +39,12 @@ handler.setFormatter(formatter)
 ilogger.addHandler(handler)
 
 
-def has_db_config_in_user_data(user_data):
-    if "db_config" in user_data:
+def has_creds_config_in_user_data(user_data):
+    if (
+        "db_config" in user_data
+        and isinstance(user_data["db_config"], dict)
+        and user_data["db_config"]
+    ):
         return True
     else:
         return False
@@ -58,21 +66,20 @@ def is_configured():
     Determines if all requried components and credentials
     are present
     """
-
     has_data_file = has_user_data_file()
-    ilogger.debug(f"Init: found data file: {has_data_file}")
+    ilogger.debug(f"Init: user data file located: {has_data_file}")
 
     if has_data_file:
         user_data = shelve.open(USER_DATA)
-
-        has_db_config = has_db_config_in_user_data(user_data)
+        has_db_config = has_creds_config_in_user_data(user_data)
         ilogger.debug(f"Init: found database config data: {has_db_config}")
         try:
             has_creds = has_creds_in_vault(
-                user_data["db_config"]["db_name"], user_data["db_config"]["user"]
+                "babel_db", user_data["db_config"]["DB_USER"]
             )
             ilogger.debug(f"Init: has credential stored in vault: {has_creds}")
         except KeyError:
+            has_creds = False
             ilogger.error(f"Init: Malformed db_config in user_data.")
 
         user_data.close()
@@ -149,6 +156,13 @@ class Installer(Tk):
                 ilogger.debug("Init: creds.bin not found.")
                 self.status.set("credentials file not found.")
 
+            # modify old vault setup
+            delete_from_vault("babelprod", "babelproddbo")
+
+            # clean up existing user_data
+            with shelve.open(USER_DATA) as user_data:
+                user_data.pop("db_config", None)
+
         if creds:
             self.store_creds(creds)
 
@@ -156,12 +170,12 @@ class Installer(Tk):
         try:
             self.status.set("Decrypting...")
             self.statusLbl.update()
-            decrypted = decrypt_file_data(
+            creds = decrypt_file_data(
                 self.key.get().strip().encode("utf8"), "creds.bin"
             )
             ilogger.debug("Init: creds.bin decrypted.")
-            creds = json.loads(decrypted)
             return creds
+
         except BabelError as exc:
             ilogger.error(f"Init: ValueError: {exc}")
             self.status.set(f"Value error. Try again.")
@@ -195,17 +209,30 @@ class Installer(Tk):
         user_data = shelve.open(USER_DATA)
 
         user_data["db_config"] = dict(
-            db_name=creds["db_name"],
-            host=creds["host"],
-            user=creds["user"],
-            port=creds["port"],
+            DB_NAME=creds["DB_NAME"],
+            DB_HOST=creds["DB_HOST"],
+            DB_USER=creds["DB_USER"],
+            DB_PORT=creds["DB_PORT"],
+        )
+        user_data["nyp_platform"] = dict(
+            PLATFORM_OAUTH_SERVER=creds["PLATFORM_OAUTH_SERVER"],
+            PLATFORM_CLIENT_ID=creds["PLATFORM_CLIENT_ID"],
+        )
+        user_data["bpl_solr"] = dict(
+            SOLR_ENDPOINT=creds["SOLR_ENDPOINT"],
         )
         user_data.close()
         ilogger.debug("Init: MySql data stored in the user_data file.")
 
         try:
-            store_in_vault(creds["db_name"], creds["user"], creds["passw"])
-            ilogger.debug("Init: MySql password stored in Windows Credential Manager.")
+            store_in_vault("babel_db", creds["DB_USER"], creds["DB_PASSWORD"])
+            store_in_vault(
+                "babel_platform", creds["PLATFORM_CLIENT_ID"], creds["PLATFORM_SECRET"]
+            )
+            store_in_vault("babel_solr", "babel", creds["SOLR_SECRET"])
+            ilogger.debug(
+                "Init: MySql/Platform/Solr secrets stored in Windows Credential Manager."
+            )
             self.status.set("Success! Closing. Please restart Babel.")
             self.statusLbl.update()
             time.sleep(3)

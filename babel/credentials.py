@@ -2,12 +2,16 @@
 Module handling initial ingests of services credentials to
 Windows Credential Manager and managing their retrieval
 """
+import binascii
+import os.path
+import json
+import shelve
+from typing import Union
 
-from Crypto.Cipher import AES
+
+from cryptography.fernet import Fernet, InvalidToken
 import keyring
 from keyring.errors import PasswordDeleteError, PasswordSetError
-import os.path
-import shelve
 
 try:
     from errors import BabelError
@@ -16,62 +20,59 @@ except ImportError:
     from .errors import BabelError
 
 
-def locate_credentials(shelf_fh, creds_fh):
+def encrypt_file_data(key: bytes, src_fh: str, dst_fh: str) -> None:
     """
-    creates a path to folder where credentials are
-    stored
-    returns:
-        path: string, path to credentials.bin
+    Encrypts data from a source file.
+
+    Args:
+        key:            a secret key as bytes
+        src_fh:         a path of the file to be encrypted
+        dst_fh:         a destination path of the encrypted file
     """
+    with open(src_fh, "rb") as src:
+        src_data = src.read()
+        f = Fernet(key)
+        encrypted_data = f.encrypt(src_data)
 
-    user_data = shelve.open(shelf_fh)
-    try:
-        update_dir = user_data["paths"]["update_dir"]
-        if update_dir == "":
-            return None
-        else:
-            creds_path = os.path.join(os.path.split(update_dir)[0], creds_fh)
-            return creds_path
-    except KeyError:
-        return None
-    finally:
-        user_data.close()
+    with open(dst_fh, "wb") as dst:
+        dst.write(encrypted_data)
 
 
-def encrypt_file_data(key, source, dst):
+def decrypt_file_data(key: Union[str, bytes], fh: str) -> dict:
     """
-    encrypts data in a file
-    args:
-        key: string, 16-bit encryption key
-        source: string, path to file to be encrypted
-        dst: string, path to encrypted file
-    """
+    Decrypts encoded data in a JSON file.
 
-    cipher = AES.new(key, AES.MODE_EAX)
-    with open(source, "rb") as file:
-        data = file.read()
-        ciphertext, tag = cipher.encrypt_and_digest(data)
-        file_out = open(dst, "wb")
-        [file_out.write(x) for x in (cipher.nonce, tag, ciphertext)]
+    Args:
+        key:            a secret key as bytes
+        fh:             file path of the source file
 
-
-def decrypt_file_data(key, fh):
-    """
-    decrypts data in a file
-    args:
-        key: string,  16-bit encryption key
-        fh: string, file handle of file to be decrypted
-    returns:
-        data: string
+    Returns:
+        decrypted data as bytes
     """
     try:
-        with open(fh, "rb") as file:
-            nonce, tag, ciphertext = [file.read(x) for x in (16, 16, -1)]
-            cipher = AES.new(key, AES.MODE_EAX, nonce)
-            data = cipher.decrypt_and_verify(ciphertext, tag)
-            return data
-    except ValueError as e:
-        raise BabelError(e)
+        f = Fernet(key)
+        with open(fh, "rb") as src:
+            data = src.read()
+            decrypted_data = f.decrypt(data)
+            structured_data = json.loads(decrypted_data)
+
+        return structured_data
+    except FileNotFoundError:
+        raise BabelError("Unable to locate a file for decoding.")
+    except (binascii.Error, InvalidToken):
+        raise BabelError("Invalid secret key provided.")
+    except json.decoder.JSONDecodeError:
+        raise BabelError("Decoded file has invalid format. Should be a JSON file.")
+
+
+def generate_key() -> bytes:
+    """
+    Creates a secret key to be used to encode data.
+
+    Returns:
+        secret key as bytes
+    """
+    return Fernet.generate_key()
 
 
 def get_from_vault(application, user):

@@ -16,22 +16,12 @@ from installer import is_configured, Installer
 from logging_settings import DEV_LOGGING, PROD_LOGGING
 
 
-# set up application logger
-
-
 # set the backend for credentials
 keyring.set_keyring(WinVaultKeyring())
 
-# determine if babelstore is connected and if not
-# launch setup
-if is_configured() is True:
-    app_ready = True
-else:
-    app_ready = False
-
-# app_ready = False
-
-if app_ready:
+# check if app is ready/configured and if not launch
+# the installer
+if is_configured():
     from gui.main import Base, determine_version
 
     logging.config.dictConfig(DEV_LOGGING)
