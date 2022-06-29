@@ -60,7 +60,7 @@ class CatalogDupWidget:
             self.resultsTxt.tag_add("bibNo", f"{row}.0", f"{row}.end")
             self.resultsTxt.insert(END, f"{bib['title']} / {bib['author']}\n")
             self.resultsTxt.tag_add("title", f"{row+1}.0", f"{row+1}.end")
-            self.resultsTxt.insert(END, f"{bib['pubPlace']} - {bib['pubDate']}\n")
+            self.resultsTxt.insert(END, f"{bib['pubPlace']} {bib['pubDate']}\n")
             self.resultsTxt.insert(
                 END,
                 "\t{0:^5s} | {1:^60s} | {2:^20s} | {3:^7s} | {4:^10s}\n".format(
