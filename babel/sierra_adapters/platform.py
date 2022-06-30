@@ -29,7 +29,7 @@ mlogger = LogglyAdapter(logging.getLogger("babel"), None)
 
 
 class NypPlatform(PlatformSession):
-    def __init__(self, library: str, creds_fh: str) -> None:
+    def __init__(self, library: str, creds_fh: str, branch_idx) -> None:
         """
         Authenticates and opens a session with NYPL Platform.
         Relies on credentials stores in Windows Credential Manager.
@@ -37,10 +37,13 @@ class NypPlatform(PlatformSession):
         Args:
                 library:            'branches' or 'research'
                 creds_fh:           path to user_data `shelve.BsdDbShelf` instance
+                branch_idx:         dict of location codes and branch or research
+                                    designation (required to determine match)
         """
         mlogger.info(f"Initiating session with Platform for {library}.")
 
         self.library = library  # branches or research
+        self.branch_idx = branch_idx
         self.creds_fh = creds_fh
 
         if self.library not in ("branches", "research", None, ""):
@@ -61,14 +64,27 @@ class NypPlatform(PlatformSession):
 
         super().__init__(authorization=token, agent=self.agent)
 
+    def _order_locations(self, data: dict):
+        return [l["code"][:2] for l in data["locations"]]
 
-    def _order_location(self, ):
-        pass
+    def _has_matching_location(self, order_locations: list) -> bool:
+        if self.library == "branches":
+            for o in order_locations:
+                if o in self.branch_idx and not self.branch_idx[o]:
+                    return True
+        elif self.library == "research":
+            for o in order_locations:
+                if o in self.branch_idx and self.branch_idx[o]:
+                    return True
+        else:
+            return True
+
+        return False
 
     def _910_tag(self):
         pass
 
-    def _determine_library_maches(self, response: Response) -> List[str]:
+    def _determine_library_maches(self, response: Response) -> list[str]:
         """
         Makes a determination for each bib in response if it matches given
         library (branches or research).
@@ -84,7 +100,7 @@ class NypPlatform(PlatformSession):
 
         data = response.json()
         for bib in data:
-
+            locations = self._order_locations(data)
 
         return matches
 
@@ -191,7 +207,6 @@ class NypPlatform(PlatformSession):
 
         user_data.close()
         return token
-
 
     def _parse_bibliographic_data(self, data: dict) -> dict:
         """
