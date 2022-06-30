@@ -61,25 +61,30 @@ class NypPlatform(PlatformSession):
 
         super().__init__(authorization=token, agent=self.agent)
 
-    def _determine_library_matches(self, bib_nos: list[str]) -> list[str]:
+
+    def _order_location(self, ):
+        pass
+
+    def _910_tag(self):
+        pass
+
+    def _determine_library_maches(self, response: Response) -> List[str]:
         """
-        Performs a search to determine if bib on the provided list
-        matches proper NYPL library (branches or research).
+        Makes a determination for each bib in response if it matches given
+        library (branches or research).
 
         Args:
-            bib_nos:                list of Sierra bib numbers as strings
+            response:               `requestss.Response` object
 
         Returns:
-            library_bib_nos
+            list of bib numbers
         """
+
         matches = []
 
-        for bib_no in bib_nos:
-            response = self.check_bib_is_research(id=bib_no)
-            if response.status_code == 200 and self._is_library_match(
-                response.json()["isResearch"]
-            ):
-                matches.append(bib_no)
+        data = response.json()
+        for bib in data:
+
 
         return matches
 
@@ -187,25 +192,6 @@ class NypPlatform(PlatformSession):
         user_data.close()
         return token
 
-    def _is_library_match(self, is_research: bool) -> bool:
-        """
-        Determines if cart library matches library on matching Platform bib
-
-        Args:
-            is_research:            Platform's `is_research` bib field value
-
-        Returns:
-            bool
-        """
-
-        if not self.library:
-            return True
-        elif self.library == "research" and is_research:
-            return True
-        elif self.library == "branches" and not is_research:
-            return True
-        else:
-            return False
 
     def _parse_bibliographic_data(self, data: dict) -> dict:
         """
@@ -305,7 +291,7 @@ class NypPlatform(PlatformSession):
             response = self.search_standardNos(keywords=keywords, deleted=False)
             if response.status_code == 200:
                 bib_nos = self._get_bib_nos(response)
-                library_matches = self._determine_library_matches(bib_nos)
+                library_matches = self._determine_library_matches(response)
                 if library_matches:
                     catalog_dup = True
                     dup_bibs = ",".join(library_matches)
