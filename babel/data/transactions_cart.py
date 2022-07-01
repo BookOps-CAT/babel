@@ -418,6 +418,32 @@ def determine_needs_validation(cart_id):
             return True
 
 
+def filter_cart(cart_id: int, filter_type: str):
+    """
+    Retrieves resources in given cart that include temporarily closed
+    branches and catalog or babel duplicates.
+
+    Args:
+        cart_id:                id of cart
+        filter_type:            'temp_closed', 'cat_dup' or 'babel_dup'
+    """
+    mlogger.debug(f"Performing {filter_type} filter on cart_id {cart_id}.")
+    with session_scope() as session:
+        stmn = text(
+            """
+        SELECT DISTINCT bpl_code
+            FROM vendor
+            JOIN `order` ON `order`.vendor_id = vendor.did
+            WHERE `order`.cart_id=:cart_id
+            ;
+        """
+        )
+        # stmn = stmn.bindparams(cart_id=cart_id)
+        # instances = session.execute(stmn)
+        # return instances
+        pass
+
+
 def find_matches(cart_id, creds_fh, middleware, progbar=None):
     with session_scope() as session:
 
