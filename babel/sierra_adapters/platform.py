@@ -71,15 +71,14 @@ class NypPlatform(PlatformSession):
                     return True
         elif self.library == "research":
             for o in order_locations:
-                if o in self.branch_idx and self.branch_idx[o]:
+                if o in self.branch_idx and (
+                    self.branch_idx[o] is True or self.branch_idx[o] is None
+                ):
                     return True
         else:
             return True
 
         return False
-
-    def _910_tag(self):
-        pass
 
     def _determine_library_matches(self, response: Response) -> list[str]:
         """
@@ -96,25 +95,12 @@ class NypPlatform(PlatformSession):
         matches = []
 
         data = response.json()
-        for bib in data:
+        for bib in data["data"]:
             ord_locations = self._order_locations(bib)
-            if has_matching_location(ord_location):
+            if self._has_matching_location(ord_locations):
                 matches.append(bib["id"])
 
         return matches
-
-    def _get_bib_nos(self, response: Response) -> list[str]:
-        """
-        Parses Platform response and provides list of Sierra bib numbers of the
-        matches.
-
-        Args:
-            response:               `requests.Response` object
-
-        Returns:
-            bib_nos:                list of bib numbers as strings
-        """
-        return [bib["id"] for bib in response.json()["data"]]
 
     def _get_bib(self, sierra_number: str) -> Optional[dict]:
         """
@@ -207,8 +193,8 @@ class NypPlatform(PlatformSession):
         user_data.close()
         return token
 
-    def _order_locations(self, data: dict) -> list[str]:
-        return [l["code"][:2] for l in data["locations"]]
+    def _order_locations(self, bib: dict) -> list[str]:
+        return [l["code"][:2] for l in bib["locations"]]
 
     def _parse_bibliographic_data(self, data: dict) -> dict:
         """
@@ -307,7 +293,6 @@ class NypPlatform(PlatformSession):
         try:
             response = self.search_standardNos(keywords=keywords, deleted=False)
             if response.status_code == 200:
-                bib_nos = self._get_bib_nos(response)
                 library_matches = self._determine_library_matches(response)
                 if library_matches:
                     catalog_dup = True
