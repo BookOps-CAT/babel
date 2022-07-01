@@ -65,6 +65,10 @@ class NypPlatform(PlatformSession):
         super().__init__(authorization=token, agent=self.agent)
 
     def _has_matching_location(self, order_locations: list) -> bool:
+
+        if not order_locations:
+            # malformed bib lacking locations
+            return True
         if self.library == "branches":
             for o in order_locations:
                 if o in self.branch_idx and not self.branch_idx[o]:
