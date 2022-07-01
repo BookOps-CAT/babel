@@ -50,7 +50,7 @@ def catalog_lookup(middleware: Union[PlatformSession, SolrSession], sierra_numbe
 
 
 def select_middleware(
-    creds_fh: str, system_id: int, library: str = None
+    creds_fh: str, system_id: int, library: str = None, branch_idx: dict = None
 ) -> Union[PlatformSession, SolrSession]:
     """
     Determines and returns proper, already instated middleware for querying
@@ -61,8 +61,10 @@ def select_middleware(
         system_id:                  library system db id
         library:                    'branches' or 'research' for NYPL,
                                     None for BPL
+        branch_idx:                 dictionary of branch codes and branch or
+                                    research designation
     """
     if system_id == 1:
         return BplSolr(creds_fh)
     elif system_id == 2:
-        return NypPlatform(library, creds_fh)
+        return NypPlatform(library, creds_fh, branch_idx)

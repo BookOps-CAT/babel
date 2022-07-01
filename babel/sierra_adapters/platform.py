@@ -29,7 +29,7 @@ mlogger = LogglyAdapter(logging.getLogger("babel"), None)
 
 
 class NypPlatform(PlatformSession):
-    def __init__(self, library: str, creds_fh: str) -> None:
+    def __init__(self, library: str, creds_fh: str, branch_idx: dict = None) -> None:
         """
         Authenticates and opens a session with NYPL Platform.
         Relies on credentials stores in Windows Credential Manager.
@@ -37,10 +37,13 @@ class NypPlatform(PlatformSession):
         Args:
                 library:            'branches' or 'research'
                 creds_fh:           path to user_data `shelve.BsdDbShelf` instance
+                branch_idx:         dict of location codes and branch or research
+                                    designation (required to determine match)
         """
         mlogger.info(f"Initiating session with Platform for {library}.")
 
         self.library = library  # branches or research
+        self.branch_idx = branch_idx
         self.creds_fh = creds_fh
 
         if self.library not in ("branches", "research", None, ""):
@@ -61,40 +64,47 @@ class NypPlatform(PlatformSession):
 
         super().__init__(authorization=token, agent=self.agent)
 
-    def _determine_library_matches(self, bib_nos: list[str]) -> list[str]:
+    def _has_matching_location(self, order_locations: list) -> bool:
+
+        if not order_locations:
+            # malformed bib lacking locations
+            return True
+        if self.library == "branches":
+            for o in order_locations:
+                if o in self.branch_idx and not self.branch_idx[o]:
+                    return True
+        elif self.library == "research":
+            for o in order_locations:
+                if o in self.branch_idx and (
+                    self.branch_idx[o] is True or self.branch_idx[o] is None
+                ):
+                    return True
+        else:
+            return True
+
+        return False
+
+    def _determine_library_matches(self, response: Response) -> list[str]:
         """
-        Performs a search to determine if bib on the provided list
-        matches proper NYPL library (branches or research).
+        Makes a determination for each bib in response if it matches given
+        library (branches or research).
 
         Args:
-            bib_nos:                list of Sierra bib numbers as strings
+            response:               `requestss.Response` object
 
         Returns:
-            library_bib_nos
+            list of bib numbers
         """
+
         matches = []
 
-        for bib_no in bib_nos:
-            response = self.check_bib_is_research(id=bib_no)
-            if response.status_code == 200 and self._is_library_match(
-                response.json()["isResearch"]
-            ):
-                matches.append(bib_no)
+        data = response.json()
+        for bib in data["data"]:
+            ord_locations = self._order_locations(bib)
+            if self._has_matching_location(ord_locations):
+                matches.append(bib["id"])
 
         return matches
-
-    def _get_bib_nos(self, response: Response) -> list[str]:
-        """
-        Parses Platform response and provides list of Sierra bib numbers of the
-        matches.
-
-        Args:
-            response:               `requests.Response` object
-
-        Returns:
-            bib_nos:                list of bib numbers as strings
-        """
-        return [bib["id"] for bib in response.json()["data"]]
 
     def _get_bib(self, sierra_number: str) -> Optional[dict]:
         """
@@ -187,25 +197,8 @@ class NypPlatform(PlatformSession):
         user_data.close()
         return token
 
-    def _is_library_match(self, is_research: bool) -> bool:
-        """
-        Determines if cart library matches library on matching Platform bib
-
-        Args:
-            is_research:            Platform's `is_research` bib field value
-
-        Returns:
-            bool
-        """
-
-        if not self.library:
-            return True
-        elif self.library == "research" and is_research:
-            return True
-        elif self.library == "branches" and not is_research:
-            return True
-        else:
-            return False
+    def _order_locations(self, bib: dict) -> list[str]:
+        return [l["code"][:2] for l in bib["locations"]]
 
     def _parse_bibliographic_data(self, data: dict) -> dict:
         """
@@ -304,8 +297,7 @@ class NypPlatform(PlatformSession):
         try:
             response = self.search_standardNos(keywords=keywords, deleted=False)
             if response.status_code == 200:
-                bib_nos = self._get_bib_nos(response)
-                library_matches = self._determine_library_matches(bib_nos)
+                library_matches = self._determine_library_matches(response)
                 if library_matches:
                     catalog_dup = True
                     dup_bibs = ",".join(library_matches)

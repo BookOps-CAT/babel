@@ -115,60 +115,6 @@ def test_get_token_not_in_user_data(caplog, dummy_user_data, mock_platform):
     assert isinstance(token, PlatformToken)
 
 
-def test_get_bib_nos(mock_platform):
-    response = MockPlatformSessionGetListResponseSuccess()
-    result = mock_platform._get_bib_nos(response)
-    assert result == ["21776219", "21742979"]
-
-
-@pytest.mark.parametrize(
-    "target,response,expectation",
-    [
-        (None, True, True),
-        (None, False, True),
-        ("branches", True, False),
-        ("branches", False, True),
-        ("research", True, True),
-        ("research", False, False),
-    ],
-)
-def test_is_library_match(mock_platform, target, response, expectation):
-    mock_platform.library = target
-    assert mock_platform._is_library_match(response) == expectation
-
-
-def test_determine_library_matches_research_true(
-    mock_platform, mock_platform_session_is_research_response_200http_true
-):
-    mock_platform.library = "research"
-    bib_nos = ["21776219", "21742979"]
-    assert mock_platform._determine_library_matches(bib_nos) == ["21776219", "21742979"]
-
-
-def test_determine_library_matches_branches_true(
-    mock_platform, mock_platform_session_is_research_response_200http_false
-):
-    mock_platform.library = "branches"
-    bib_nos = ["21776219", "21742979"]
-    assert mock_platform._determine_library_matches(bib_nos) == ["21776219", "21742979"]
-
-
-def test_determine_library_matches_research_false(
-    mock_platform, mock_platform_session_is_research_response_200http_false
-):
-    mock_platform.library = "research"
-    bib_nos = ["21776219", "21742979"]
-    assert mock_platform._determine_library_matches(bib_nos) == []
-
-
-def test_determine_library_matches_branches_false(
-    mock_platform, mock_platform_session_is_research_response_200http_true
-):
-    mock_platform.library = "branches"
-    bib_nos = ["21776219", "21742979"]
-    assert mock_platform._determine_library_matches(bib_nos) == []
-
-
 def test_search_success(
     mock_platform,
     mock_platform_determine_library_matches,
@@ -278,6 +224,33 @@ def test_get_bib_exception(caplog, mock_platform, mock_platform_error):
 
     assert result is None
     assert "Unable to retireve bib 21742979 data from Platform."
+
+
+@pytest.mark.parametrize(
+    "library,arg,expectation",
+    [
+        ("branches", ["ca"], True),
+        ("branches", ["rc", "ca"], True),
+        ("branches", ["sn", "ma"], True),
+        ("branches", ["my"], False),
+        ("branches", [], True),
+        ("branches", ["ia"], True),
+        ("research", ["ia"], True),
+        ("research", ["ma"], True),
+        ("research", ["sn", "ma"], True),
+        ("research", ["sn", "ca"], False),
+    ],
+)
+def test_has_matching_location(mock_platform, library, arg, expectation):
+    mock_platform.library = library
+    assert mock_platform._has_matching_location(arg) == expectation
+
+
+def test_order_locations(mock_platform):
+    response = MockPlatformSessionGetListResponseSuccess().json()
+    data = response["data"][0]
+
+    assert mock_platform._order_locations(data) == ["ma"]
 
 
 def test_parse_item_data(mock_platform):

@@ -25,10 +25,16 @@ from sqlalchemy.engine.url import URL
 import shelve
 
 
-from credentials import get_from_vault
-from data.datastore_values import *
-from data.datastore_worker import insert_or_ignore
-from paths import USER_DATA
+try:
+    from credentials import get_from_vault
+    from data.datastore_values import *
+    from data.datastore_worker import insert_or_ignore
+    from paths import USER_DATA
+except ImportError:
+    from babel.credentials import get_from_vault
+    from babel.data.datastore_values import *
+    from babel.data.datastore_worker import insert_or_ignore
+    from babel.paths import USER_DATA
 
 DB_DIALECT = "mysql"
 DB_DRIVER = "pymysql"
@@ -128,6 +134,7 @@ class Branch(Base):
     system_id = Column(Integer, ForeignKey("system.did"), nullable=False)
     name = Column(String(50))
     code = Column(String(2), nullable=False)
+    is_research = Column(Boolean, default=None)
 
     def __repr__(self):
         state = inspect(self)
@@ -559,7 +566,14 @@ def create_datastore(db_name=None, user=None, password=None, host=None, port=Non
         insert_or_ignore(session, Lang, code=item[0], name=item[1])
 
     for item in BRANCH:
-        insert_or_ignore(session, Branch, system_id=item[0], code=item[1], name=item[2])
+        insert_or_ignore(
+            session,
+            Branch,
+            system_id=item[0],
+            code=item[1],
+            name=item[2],
+            is_research=item[3],
+        )
 
     for item in MATERIAL:
         insert_or_ignore(

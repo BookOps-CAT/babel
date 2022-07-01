@@ -15,6 +15,7 @@ from data.transactions_cart import (
     delete_locations_from_selected_orders,
     find_matches,
     determine_needs_validation,
+    get_branch_idx,
     get_cart_resources,
     get_last_cart,
     get_orders_by_id,
@@ -1949,11 +1950,12 @@ class CartView(Frame):
         self.cur_manager.busy()
 
         creds_fh = get_user_data_handle()
+        branch_idx = get_branch_idx(self.system.get())
 
         if self.middleware is None:
             try:
                 self.middleware = select_middleware(
-                    creds_fh, self.system.get(), self.library.get()
+                    creds_fh, self.system.get(), self.library.get(), branch_idx
                 )
             except BabelError as e:
                 self.cur_manager.not_busy()

@@ -489,6 +489,15 @@ def get_branch_rec_id(session, branch_code):
     return rec.did
 
 
+def get_branch_idx(system_id):
+    """
+    Creates an array of location for a given system
+    """
+    with session_scope() as session:
+        recs = retrieve_records(session, Branch, system_id=system_id)
+        return {r.code: r.is_research for r in recs}
+
+
 def get_cart_resources(cart_id):
     """creates a list of resources to be displayed in ApplyGridsWidget"""
 
