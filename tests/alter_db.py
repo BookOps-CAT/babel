@@ -27,9 +27,9 @@ def alter_datastore(db_name=None, user=None, password=None, host=None, port=None
     engine = create_engine(database_url)
 
     # add extra columns to modified tables
-    engine.excute(
-        "ALTER TABLE resource ADD dup_bibs VARCHAR(200) CHARACTER SET UTF8 COLLATE utf8_bin AFTER dup_catalog;"
-    )
+    # engine.execute(
+    #     "ALTER TABLE resource ADD dup_bibs VARCHAR(200) CHARACTER SET UTF8 COLLATE utf8_bin AFTER dup_catalog;"
+    # )
     print("Added dup_bibs column to resource table.")
 
     engine.execute("ALTER TABLE branch ADD is_research BOOLEAN AFTER code;")
