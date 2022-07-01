@@ -428,20 +428,31 @@ def filter_cart(cart_id: int, filter_type: str):
         filter_type:            'temp_closed', 'cat_dup' or 'babel_dup'
     """
     mlogger.debug(f"Performing {filter_type} filter on cart_id {cart_id}.")
+
     with session_scope() as session:
-        stmn = text(
-            """
-        SELECT DISTINCT bpl_code
-            FROM vendor
-            JOIN `order` ON `order`.vendor_id = vendor.did
-            WHERE `order`.cart_id=:cart_id
-            ;
-        """
+        query = (
+            session.query(Order.did, Resource.title, Resource.author, Resource.isbn)
+            .join(Order, Order.did == Resource.order_id)
+            .join(OrderLocation, OrderLocation.order_id == Order.did)
+            .join(Branch, OrderLocation.branch_id == Branch.did)
+            .filter(Order.cart_id == cart_id)
+            .order_by(Order.did)
         )
-        # stmn = stmn.bindparams(cart_id=cart_id)
-        # instances = session.execute(stmn)
-        # return instances
-        pass
+
+        if filter_type == "temp_closed":
+            recs = query.filter(Branch.temp_closed == True).all()
+        elif filter_type == "cat_dup":
+            recs = query.filter(Resource.dup_catalog == True).all()
+        elif filter_type == "babel_dup":
+            recs = query.filter(Resource.dup_babel == True).all()
+
+        results = []
+        n = 0
+        for rec in recs:
+            n += 1
+            results.append((rec[0], n, rec[1], rec[2], rec[3]))
+
+        return results
 
 
 def find_matches(cart_id, creds_fh, middleware, progbar=None):
