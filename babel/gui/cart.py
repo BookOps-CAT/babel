@@ -1951,7 +1951,6 @@ class CartView(Frame):
 
         creds_fh = get_user_data_handle()
         branch_idx = get_branch_idx(self.system.get())
-        print(branch_idx)
 
         if self.middleware is None:
             try:
