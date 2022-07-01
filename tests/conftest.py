@@ -9,6 +9,7 @@ import keyring
 from keyring.backends.Windows import WinVaultKeyring
 import requests
 
+from babel.data.datastore_values import BRANCH
 from babel.sierra_adapters.platform import NypPlatform
 from babel.sierra_adapters.solr import BplSolr
 
@@ -638,7 +639,11 @@ def mock_platform_error(monkeypatch):
 def mock_platform(
     dummy_user_data, mock_vault, mock_platform_post_token_response_200http
 ):
-    with NypPlatform("branches", dummy_user_data) as middleware:
+    nyp_locs = dict()
+    for b in BRANCH:
+        if b[0] == 2:
+            nyp_locs[b[1]] = b[3]
+    with NypPlatform("branches", dummy_user_data, nyp_locs) as middleware:
         yield middleware
 
 

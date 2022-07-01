@@ -29,7 +29,7 @@ mlogger = LogglyAdapter(logging.getLogger("babel"), None)
 
 
 class NypPlatform(PlatformSession):
-    def __init__(self, library: str, creds_fh: str, branch_idx) -> None:
+    def __init__(self, library: str, creds_fh: str, branch_idx: dict = None) -> None:
         """
         Authenticates and opens a session with NYPL Platform.
         Relies on credentials stores in Windows Credential Manager.
@@ -64,9 +64,6 @@ class NypPlatform(PlatformSession):
 
         super().__init__(authorization=token, agent=self.agent)
 
-    def _order_locations(self, data: dict):
-        return [l["code"][:2] for l in data["locations"]]
-
     def _has_matching_location(self, order_locations: list) -> bool:
         if self.library == "branches":
             for o in order_locations:
@@ -84,7 +81,7 @@ class NypPlatform(PlatformSession):
     def _910_tag(self):
         pass
 
-    def _determine_library_maches(self, response: Response) -> list[str]:
+    def _determine_library_matches(self, response: Response) -> list[str]:
         """
         Makes a determination for each bib in response if it matches given
         library (branches or research).
@@ -100,7 +97,9 @@ class NypPlatform(PlatformSession):
 
         data = response.json()
         for bib in data:
-            locations = self._order_locations(data)
+            ord_locations = self._order_locations(bib)
+            if has_matching_location(ord_location):
+                matches.append(bib["id"])
 
         return matches
 
@@ -207,6 +206,9 @@ class NypPlatform(PlatformSession):
 
         user_data.close()
         return token
+
+    def _order_locations(self, data: dict) -> list[str]:
+        return [l["code"][:2] for l in data["locations"]]
 
     def _parse_bibliographic_data(self, data: dict) -> dict:
         """
