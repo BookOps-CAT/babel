@@ -388,6 +388,9 @@ class SearchCartWidget:
         self.cart_id = app_data["active_id"].get()
         self.keywords = StringVar()
         self.key_type = StringVar()
+        self.temp_closed = IntVar()
+        self.catalog_dup = IntVar()
+        self.babel_dup = IntVar()
 
         self.search_top = Toplevel(master=self.parent)
         self.search_top.title("Search cart")
@@ -395,7 +398,7 @@ class SearchCartWidget:
 
         # input frame
         inputFrm = Frame(self.search_top)
-        inputFrm.grid(row=0, column=0, sticky="snew", padx=20, pady=20)
+        inputFrm.grid(row=0, column=0, sticky="snew", padx=20, pady=10)
 
         self.keywordEnt = Entry(
             inputFrm, font=RFONT, textvariable=self.keywords, width=40
@@ -432,9 +435,36 @@ class SearchCartWidget:
         self.searchtypeCbx.grid(row=0, column=2, sticky="snew", padx=2, pady=5)
         self.searchtypeCbx.set(self.search_types[0])
 
+        # filters
+        fltFrm = Frame(self.search_top)
+        fltFrm.grid(row=1, column=0, sticky="snew", padx=20)
+
+        self.tempClosedChx = Checkbutton(
+            fltFrm, variable=self.temp_closed, onvalue=1, offvalue=0
+        )
+        self.tempClosedChx.grid(row=0, column=0, padx=5)
+        Label(fltFrm, text="temporary closed").grid(
+            row=0, column=1, sticky="snw", padx=5
+        )
+        self.catDupChx = Checkbutton(
+            fltFrm, variable=self.catalog_dup, onvalue=1, offvalue=0
+        )
+        self.catDupChx.grid(row=1, column=0, padx=5)
+        Label(fltFrm, text="catalog duplicates").grid(
+            row=1, column=1, sticky="snw", padx=5
+        )
+
+        self.babelDupChx = Checkbutton(
+            fltFrm, variable=self.babel_dup, onvalue=1, offvalue=0
+        )
+        self.babelDupChx.grid(row=2, column=0, sticky="snw", padx=5)
+        Label(fltFrm, text="other cart duplicates").grid(
+            row=2, column=1, sticky="snw", padx=5
+        )
+
         # buttons frame
         btnFrm = Frame(self.search_top)
-        btnFrm.grid(row=1, column=0, sticky="snew", padx=20)
+        btnFrm.grid(row=2, column=0, sticky="snew", padx=20, pady=10)
         btnFrm.columnconfigure(0, minsize=160)
 
         self.searchBtn = Button(btnFrm, text="search", command=self.search, width=10)
@@ -447,7 +477,7 @@ class SearchCartWidget:
 
         # results frame
         resFrm = Frame(self.search_top)
-        resFrm.grid(row=2, column=0, sticky="snew", padx=20, pady=20)
+        resFrm.grid(row=3, column=0, sticky="snew", padx=20, pady=20)
 
         columns = ("oid", "#", "title", "author", "ISBN")
 
