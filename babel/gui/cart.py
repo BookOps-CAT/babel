@@ -2053,7 +2053,10 @@ class CartView(Frame):
                     changed.append(dict(order=value["order"], grid=value["grid"]))
                     new_qty = 0
                     for l in value["grid"]["locs"]:
-                        new_qty += int(l["qtyEnt"].get())
+                        try:
+                            new_qty += int(l["qtyEnt"].get())
+                        except ValueError:
+                            mlogger.warning("Tried to save qty that is not integer.")
                     self.tracker[key]["grid"]["totalQty"] = new_qty
                     self.tracker[key]["grid"]["totalQtyLbl"].set(f"total qty:{new_qty}")
             save_displayed_order_data(changed)
@@ -2454,10 +2457,10 @@ class CartView(Frame):
             else:
                 vrepTxt.insert(END, f"order {ord_no}:\n")
                 if ord_iss[0]:
-                    vrepTxt.insert(END, "  missing: {}\n".format(",".join(ord_iss[0])))
+                    vrepTxt.insert(END, "  problems: {}\n".format(",".join(ord_iss[0])))
                 for gno, loc in ord_iss[1].items():
                     vrepTxt.insert(
-                        END, "\tlocation {}: missing {}\n".format(gno, ",".join(loc))
+                        END, "\tlocation {}: {}\n".format(gno, ",".join(loc))
                     )
 
         vrepTxt.tag_add("header", "1.0", "1.end")

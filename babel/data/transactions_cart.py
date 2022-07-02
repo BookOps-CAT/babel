@@ -972,6 +972,12 @@ def validate_cart_data(cart_id):
             if not o.resource.price_disc:
                 iss_count += 1
                 ord_issues.append("discount price")
+            if o.resource.dup_catalog:
+                iss_count += 1
+                ord_issues.append("catalog duplicate")
+            if o.resource.dup_babel:
+                iss_count += 1
+                ord_issues.append("previously ordered")
 
             grid_issues = OrderedDict()
             m = 0
@@ -981,16 +987,20 @@ def validate_cart_data(cart_id):
                     loc_issues = []
                     if not l.branch_id:
                         iss_count += 1
-                        loc_issues.append("branch")
+                        loc_issues.append("no branch")
+                    else:
+                        temp_closed, branch_code = is_temp_closed(session, l.branch_id)
+                        if temp_closed:
+                            loc_issues.append(f"branch closed ({branch_code})")
                     if not l.shelfcode_id:
                         iss_count += 1
-                        loc_issues.append("shelf code")
+                        loc_issues.append("no shelf code")
                     if not l.qty:
                         iss_count += 1
-                        loc_issues.append("quantity")
+                        loc_issues.append("no quantity")
                     if not l.fund_id:
                         iss_count += 1
-                        loc_issues.append("fund")
+                        loc_issues.append("no fund")
                     else:
                         # verify fund here
                         valid_fund = validate_fund(
@@ -1015,6 +1025,12 @@ def validate_cart_data(cart_id):
                 issues[n] = (ord_issues, grid_issues)
 
     return iss_count, issues
+
+
+@lru_cache(maxsize=24)
+def is_temp_closed(session, branch_id):
+    branch_rec = retrieve_record(session, Branch, did=branch_id)
+    return branch_rec.temp_closed, branch_rec.code
 
 
 @lru_cache(maxsize=24)
