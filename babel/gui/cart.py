@@ -461,7 +461,12 @@ class SearchCartWidget:
             variable=self.filter,
             value="babel_dup",
         )
-        fltBabelDupBtn.grid(row=2, column=0, sticky="snw", padx=5)
+        fltBabelDupBtn.grid(row=0, column=1, sticky="snw", padx=50)
+
+        fltNoneBtn = Radiobutton(
+            fltFrm, text="no filter", variable=self.filter, value=""
+        )
+        fltNoneBtn.grid(row=1, column=1, sticky="snew", padx=50)
 
         # buttons frame
         btnFrm = Frame(self.search_top)
