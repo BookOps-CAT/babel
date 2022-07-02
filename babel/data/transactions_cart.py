@@ -440,11 +440,11 @@ def filter_cart(cart_id: int, filter_type: str):
         )
 
         if filter_type == "temp_closed":
-            recs = query.filter(Branch.temp_closed == True).all()
+            recs = query.filter(Branch.temp_closed == True).distinct().all()
         elif filter_type == "cat_dup":
-            recs = query.filter(Resource.dup_catalog == True).all()
+            recs = query.filter(Resource.dup_catalog == True).distinct().all()
         elif filter_type == "babel_dup":
-            recs = query.filter(Resource.dup_babel == True).all()
+            recs = query.filter(Resource.dup_babel == True).distinct().all()
 
         results = []
         n = 0
