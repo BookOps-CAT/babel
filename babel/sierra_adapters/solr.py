@@ -165,17 +165,21 @@ class BplSolr(SolrSession):
 
         items = []
 
-        for item_str in data["sm_item_data"]:
-            item = json.loads(item_str)
-            items.append(
-                dict(
-                    locCode=item["location"]["code"],
-                    locName=item["location"]["name"],
-                    status=item["status"]["display"],
-                    circ="n/a",
-                    lastCheck="n/a",
+        try:
+            for item_str in data["sm_item_data"]:
+                item = json.loads(item_str)
+                items.append(
+                    dict(
+                        locCode=item["location"]["code"],
+                        locName=item["location"]["name"],
+                        status=item["status"]["display"],
+                        circ="n/a",
+                        lastCheck="n/a",
+                    )
                 )
-            )
+        except KeyError:
+            # order record only, no items
+            pass
 
         return items
 

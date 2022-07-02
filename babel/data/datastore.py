@@ -135,6 +135,7 @@ class Branch(Base):
     name = Column(String(50))
     code = Column(String(2), nullable=False)
     is_research = Column(Boolean, default=None)
+    temp_closed = Column(Boolean, default=False, nullable=False)
 
     def __repr__(self):
         state = inspect(self)

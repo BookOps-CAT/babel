@@ -4,6 +4,7 @@ import logging
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
+from typing import Optional
 
 from errors import BabelError
 from data.transactions_cart import (
@@ -27,6 +28,7 @@ from data.transactions_cart import (
     create_order_snapshot,
     create_grids_snapshot,
     search_cart,
+    filter_cart,
 )
 from data.datastore import (
     Cart,
@@ -388,14 +390,15 @@ class SearchCartWidget:
         self.cart_id = app_data["active_id"].get()
         self.keywords = StringVar()
         self.key_type = StringVar()
+        self.filter = StringVar()
 
         self.search_top = Toplevel(master=self.parent)
         self.search_top.title("Search cart")
         self.cur_manager = BusyManager(self.search_top)
 
         # input frame
-        inputFrm = Frame(self.search_top)
-        inputFrm.grid(row=0, column=0, sticky="snew", padx=20, pady=20)
+        inputFrm = LabelFrame(self.search_top, text="keyword search")
+        inputFrm.grid(row=0, column=0, sticky="snew", padx=20, pady=10)
 
         self.keywordEnt = Entry(
             inputFrm, font=RFONT, textvariable=self.keywords, width=40
@@ -432,9 +435,42 @@ class SearchCartWidget:
         self.searchtypeCbx.grid(row=0, column=2, sticky="snew", padx=2, pady=5)
         self.searchtypeCbx.set(self.search_types[0])
 
+        # filters
+        fltFrm = LabelFrame(self.search_top, text="OR filter (select only one)")
+        fltFrm.grid(row=1, column=0, sticky="snew", padx=20)
+
+        fltTempClosedBtn = Radiobutton(
+            fltFrm,
+            text="temporarily closed",
+            variable=self.filter,
+            value="temp_closed",
+        )
+        fltTempClosedBtn.grid(row=0, column=0, sticky="snw", padx=5)
+
+        fltCatDupBtn = Radiobutton(
+            fltFrm,
+            text="catalog duplicates",
+            variable=self.filter,
+            value="cat_dup",
+        )
+        fltCatDupBtn.grid(row=1, column=0, sticky="snw", padx=5)
+
+        fltBabelDupBtn = Radiobutton(
+            fltFrm,
+            text="other carts duplicates",
+            variable=self.filter,
+            value="babel_dup",
+        )
+        fltBabelDupBtn.grid(row=0, column=1, sticky="snw", padx=50)
+
+        fltNoneBtn = Radiobutton(
+            fltFrm, text="no filter", variable=self.filter, value=""
+        )
+        fltNoneBtn.grid(row=1, column=1, sticky="snew", padx=50)
+
         # buttons frame
         btnFrm = Frame(self.search_top)
-        btnFrm.grid(row=1, column=0, sticky="snew", padx=20)
+        btnFrm.grid(row=2, column=0, sticky="snew", padx=20, pady=10)
         btnFrm.columnconfigure(0, minsize=160)
 
         self.searchBtn = Button(btnFrm, text="search", command=self.search, width=10)
@@ -447,7 +483,7 @@ class SearchCartWidget:
 
         # results frame
         resFrm = Frame(self.search_top)
-        resFrm.grid(row=2, column=0, sticky="snew", padx=20, pady=20)
+        resFrm.grid(row=3, column=0, sticky="snew", padx=20, pady=20)
 
         columns = ("oid", "#", "title", "author", "ISBN")
 
@@ -484,15 +520,35 @@ class SearchCartWidget:
         for value in results:
             self.resultsTrv.insert("", END, values=value)
 
-    def search(self):
-        self.resultsTrv.delete(*self.resultsTrv.get_children())
-        if not self.keywords.get().strip():
+    def _search_type(self) -> Optional[str]:
+        """
+        Determines if any search criteria has been entred.
+        """
+        if not self.keywords.get().strip() and not self.filter.get():
             messagebox.showwarning(
                 "Missing data",
                 "Please enter keywords to search.",
                 parent=self.search_top,
             )
+            return None
+        elif self.keywords.get().strip() and self.filter.get():
+            messagebox.showwarning(
+                "Invalid search",
+                "Please select keyword or filter, but not both.",
+                parent=self.search_top,
+            )
+        elif self.keywords.get().strip():
+            return "keyword"
+        elif self.filter.get():
+            return "filter"
         else:
+            return None
+
+    def search(self):
+        self.resultsTrv.delete(*self.resultsTrv.get_children())
+        search_requested = self._search_type()
+        mlogger.debug(f"Requested {search_requested} search in SearchCartWidget.")
+        if search_requested == "keyword":
             # force any id type keywords to be searched as phrases
             if self.key_type.get() in self.key_types[:6]:
                 self.searchtypeCbx.set(self.search_types[0])
@@ -502,7 +558,10 @@ class SearchCartWidget:
             results = search_cart(
                 self.cart_id, keywords, self.keytypeCbx.get(), self.searchtypeCbx.get()
             )
+        elif search_requested == "filter":
+            results = filter_cart(self.cart_id, self.filter.get())
 
+        if search_requested is not None:
             self.populate_result_list(results)
 
     def select_item(self, a):

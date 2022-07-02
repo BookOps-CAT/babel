@@ -134,6 +134,18 @@ def test_parse_item_data(dummy_solr):
     }
 
 
+def test_parse_item_data_not_found(dummy_solr):
+    # scenario when there is only brief order record without items attached
+    data = MockSolrSessionResponseSuccess().json()
+    bib = data["response"]["docs"][0]
+    bib.pop("sm_item_data", None)
+    data["response"]["docs"][0] = bib
+
+    results = dummy_solr._parse_item_data(data)
+
+    assert results == []
+
+
 @pytest.mark.parametrize("arg", ["isbn"])
 def test_search_success(dummy_user_data, mock_solr_search_success, mock_vault, arg):
     with BplSolr(dummy_user_data) as solr:

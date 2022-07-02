@@ -23,17 +23,19 @@ def alter_datastore(db_name=None, user=None, password=None, host=None, port=None
         database=db_name,
         query={"charset": DB_CHARSET},
     )
-    print(database_url)
     engine = create_engine(database_url)
 
     # add extra columns to modified tables
-    # engine.execute(
-    #     "ALTER TABLE resource ADD dup_bibs VARCHAR(200) CHARACTER SET UTF8 COLLATE utf8_bin AFTER dup_catalog;"
-    # )
+    engine.execute(
+        "ALTER TABLE resource ADD dup_bibs VARCHAR(200) CHARACTER SET UTF8 COLLATE utf8_bin AFTER dup_catalog;"
+    )
     print("Added dup_bibs column to resource table.")
 
     engine.execute("ALTER TABLE branch ADD is_research BOOLEAN AFTER code;")
     print("Added is_research column to branch table.")
+
+    engine.execute("ALTER TABLE branch ADD temp_closed BOOLEAN AFTER is_research;")
+    print("Added temp_closed column to branch table.")
 
     engine.execute(
         "ALTER TABLE cart MODIFY `name` VARCHAR(100) CHARACTER SET UTF8 COLLATE utf8_bin;"
