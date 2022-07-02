@@ -861,35 +861,39 @@ def search_cart(cart_id, keywords, keyword_type, search_type):
             .order_by(Order.did)
         )
 
-        if keyword_type == "isbn":
-            recs = query.filter(Resource.isbn.ilike(f"%{keywords}%")).all()
-        if keyword_type == "upc":
-            recs = query.filter(Resource.upc.ilike(f"%{keywords}%")).all()
-        if keyword_type == "other #":
-            recs = query.filter(Resource.other_no.ilike(f"%{keywords}")).all()
-        if keyword_type == "wlo #":
-            recs = query.filter(Order.wlo.ilike(f"%{keywords}%")).all()
-        if keyword_type == "order #":
-            recs = query.filter(Order.oid.ilike(f"%{keywords}%")).all()
-        if keyword_type == "bib #":
-            recs = query.filter(Order.bid.ilike(f"%{keywords}%")).all()
-        if keyword_type == "title":
-            if search_type == "phrase":
-                query = query.filter(Resource.title.ilike(f"%{keywords}%"))
-                recs = query.all()
-            elif search_type == "keyword":
-                keywords = keywords.split(" ")
-                for word in keywords:
-                    query = query.filter(Resource.title.ilike(f"%{word}%"))
-                recs = query.all()
-        if keyword_type == "author":
-            if search_type == "phrase":
-                recs = query.filter(Resource.author.ilike(f"%{keywords}%")).all()
-            elif search_type == "keyword":
-                keywords = keywords.split(" ")
-                for word in keywords:
-                    query = query.filter(Resource.author.ilike(f"%{word}%"))
-                recs = query.all()
+        if not keywords:
+            # show everything
+            recs = query.all()
+        else:
+            if keyword_type == "isbn":
+                recs = query.filter(Resource.isbn.ilike(f"%{keywords}%")).all()
+            if keyword_type == "upc":
+                recs = query.filter(Resource.upc.ilike(f"%{keywords}%")).all()
+            if keyword_type == "other #":
+                recs = query.filter(Resource.other_no.ilike(f"%{keywords}")).all()
+            if keyword_type == "wlo #":
+                recs = query.filter(Order.wlo.ilike(f"%{keywords}%")).all()
+            if keyword_type == "order #":
+                recs = query.filter(Order.oid.ilike(f"%{keywords}%")).all()
+            if keyword_type == "bib #":
+                recs = query.filter(Order.bid.ilike(f"%{keywords}%")).all()
+            if keyword_type == "title":
+                if search_type == "phrase":
+                    query = query.filter(Resource.title.ilike(f"%{keywords}%"))
+                    recs = query.all()
+                elif search_type == "keyword":
+                    keywords = keywords.split(" ")
+                    for word in keywords:
+                        query = query.filter(Resource.title.ilike(f"%{word}%"))
+                    recs = query.all()
+            if keyword_type == "author":
+                if search_type == "phrase":
+                    recs = query.filter(Resource.author.ilike(f"%{keywords}%")).all()
+                elif search_type == "keyword":
+                    keywords = keywords.split(" ")
+                    for word in keywords:
+                        query = query.filter(Resource.author.ilike(f"%{word}%"))
+                    recs = query.all()
 
         results = []
         n = 0

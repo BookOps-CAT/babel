@@ -525,12 +525,9 @@ class SearchCartWidget:
         Determines if any search criteria has been entred.
         """
         if not self.keywords.get().strip() and not self.filter.get():
-            messagebox.showwarning(
-                "Missing data",
-                "Please enter keywords to search.",
-                parent=self.search_top,
-            )
-            return None
+            # show all resources in the cart if nothing selectd
+            # this could be very useful if combined with the validation report, etc.
+            return "keyword"
         elif self.keywords.get().strip() and self.filter.get():
             messagebox.showwarning(
                 "Invalid search",
