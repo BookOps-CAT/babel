@@ -21,6 +21,8 @@ from data.transactions_cart import (
     get_last_cart,
     get_orders_by_id,
     has_library_assigned,
+    remove_temp_closed_locations,
+    remove_catalog_duplicates,
     save_displayed_order_data,
     save_new_dist_and_grid,
     validate_cart_data,
@@ -759,7 +761,9 @@ class CartView(Frame):
         self._createToolTip(self.fundBtn, "apply funds")
 
         self.validBtn = Button(
-            self.actionFrm, image=validationImg, command=self.validation_report
+            self.actionFrm,
+            image=validationImg,
+            command=self.validation_report_widget_create,
         )
         self.validBtn.grid(row=5, column=0, sticky="sw", padx=10, pady=5)
         self._createToolTip(self.validBtn, "validate cart")
@@ -1794,7 +1798,6 @@ class CartView(Frame):
             if self.profile.get() != "All users":
 
                 # mlogger.debug('CartView raised.')
-
                 self.reset()
 
                 # trigger profile observer when Window active
@@ -2083,7 +2086,7 @@ class CartView(Frame):
                 if self.status.get() == "finalized" and needs_validation:
 
                     # run validation
-                    self.validation_report(final=True)
+                    self.validation_report_widget_create(final=True)
                     self.wait_window(self.validTop)
 
                     if self.cart_valid:
@@ -2406,7 +2409,7 @@ class CartView(Frame):
         self.cart_valid = True
         self.validTop.destroy()
 
-    def validation_report(self, final=False):
+    def validate(self):
         self.cur_manager.busy()
         issues_count, issues = validate_cart_data(self.cart_id.get())
         self.cur_manager.notbusy()
@@ -2421,6 +2424,101 @@ class CartView(Frame):
         except IndexError:
             affected_records = 0
 
+        return affected_records, issues_count, issues
+
+    def validation_report_populate(
+        self, widget, affected_records, issues_count, issues
+    ):
+        """
+        Populates validation report
+        """
+        # remove any previous reports
+        widget["state"] = "normal"
+        widget.delete("1.0", END)
+
+        # populate
+        if not affected_records:
+            widget.insert(END, "No problems found :-). The cart is good to go.")
+        else:
+            widget.insert(
+                END,
+                f"Found {issues_count} problems in " f"{affected_records} orders\n\n",
+            )
+
+            for ord_no, ord_iss in issues.items():
+                if ord_no == 0:
+                    widget.insert(END, f"cart issues: {ord_iss}\n\n")
+                else:
+                    widget.insert(END, f"order {ord_no}:\n")
+                    if ord_iss[0]:
+                        widget.insert(
+                            END, "  problems: {}\n".format(",".join(ord_iss[0]))
+                        )
+                    for gno, loc in ord_iss[1].items():
+                        widget.insert(
+                            END, "\tlocation {}: {}\n".format(gno, ",".join(loc))
+                        )
+
+            widget.tag_add("header", "1.0", "1.end")
+            widget.tag_config("header", font=RBFONT, foreground="tomato2")
+
+            widget["state"] = "disabled"
+
+    def remove_catalog_dups(self, widget):
+        """
+        Removes from the given cart resources that were identified to have duplicate
+        in the catalog.
+        """
+        try:
+            self.cur_manager.busy()
+            remove_catalog_duplicates(self.cart_id.get())
+            self.cur_manager.notbusy()
+
+            # refresh validation report
+            affected_records, issues_count, issues = self.validate()
+            self.validation_report_populate(
+                widget, affected_records, issues_count, issues
+            )
+
+            # refresh cart display & revert to first set of orders
+            self.nav_start()
+
+        except BabelError as exc:
+            mlogger.error(
+                f"Encountered error while removing catalog duplicates from the cart: Error {exc}"
+            )
+
+    def remove_closed_branches(self, widget):
+        """
+        Removes from the given cart locations that include temporarily closed branches
+        """
+        try:
+            self.cur_manager.busy()
+            remove_temp_closed_locations(self.cart_id.get())
+            self.cur_manager.notbusy()
+
+            # refresh validation report
+            affected_records, issues_count, issues = self.validate()
+            self.validation_report_populate(
+                widget, affected_records, issues_count, issues
+            )
+            # refresh cart display
+            self.display_selected_orders(self.selected_order_ids)
+
+        except BabelError as exc:
+            logger.error(
+                f"Encountered error while removing closed branches from the cart. Error: {exc}"
+            )
+
+    def remove_babel_dups(self, cart_id):
+        """
+        Removes from the given cart resources that were identified to have been
+        previously ordered (duplicate in a different cart)
+        """
+        self.cur_manager.busy()
+        self.cur_manager.notbusy()
+
+    def validation_report_widget_create(self, final=False):
         # generate report widget
         self.validTop = Toplevel(self)
         self.validTop.title("Cart validation report")
@@ -2443,40 +2541,53 @@ class CartView(Frame):
         )
         scrollbar["command"] = vrepTxt.yview
 
-        if affected_records:
-            vrepTxt.insert(
-                END,
-                f"Found {issues_count} problems in " f"{affected_records} orders\n\n",
-            )
-        else:
-            vrepTxt.insert(END, "No problems found :-). The cart is good to go.")
+        # buttons
+        btnFrm = Frame(self.validTop)
+        btnFrm.grid(row=1, column=0, columnspan=5, sticky="snw", pady=5)
+        btnFrm.columnconfigure(0, minsize=80)
+        btnFrm.columnconfigure(1, minsize=120)
 
-        for ord_no, ord_iss in issues.items():
-            if ord_no == 0:
-                vrepTxt.insert(END, f"cart issues: {ord_iss}\n\n")
-            else:
-                vrepTxt.insert(END, f"order {ord_no}:\n")
-                if ord_iss[0]:
-                    vrepTxt.insert(END, "  problems: {}\n".format(",".join(ord_iss[0])))
-                for gno, loc in ord_iss[1].items():
-                    vrepTxt.insert(
-                        END, "\tlocation {}: {}\n".format(gno, ",".join(loc))
-                    )
+        cancelBtn = Button(
+            btnFrm, text="cancel", width=10, command=self.validTop.destroy
+        )
+        cancelBtn.grid(row=0, column=5, sticky="sne", padx=10, pady=10)
+        rmClosedBtn = Button(
+            btnFrm,
+            text="rm closed",
+            width=10,
+            command=lambda: self.remove_closed_branches(vrepTxt),
+        )
+        rmClosedBtn.grid(row=0, column=2, sticky="sne", padx=10, pady=10)
+        self._createToolTip(rmClosedBtn, "remove temp closed branches\nfrom the cart")
 
-        vrepTxt.tag_add("header", "1.0", "1.end")
-        vrepTxt.tag_config("header", font=RBFONT, foreground="tomato2")
-        vrepTxt["state"] = "disabled"
+        rmCatDupBtn = Button(
+            btnFrm,
+            text="rm cat dup",
+            width=10,
+            command=self.remove_catalog_dups(vrepTxt),
+        )
+        rmCatDupBtn.grid(row=0, column=3, sticky="sne", padx=10, pady=10)
+        self._createToolTip(rmCatDupBtn, "remove catalog duplicates\nfrom the cart")
+
+        rmBabDupBtn = Button(
+            btnFrm,
+            text="rm cart dup",
+            width=10,
+            command=self.remove_babel_dups(vrepTxt),
+        )
+        rmBabDupBtn.grid(row=0, column=4, sticky="sne", padx=10, pady=10)
+        self._createToolTip(rmBabDupBtn, "remove duplicates identified\nin other carts")
+
+        affected_records, issues_count, issues = self.validate()
+        self.validation_report_populate(vrepTxt, affected_records, issues_count, issues)
 
         if final:
             if not self.cart_valid:
-                cancelBtn = Button(
-                    frm, text="cancel", width=10, command=self.validTop.destroy
-                )
-                cancelBtn.grid(row=3, column=2, sticky="sne", padx=10, pady=10)
                 ovrwBtn = Button(
-                    frm, text="override", width=10, command=self.validation_override
+                    btnFrm, text="override", width=10, command=self.validation_override
                 )
-                ovrwBtn.grid(row=3, column=3, sticky="snw", padx=10, pady=10)
+                ovrwBtn.grid(row=0, column=1, sticky="snw", padx=10, pady=10)
+                self._createToolTip(ovrwBtn, "finalize the cat ignoring problems")
 
     def _preview(self):
         self.preview_frame = Frame(self.preview_base)
