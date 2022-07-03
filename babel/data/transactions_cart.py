@@ -668,6 +668,59 @@ def has_library_assigned(cart_id):
             return False
 
 
+def remove_catalog_duplicates(cart_id: int) -> None:
+    """
+    Deletes from the cart any orders/resources identified to
+    have a duplicate in the catalog.
+
+    Args:
+        cart_id:                `cart.did` to perform opertaion on
+    """
+    try:
+        with session_scope() as session:
+            instances = (
+                session.query(Order)
+                .join(Resource, Resource.order_id == Order.did)
+                .filter(Resource.dup_catalog == True)
+                .all()
+            )
+            for i in instances:
+                delete_record(session, Order, did=i.did)
+            session.commit()
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error("Unhandled error on updating resource." f"Traceback: {tb}")
+        raise BabelError(exc)
+
+
+def remove_temp_closed_locations(cart_id: int) -> None:
+    """
+    Deletes from OrderLocation tabel locations that
+    are indicated as temporarily closed.
+
+    Args:
+        cart_id:                `cart.did` to perform operation on
+    """
+    try:
+        with session_scope() as session:
+            instances = (
+                session.query(OrderLocation)
+                .join(Order, OrderLocation.order_id == Order.did)
+                .join(Branch, OrderLocation.branch_id == Branch.did)
+                .filter(Order.cart_id == cart_id)
+                .filter(Branch.temp_closed == True)
+            ).all()
+            for i in instances:
+                delete_record(session, OrderLocation, did=i.did)
+            session.commit()
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error("Unhandled error on updating resource." f"Traceback: {tb}")
+        raise BabelError(exc)
+
+
 def retrieve_unique_vendor_codes_from_cart(session, cart_id, system_id):
     if system_id == 1:
         stmn = text(
