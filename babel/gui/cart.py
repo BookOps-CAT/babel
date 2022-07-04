@@ -2469,6 +2469,7 @@ class CartView(Frame):
         Removes from the given cart resources that were identified to have duplicate
         in the catalog.
         """
+        mlogger.info(f"Removing catalog duplicates from cart # {self.cart_id.get()}")
         try:
             self.cur_manager.busy()
             remove_catalog_duplicates(self.cart_id.get())
@@ -2481,7 +2482,7 @@ class CartView(Frame):
             )
 
             # refresh cart display & revert to first set of orders
-            self.nav_start()
+            self.observer()
 
         except BabelError as exc:
             mlogger.error(
@@ -2492,6 +2493,9 @@ class CartView(Frame):
         """
         Removes from the given cart locations that include temporarily closed branches
         """
+        mlogger.info(
+            f"Removing temporarily closed branches from cart # {self.cart_id.get()}"
+        )
         try:
             self.cur_manager.busy()
             remove_temp_closed_locations(self.cart_id.get())
@@ -2564,7 +2568,7 @@ class CartView(Frame):
             btnFrm,
             text="rm cat dup",
             width=10,
-            command=self.remove_catalog_dups(vrepTxt),
+            command=lambda: self.remove_catalog_dups(vrepTxt),
         )
         rmCatDupBtn.grid(row=0, column=3, sticky="sne", padx=10, pady=10)
         self._createToolTip(rmCatDupBtn, "remove catalog duplicates\nfrom the cart")
@@ -2573,7 +2577,7 @@ class CartView(Frame):
             btnFrm,
             text="rm cart dup",
             width=10,
-            command=self.remove_babel_dups(vrepTxt),
+            command=lambda: self.remove_babel_dups(vrepTxt),
         )
         rmBabDupBtn.grid(row=0, column=4, sticky="sne", padx=10, pady=10)
         self._createToolTip(rmBabDupBtn, "remove duplicates identified\nin other carts")
