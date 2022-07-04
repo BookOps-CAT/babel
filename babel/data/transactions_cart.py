@@ -668,13 +668,41 @@ def has_library_assigned(cart_id):
             return False
 
 
+def remove_babel_duplicates(cart_id: int) -> None:
+    """
+    Deletes from the cart any orders/resources identified
+    to be present in other carts.
+
+    Args:
+        cart_id:                `Cart.did` to perform operation on
+    """
+    try:
+        with session_scope() as session:
+            instances = (
+                session.query(Order)
+                .join(Resource, Resource.order_id == Order.did)
+                .filter(Order.cart_id == cart_id)
+                .filter(Resource.dup_babel == True)
+                .all()
+            )
+            for i in instances:
+                delete_record(session, Order, did=i.did)
+                mlogger.debug(f"Deleted Order record # {i.did}.")
+
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error("Unhandled error on updating resource." f"Traceback: {tb}")
+        raise BabelError(exc)
+
+
 def remove_catalog_duplicates(cart_id: int) -> None:
     """
     Deletes from the cart any orders/resources identified to
     have a duplicate in the catalog.
 
     Args:
-        cart_id:                `cart.did` to perform opertaion on
+        cart_id:                `Cart.did` to perform operation on
     """
     try:
         with session_scope() as session:
@@ -702,7 +730,7 @@ def remove_temp_closed_locations(cart_id: int) -> None:
     are indicated as temporarily closed.
 
     Args:
-        cart_id:                `cart.did` to perform operation on
+        cart_id:                `Cart.did` to perform operation on
     """
     try:
         with session_scope() as session:
