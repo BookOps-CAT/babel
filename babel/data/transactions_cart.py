@@ -433,14 +433,18 @@ def filter_cart(cart_id: int, filter_type: str):
         query = (
             session.query(Order.did, Resource.title, Resource.author, Resource.isbn)
             .join(Order, Order.did == Resource.order_id)
-            .join(OrderLocation, OrderLocation.order_id == Order.did)
-            .join(Branch, OrderLocation.branch_id == Branch.did)
             .filter(Order.cart_id == cart_id)
             .order_by(Order.did)
         )
 
         if filter_type == "temp_closed":
-            recs = query.filter(Branch.temp_closed == True).distinct().all()
+            recs = (
+                query.join(OrderLocation, OrderLocation.order_id == Order.did)
+                .join(Branch, OrderLocation.branch_id == Branch.did)
+                .filter(Branch.temp_closed == True)
+                .distinct()
+                .all()
+            )
         elif filter_type == "cat_dup":
             recs = query.filter(Resource.dup_catalog == True).distinct().all()
         elif filter_type == "babel_dup":
@@ -452,6 +456,7 @@ def filter_cart(cart_id: int, filter_type: str):
             n += 1
             results.append((rec[0], n, rec[1], rec[2], rec[3]))
 
+        mlogger.info(f"Identified {n} orders fulfilling the {filter_type} filter.")
         return results
 
 
@@ -1075,6 +1080,7 @@ def validate_cart_data(cart_id):
                     else:
                         temp_closed, branch_code = is_temp_closed(session, l.branch_id)
                         if temp_closed:
+                            iss_count += 1
                             loc_issues.append(f"branch closed ({branch_code})")
                     if not l.shelfcode_id:
                         iss_count += 1
@@ -1097,6 +1103,7 @@ def validate_cart_data(cart_id):
                             l.branch_id,
                         )
                         if not valid_fund:
+                            iss_count += 1
                             loc_issues.append("(incorrect) fund")
 
                     if loc_issues:
