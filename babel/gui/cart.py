@@ -21,6 +21,7 @@ from data.transactions_cart import (
     get_last_cart,
     get_orders_by_id,
     has_library_assigned,
+    remove_babel_duplicates,
     remove_temp_closed_locations,
     remove_catalog_duplicates,
     save_displayed_order_data,
@@ -2411,6 +2412,9 @@ class CartView(Frame):
 
     def validate(self):
         self.cur_manager.busy()
+        # save any changes before running validation
+        self.save_cart()
+
         issues_count, issues = validate_cart_data(self.cart_id.get())
         self.cur_manager.notbusy()
 
@@ -2514,13 +2518,32 @@ class CartView(Frame):
                 f"Encountered error while removing closed branches from the cart. Error: {exc}"
             )
 
-    def remove_babel_dups(self, cart_id):
+    def remove_babel_dups(self, widget):
         """
         Removes from the given cart resources that were identified to have been
         previously ordered (duplicate in a different cart)
         """
-        self.cur_manager.busy()
-        self.cur_manager.notbusy()
+        mlogger.info(f"Removing Babel duplicates from cart # {self.cart_id.get()}")
+
+        try:
+
+            self.cur_manager.busy()
+            remove_babel_duplicates(self.cart_id.get())
+            self.cur_manager.notbusy()
+
+            # refresh validation report
+            affected_records, issues_count, issues = self.validate()
+            self.validation_report_populate(
+                widget, affected_records, issues_count, issues
+            )
+
+            # refresh cart display & revert to first set of orders
+            self.observer()
+
+        except BabelError as exc:
+            logger.error(
+                f"Encountered error while removing Babel duplicates from the cart. Error: {exc}"
+            )
 
     def validation_report_widget_create(self, final=False):
         # generate report widget
