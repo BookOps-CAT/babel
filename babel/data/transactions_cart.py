@@ -681,11 +681,13 @@ def remove_catalog_duplicates(cart_id: int) -> None:
             instances = (
                 session.query(Order)
                 .join(Resource, Resource.order_id == Order.did)
+                .filter(Order.cart_id == cart_id)
                 .filter(Resource.dup_catalog == True)
                 .all()
             )
             for i in instances:
                 delete_record(session, Order, did=i.did)
+                mlogger.debug(f"Deleted Order record # {i.did}.")
             session.commit()
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
@@ -713,6 +715,7 @@ def remove_temp_closed_locations(cart_id: int) -> None:
             ).all()
             for i in instances:
                 delete_record(session, OrderLocation, did=i.did)
+                mlogger.debug(f"Deleted OrderLocation record # {i.did}.")
             session.commit()
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
