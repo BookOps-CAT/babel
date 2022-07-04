@@ -433,14 +433,18 @@ def filter_cart(cart_id: int, filter_type: str):
         query = (
             session.query(Order.did, Resource.title, Resource.author, Resource.isbn)
             .join(Order, Order.did == Resource.order_id)
-            .join(OrderLocation, OrderLocation.order_id == Order.did)
-            .join(Branch, OrderLocation.branch_id == Branch.did)
             .filter(Order.cart_id == cart_id)
             .order_by(Order.did)
         )
 
         if filter_type == "temp_closed":
-            recs = query.filter(Branch.temp_closed == True).distinct().all()
+            recs = (
+                query.join(OrderLocation, OrderLocation.order_id == Order.did)
+                .join(Branch, OrderLocation.branch_id == Branch.did)
+                .filter(Branch.temp_closed == True)
+                .distinct()
+                .all()
+            )
         elif filter_type == "cat_dup":
             recs = query.filter(Resource.dup_catalog == True).distinct().all()
         elif filter_type == "babel_dup":
@@ -452,6 +456,7 @@ def filter_cart(cart_id: int, filter_type: str):
             n += 1
             results.append((rec[0], n, rec[1], rec[2], rec[3]))
 
+        mlogger.info(f"Identified {n} orders fulfilling the {filter_type} filter.")
         return results
 
 
@@ -668,6 +673,90 @@ def has_library_assigned(cart_id):
             return False
 
 
+def remove_babel_duplicates(cart_id: int) -> None:
+    """
+    Deletes from the cart any orders/resources identified
+    to be present in other carts.
+
+    Args:
+        cart_id:                `Cart.did` to perform operation on
+    """
+    try:
+        with session_scope() as session:
+            instances = (
+                session.query(Order)
+                .join(Resource, Resource.order_id == Order.did)
+                .filter(Order.cart_id == cart_id)
+                .filter(Resource.dup_babel == True)
+                .all()
+            )
+            for i in instances:
+                delete_record(session, Order, did=i.did)
+                mlogger.debug(f"Deleted Order record # {i.did}.")
+
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error("Unhandled error on updating resource." f"Traceback: {tb}")
+        raise BabelError(exc)
+
+
+def remove_catalog_duplicates(cart_id: int) -> None:
+    """
+    Deletes from the cart any orders/resources identified to
+    have a duplicate in the catalog.
+
+    Args:
+        cart_id:                `Cart.did` to perform operation on
+    """
+    try:
+        with session_scope() as session:
+            instances = (
+                session.query(Order)
+                .join(Resource, Resource.order_id == Order.did)
+                .filter(Order.cart_id == cart_id)
+                .filter(Resource.dup_catalog == True)
+                .all()
+            )
+            for i in instances:
+                delete_record(session, Order, did=i.did)
+                mlogger.debug(f"Deleted Order record # {i.did}.")
+            session.commit()
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error("Unhandled error on updating resource." f"Traceback: {tb}")
+        raise BabelError(exc)
+
+
+def remove_temp_closed_locations(cart_id: int) -> None:
+    """
+    Deletes from OrderLocation tabel locations that
+    are indicated as temporarily closed.
+
+    Args:
+        cart_id:                `Cart.did` to perform operation on
+    """
+    try:
+        with session_scope() as session:
+            instances = (
+                session.query(OrderLocation)
+                .join(Order, OrderLocation.order_id == Order.did)
+                .join(Branch, OrderLocation.branch_id == Branch.did)
+                .filter(Order.cart_id == cart_id)
+                .filter(Branch.temp_closed == True)
+            ).all()
+            for i in instances:
+                delete_record(session, OrderLocation, did=i.did)
+                mlogger.debug(f"Deleted OrderLocation record # {i.did}.")
+            session.commit()
+    except Exception as exc:
+        _, _, exc_traceback = sys.exc_info()
+        tb = format_traceback(exc, exc_traceback)
+        mlogger.error("Unhandled error on updating resource." f"Traceback: {tb}")
+        raise BabelError(exc)
+
+
 def retrieve_unique_vendor_codes_from_cart(session, cart_id, system_id):
     if system_id == 1:
         stmn = text(
@@ -861,35 +950,39 @@ def search_cart(cart_id, keywords, keyword_type, search_type):
             .order_by(Order.did)
         )
 
-        if keyword_type == "isbn":
-            recs = query.filter(Resource.isbn.ilike(f"%{keywords}%")).all()
-        if keyword_type == "upc":
-            recs = query.filter(Resource.upc.ilike(f"%{keywords}%")).all()
-        if keyword_type == "other #":
-            recs = query.filter(Resource.other_no.ilike(f"%{keywords}")).all()
-        if keyword_type == "wlo #":
-            recs = query.filter(Order.wlo.ilike(f"%{keywords}%")).all()
-        if keyword_type == "order #":
-            recs = query.filter(Order.oid.ilike(f"%{keywords}%")).all()
-        if keyword_type == "bib #":
-            recs = query.filter(Order.bid.ilike(f"%{keywords}%")).all()
-        if keyword_type == "title":
-            if search_type == "phrase":
-                query = query.filter(Resource.title.ilike(f"%{keywords}%"))
-                recs = query.all()
-            elif search_type == "keyword":
-                keywords = keywords.split(" ")
-                for word in keywords:
-                    query = query.filter(Resource.title.ilike(f"%{word}%"))
-                recs = query.all()
-        if keyword_type == "author":
-            if search_type == "phrase":
-                recs = query.filter(Resource.author.ilike(f"%{keywords}%")).all()
-            elif search_type == "keyword":
-                keywords = keywords.split(" ")
-                for word in keywords:
-                    query = query.filter(Resource.author.ilike(f"%{word}%"))
-                recs = query.all()
+        if not keywords:
+            # show everything
+            recs = query.all()
+        else:
+            if keyword_type == "isbn":
+                recs = query.filter(Resource.isbn.ilike(f"%{keywords}%")).all()
+            if keyword_type == "upc":
+                recs = query.filter(Resource.upc.ilike(f"%{keywords}%")).all()
+            if keyword_type == "other #":
+                recs = query.filter(Resource.other_no.ilike(f"%{keywords}")).all()
+            if keyword_type == "wlo #":
+                recs = query.filter(Order.wlo.ilike(f"%{keywords}%")).all()
+            if keyword_type == "order #":
+                recs = query.filter(Order.oid.ilike(f"%{keywords}%")).all()
+            if keyword_type == "bib #":
+                recs = query.filter(Order.bid.ilike(f"%{keywords}%")).all()
+            if keyword_type == "title":
+                if search_type == "phrase":
+                    query = query.filter(Resource.title.ilike(f"%{keywords}%"))
+                    recs = query.all()
+                elif search_type == "keyword":
+                    keywords = keywords.split(" ")
+                    for word in keywords:
+                        query = query.filter(Resource.title.ilike(f"%{word}%"))
+                    recs = query.all()
+            if keyword_type == "author":
+                if search_type == "phrase":
+                    recs = query.filter(Resource.author.ilike(f"%{keywords}%")).all()
+                elif search_type == "keyword":
+                    keywords = keywords.split(" ")
+                    for word in keywords:
+                        query = query.filter(Resource.author.ilike(f"%{word}%"))
+                    recs = query.all()
 
         results = []
         n = 0
@@ -968,6 +1061,12 @@ def validate_cart_data(cart_id):
             if not o.resource.price_disc:
                 iss_count += 1
                 ord_issues.append("discount price")
+            if o.resource.dup_catalog:
+                iss_count += 1
+                ord_issues.append("catalog duplicate")
+            if o.resource.dup_babel:
+                iss_count += 1
+                ord_issues.append("previously ordered")
 
             grid_issues = OrderedDict()
             m = 0
@@ -977,16 +1076,21 @@ def validate_cart_data(cart_id):
                     loc_issues = []
                     if not l.branch_id:
                         iss_count += 1
-                        loc_issues.append("branch")
+                        loc_issues.append("no branch")
+                    else:
+                        temp_closed, branch_code = is_temp_closed(session, l.branch_id)
+                        if temp_closed:
+                            iss_count += 1
+                            loc_issues.append(f"branch closed ({branch_code})")
                     if not l.shelfcode_id:
                         iss_count += 1
-                        loc_issues.append("shelf code")
+                        loc_issues.append("no shelf code")
                     if not l.qty:
                         iss_count += 1
-                        loc_issues.append("quantity")
+                        loc_issues.append("no quantity")
                     if not l.fund_id:
                         iss_count += 1
-                        loc_issues.append("fund")
+                        loc_issues.append("no fund")
                     else:
                         # verify fund here
                         valid_fund = validate_fund(
@@ -999,6 +1103,7 @@ def validate_cart_data(cart_id):
                             l.branch_id,
                         )
                         if not valid_fund:
+                            iss_count += 1
                             loc_issues.append("(incorrect) fund")
 
                     if loc_issues:
@@ -1011,6 +1116,12 @@ def validate_cart_data(cart_id):
                 issues[n] = (ord_issues, grid_issues)
 
     return iss_count, issues
+
+
+@lru_cache(maxsize=24)
+def is_temp_closed(session, branch_id):
+    branch_rec = retrieve_record(session, Branch, did=branch_id)
+    return branch_rec.temp_closed, branch_rec.code
 
 
 @lru_cache(maxsize=24)
