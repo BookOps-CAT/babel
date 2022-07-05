@@ -359,9 +359,11 @@ class ReportView:
         rows, cols, heights = self._determine_widgets_layout(data)
         n = 0
         for branch_name, branch_data in data["branches"].items():
-            wTxt = self.unitFrm(self.reportFrm, heights[n], rows[n], cols[n])
+            wTxt = self.create_report_widget(
+                self.reportFrm, heights[n], rows[n], cols[n], branch_data
+            )
 
-            wTxt.insert(END, f"{branch_name}\n", "tag-header")
+            wTxt.insert(END, f"\t{branch_name}\n", "tag-header")
             wTxt.insert(
                 END, branch_data.to_string(index=False, justify="right"), "tag-right"
             )
