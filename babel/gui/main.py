@@ -218,8 +218,8 @@ class Base(Tk):
         calcImgM = ImageTk.PhotoImage(img)
         img = Image.open("./icons/Action-arrow-right-iconM.png")
         runImgM = ImageTk.PhotoImage(img)
-        img = Image.open("./icons/Action-build-iconM.png")
-        downloadImgM = ImageTk.PhotoImage(img)
+        img = Image.open("./icons/Arrows-down-iconS.png")
+        downloadImgS = ImageTk.PhotoImage(img)
         img = Image.open("./icons/App-ksirtet-iconM.png")
         gridImgM = ImageTk.PhotoImage(img)
         img = Image.open("./icons/Action-run-iconM.png")
@@ -266,7 +266,7 @@ class Base(Tk):
                 "fundM": fundImgM,
                 "calcM": calcImgM,
                 "runM": runImgM,
-                "downloadM": downloadImgM,
+                "downloadS": downloadImgS,
                 "gridM": gridImgM,
                 "customM": customImgM,
             },
