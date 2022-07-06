@@ -319,7 +319,8 @@ def generate_branch_breakdown(df, start_date, end_date):
 
     # group by branch
     branches = OrderedDict()
-    for k, d in fdf.groupby("branch_name"):
+    for branch_name, d in fdf.groupby("branch_name"):
+        branch_code = d["branch_code"].unique()[0].upper()
         branch = []
         total_copies = d["qty"].sum()
         ad = d[d["audn"] == "adult"]
@@ -362,7 +363,7 @@ def generate_branch_breakdown(df, start_date, end_date):
 
         bdf = DataFrame(branch)
         if not bdf.empty:
-            branches[k] = bdf
+            branches[f"{branch_name} ({branch_code})"] = bdf
 
     data["branches"] = branches
 
