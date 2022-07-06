@@ -381,16 +381,20 @@ class ReportView:
         grouped_sizes = []
         row_sizes = []
         for branch_name, branch_data in data["branches"].items():
-            if len(row_sizes) >= 3:
+            if len(row_sizes) == 3:
                 grouped_sizes.append(row_sizes)
                 row_sizes = []
+            elif len(row_sizes) > 3:
+                mlogger.error("Error while determining branches report layout.")
 
             # calculate number of records in a dataframe
-            row_sizes.append(len(branch_data.index))
+            row_sizes.append(branch_data.shape[0])
 
         # pick up any leftovers
-        if len(row_sizes) < 3:
+        if len(row_sizes) <= 3:
             grouped_sizes.append(row_sizes)
+
+        mlogger.debug(f"Determined # of required report rows: {len(grouped_sizes)}.")
 
         # determine layout location and height
         cols = []
@@ -402,9 +406,8 @@ class ReportView:
             for c in range(len(row_sizes)):
                 rows.append(r)
                 cols.append(c)
-                max_height = row_sizes[row_sizes.index(max(row_sizes))] + 2
+                max_height = row_sizes[row_sizes.index(max(row_sizes))] + 1
                 heights.append(max_height)
-                mlogger.debug(f"row={r}, col={c}, max_height={max_height}")
             r += 1
 
         return rows, cols, heights
