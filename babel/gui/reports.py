@@ -87,7 +87,8 @@ class ReportView:
         self.generate_report(report_data)
 
     def store_report_data(self, widget_id, df):
-        self.reports_idx[widget_id] = df
+        if df is not None:
+            self.reports_idx[widget_id] = df
 
     def download_report(self, widget_id):
 
@@ -119,12 +120,13 @@ class ReportView:
         textWidget.grid(row=0, column=0, sticky="snew")
 
         # add dowload button
-        downloadBtn = Button(
-            textWidget,
-            image=self.downloadImg,
-            command=lambda: self.download_report(textWidget.winfo_id()),
-        )
-        textWidget.window_create(END, window=downloadBtn)
+        if df is not None:
+            downloadBtn = Button(
+                textWidget,
+                image=self.downloadImg,
+                command=lambda: self.download_report(textWidget.winfo_id()),
+            )
+            textWidget.window_create(END, window=downloadBtn)
 
         textWidget.tag_configure("tag-right", justify="right")
         textWidget.tag_configure("tag-left", justify="left")
@@ -189,12 +191,13 @@ class ReportView:
 
     def report_one(self, data):
         """Current fiscal year summary"""
-        reportTxt = self.unitFrm(self.reportFrm, 80, 0, 0)
+        reportTxt = self.create_report_widget(self.reportFrm, 100, 0, 0)
 
         reportTxt.insert(END, "carts status\n", "tag-header")
         cats = [f"{x}: {y}" for x, y in data["status"].items()]
         for c in cats:
-            reportTxt.insert(END, f"{c}\n\n", "tag-center")
+            reportTxt.insert(END, f"{c}\n", "tag-center")
+        reportTxt.insert(END, "\n")
 
         reportTxt.insert(END, "quantities\n", "tag-header")
         reportTxt.insert(END, f'orders: {data["orders"]:,}\n', "tag-center")
