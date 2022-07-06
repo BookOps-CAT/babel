@@ -3,6 +3,7 @@ import logging
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import *
+from tkinter import messagebox, filedialog
 from tkinter.ttk import *
 
 
@@ -23,6 +24,7 @@ from gui.utils import (
     open_url,
 )
 from gui.fonts import RBFONT, RFONT
+from paths import MY_DOCS
 from reports.reports import generate_fy_summary_by_user_chart
 
 
@@ -45,9 +47,10 @@ class ReportView:
 
         # local variables
         self.top.report_title = StringVar()
+        self.reports_idx = dict()
 
         # icons
-        # downloadImg = app_data['img']['downloadM']
+        self.downloadImg = app_data["img"]["downloadS"]
 
         # layout
         self.baseFrm = Frame(self.top)
@@ -83,19 +86,48 @@ class ReportView:
         # populate report
         self.generate_report(report_data)
 
-    def unitFrm(self, parent, height, row, col):
+    def store_report_data(self, widget_id, df):
+        if df is not None:
+            self.reports_idx[widget_id] = df
+
+    def download_report(self, widget_id):
+
+        dst_fh = filedialog.asksaveasfilename(
+            parent=self.parent,
+            title="Save as",
+            defaultextension=".csv",
+            filetypes=(("cvs file", "*.csv"),),
+            initialfile=f"",
+            initialdir=MY_DOCS,
+        )
+
+        if dst_fh:
+            df = self.reports_idx[widget_id]
+            df.to_csv(dst_fh, index=False, encoding="utf-8")
+
+    def create_report_widget(self, parent, height, row, col, df=None):
         unit_frame = Frame(parent)
         unit_frame.grid(row=row, column=col, sticky="snew", padx=5, pady=5)  # rowspan=4
         textWidget = Text(
             unit_frame,
             font=RFONT,
             width=45,
-            height=height,
+            height=height + 5,
             wrap=NONE,
             background="SystemButtonFace",
             relief="flat",
         )
         textWidget.grid(row=0, column=0, sticky="snew")
+
+        # add dowload button
+        if df is not None:
+            downloadBtn = Button(
+                textWidget,
+                image=self.downloadImg,
+                command=lambda: self.download_report(textWidget.winfo_id()),
+            )
+            textWidget.window_create(END, window=downloadBtn)
+
         textWidget.tag_configure("tag-right", justify="right")
         textWidget.tag_configure("tag-left", justify="left")
         textWidget.tag_configure("tag-center", justify="center")
@@ -106,6 +138,8 @@ class ReportView:
             background="#B9DEF6",
             relief="raised",
         )
+
+        self.store_report_data(textWidget.winfo_id(), df)
 
         return textWidget
 
@@ -142,6 +176,9 @@ class ReportView:
             )
 
     def generate_report(self, data):
+        # reset report index
+        self.reports_idx = dict()
+
         self.create_report_title(
             data["report_type"], data["users_lbl"], data["start_date"], data["end_date"]
         )
@@ -154,12 +191,13 @@ class ReportView:
 
     def report_one(self, data):
         """Current fiscal year summary"""
-        reportTxt = self.unitFrm(self.reportFrm, 80, 0, 0)
+        reportTxt = self.create_report_widget(self.reportFrm, 100, 0, 0)
 
         reportTxt.insert(END, "carts status\n", "tag-header")
         cats = [f"{x}: {y}" for x, y in data["status"].items()]
         for c in cats:
-            reportTxt.insert(END, f"{c}\n\n", "tag-center")
+            reportTxt.insert(END, f"{c}\n", "tag-center")
+        reportTxt.insert(END, "\n")
 
         reportTxt.insert(END, "quantities\n", "tag-header")
         reportTxt.insert(END, f'orders: {data["orders"]:,}\n', "tag-center")
@@ -229,86 +267,94 @@ class ReportView:
         """Detailed breakdown by each category"""
 
         # left panel
-        w_height = data["audns"].shape[0]
-        w_height += data["langs"].shape[0]
-        w_height += data["langs_audns"].shape[0] + 13
-        leftColTxt = self.unitFrm(self.reportFrm, w_height, 0, 0)
-
         # audience box
-        leftColTxt.insert(END, "audience\n", "tag-header")
-        leftColTxt.insert(
+        leftAudnTxt = self.create_report_widget(
+            self.reportFrm, data["audns"].shape[0], 0, 0, data["audns"]
+        )
+        leftAudnTxt.insert(END, "\t\taudience\n", "tag-header")
+        leftAudnTxt.insert(
             END, data["audns"].to_string(index=False, justify="right"), "tag-right"
         )
-        leftColTxt.insert(END, "\n\n")
 
         # languages boxes
-        leftColTxt.insert(END, "language\n", "tag-header")
-        leftColTxt.insert(
+        leftLangTxt = self.create_report_widget(
+            self.reportFrm, data["langs"].shape[0], 1, 0, data["langs"]
+        )
+        leftLangTxt.insert(END, "\t\tlanguage\n", "tag-header")
+        leftLangTxt.insert(
             END, data["langs"].to_string(index=False, justify="right"), "tag-right"
         )
-        leftColTxt.insert(END, "\n\n")
 
-        leftColTxt.insert(END, "languages by audience\n", "tag-header")
-        leftColTxt.insert(
+        leftLangAudnTxt = self.create_report_widget(
+            self.reportFrm, data["langs_audns"].shape[0], 2, 0, data["langs_audns"]
+        )
+        leftLangAudnTxt.insert(END, "\t\tlanguages by audience\n", "tag-header")
+        leftLangAudnTxt.insert(
             END,
             data["langs_audns"].to_string(index=False, justify="right"),
             "tag-right",
         )
-        leftColTxt.insert(END, "\n\n")
 
         # center panel
         # vendors
-        w_height = data["vendors"].shape[0]
-        w_height += data["funds_langs"].shape[0]
-        w_height += data["funds"].shape[0] + 13
-        centerColTxt = self.unitFrm(self.reportFrm, w_height, 0, 1)
+        centerVendTxt = self.create_report_widget(
+            self.reportFrm, data["vendors"].shape[0], 0, 1, data["vendors"]
+        )
 
-        centerColTxt.insert(END, "vendors\n", "tag-header")
-        centerColTxt.insert(
+        centerVendTxt.insert(END, "\t\tvendors\n", "tag-header")
+        centerVendTxt.insert(
             END, data["vendors"].to_string(index=False, justify="right"), "tag-right"
         )
-        centerColTxt.insert(END, "\n\n")
 
         # funds
-        centerColTxt.insert(END, "funds\n", "tag-header")
-        centerColTxt.insert(
+        centerFundTxt = self.create_report_widget(
+            self.reportFrm, data["funds"].shape[0], 1, 1, data["funds"]
+        )
+        centerFundTxt.insert(END, "\t\tfunds\n", "tag-header")
+        centerFundTxt.insert(
             END, data["funds"].to_string(index=False, justify="right"), "tag-right"
         )
-        centerColTxt.insert(END, "\n\n")
 
         # funds and languages
-        centerColTxt.insert(END, "funds and languages\n", "tag-header")
-        centerColTxt.insert(
+        centerFundLangTxt = self.create_report_widget(
+            self.reportFrm, data["funds_langs"].shape[0], 2, 1, data["funds_langs"]
+        )
+        centerFundLangTxt.insert(END, "\t\tfunds and languages\n", "tag-header")
+        centerFundLangTxt.insert(
             END,
             data["funds_langs"].to_string(index=False, justify="right"),
             "tag-right",
         )
-        centerColTxt.insert(END, "\n\n")
 
         # right panel
-        w_height = data["mattypes"].shape[0]
-        w_height += data["mattypes_langs"].shape[0] + 8
-        rightColTxt = self.unitFrm(self.reportFrm, w_height, 0, 2)
-
         # material types
-        rightColTxt.insert(END, "material types\n", "tag-header")
-        rightColTxt.insert(
+        rightMatTypeTxt = self.create_report_widget(
+            self.reportFrm, data["mattypes"].shape[0], 0, 2, data["mattypes"]
+        )
+        rightMatTypeTxt.insert(END, "\t\tmaterial types\n", "tag-header")
+        rightMatTypeTxt.insert(
             END, data["mattypes"].to_string(index=False, justify="right"), "tag-right"
         )
-        rightColTxt.insert(END, "\n\n")
 
-        rightColTxt.insert(END, "material type by language\n", "tag-header")
-        rightColTxt.insert(
+        # material type by language
+        rightMatTypeLangTxt = self.create_report_widget(
+            self.reportFrm,
+            data["mattypes_langs"].shape[0],
+            1,
+            2,
+            data["mattypes_langs"],
+        )
+        rightMatTypeLangTxt.insert(END, "\t\tmaterial type by language\n", "tag-header")
+        rightMatTypeLangTxt.insert(
             END,
             data["mattypes_langs"].to_string(index=False, justify="right"),
             "tag-right",
         )
-        rightColTxt.insert(END, "\n\n")
 
         # read-only mode
-        leftColTxt["state"] = DISABLED
-        centerColTxt["state"] = DISABLED
-        rightColTxt["state"] = DISABLED
+        for f in self.reportFrm.winfo_children():
+            for w in f.winfo_children():
+                w["state"] = DISABLED
 
     def report_three(self, data):
         """Breakdown by branch"""
@@ -316,9 +362,11 @@ class ReportView:
         rows, cols, heights = self._determine_widgets_layout(data)
         n = 0
         for branch_name, branch_data in data["branches"].items():
-            wTxt = self.unitFrm(self.reportFrm, heights[n], rows[n], cols[n])
+            wTxt = self.create_report_widget(
+                self.reportFrm, heights[n], rows[n], cols[n], branch_data
+            )
 
-            wTxt.insert(END, f"{branch_name}\n", "tag-header")
+            wTxt.insert(END, f"\t{branch_name}\n", "tag-header")
             wTxt.insert(
                 END, branch_data.to_string(index=False, justify="right"), "tag-right"
             )
@@ -336,16 +384,20 @@ class ReportView:
         grouped_sizes = []
         row_sizes = []
         for branch_name, branch_data in data["branches"].items():
-            if len(row_sizes) >= 3:
+            if len(row_sizes) == 3:
                 grouped_sizes.append(row_sizes)
                 row_sizes = []
+            elif len(row_sizes) > 3:
+                mlogger.error("Error while determining branches report layout.")
 
             # calculate number of records in a dataframe
-            row_sizes.append(len(branch_data.index))
+            row_sizes.append(branch_data.shape[0])
 
         # pick up any leftovers
-        if len(row_sizes) < 3:
+        if len(row_sizes) <= 3:
             grouped_sizes.append(row_sizes)
+
+        mlogger.debug(f"Determined # of required report rows: {len(grouped_sizes)}.")
 
         # determine layout location and height
         cols = []
@@ -357,9 +409,8 @@ class ReportView:
             for c in range(len(row_sizes)):
                 rows.append(r)
                 cols.append(c)
-                max_height = row_sizes[row_sizes.index(max(row_sizes))] + 2
+                max_height = row_sizes[row_sizes.index(max(row_sizes))] + 1
                 heights.append(max_height)
-                mlogger.debug(f"row={r}, col={c}, max_height={max_height}")
             r += 1
 
         return rows, cols, heights

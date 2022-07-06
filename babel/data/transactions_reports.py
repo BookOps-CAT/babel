@@ -64,7 +64,7 @@ def get_fy_summary(system_id, library_id, user_ids):
         data: dict, data to be displayed broke down to different categories
     """
     date_today = date.today()
-    if date_today.month < 6:
+    if date_today.month <= 6:
         start_date = date.fromisoformat(f"{date_today.year - 1}-07-01")
     else:
         start_date = date.fromisoformat(f"{date_today.year}-07-01")
