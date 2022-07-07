@@ -4,6 +4,7 @@ import shelve
 from bookops_nypl_platform import PlatformToken
 from bookops_nypl_platform.errors import BookopsPlatformError
 from bookops_bpl_solr.session import BookopsSolrError
+from pandas import read_csv
 import pytest
 import keyring
 from keyring.backends.Windows import WinVaultKeyring
@@ -811,3 +812,8 @@ def mock_solr_error(monkeypatch):
 def dummy_solr(dummy_user_data, mock_vault):
     with BplSolr(dummy_user_data) as solr:
         return solr
+
+
+@pytest.fixture
+def stub_dataframe():
+    return read_csv("tests/report-data.csv")
