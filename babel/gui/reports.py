@@ -351,6 +351,20 @@ class ReportView:
             "tag-right",
         )
 
+        # total items by branch
+        itemsBranchTxt = self.create_report_widget(
+            self.reportFrm,
+            data["total_item_branch"].shape[0],
+            2,
+            2,
+            data["total_item_branch"],
+        )
+        itemsBranchTxt.insert(END, "\t\ttotal branch items\n", "tag-header")
+        itemsBranchTxt.insert(
+            END,
+            data["total_item_branch"].to_string(index=False, justify="left"),
+        )
+
         # read-only mode
         for f in self.reportFrm.winfo_children():
             for w in f.winfo_children():
@@ -540,11 +554,14 @@ class ReportWizView(Frame):
         )
         fyBtn.grid(row=7, column=1, columnspa=2, sticky="snw", padx=2, pady=5)
         audnBtn = Radiobutton(
-            critFrm, text="detailed breakdown", variable=self.report, value=2
+            critFrm, text="view cumulative breakdown", variable=self.report, value=2
         )
         audnBtn.grid(row=8, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
         branchBtn = Radiobutton(
-            critFrm, text="individual branches report", variable=self.report, value=3
+            critFrm,
+            text="view individual branches report",
+            variable=self.report,
+            value=3,
         )
         branchBtn.grid(row=9, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
 
