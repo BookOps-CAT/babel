@@ -2,6 +2,7 @@ from datetime import date
 import logging
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from pandas import DataFrame
 from tkinter import *
 from tkinter import messagebox, filedialog
 from tkinter.ttk import *
@@ -12,6 +13,7 @@ from data.transactions_reports import (
     get_fy_summary,
     get_categories_breakdown,
     get_branch_breakdown,
+    get_lang_branch,
 )
 from logging_settings import LogglyAdapter
 from gui.data_retriever import get_record
@@ -543,11 +545,38 @@ class ReportWizView(Frame):
         audnBtn.grid(row=8, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
         branchBtn = Radiobutton(
             critFrm,
-            text="view individual branches report",
+            text="view individual branches stats",
             variable=self.report,
             value=3,
         )
         branchBtn.grid(row=9, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
+
+        getLangBranchBtn = Radiobutton(
+            critFrm, text="Language/Branch", variable=self.report, value=4
+        )
+        getLangBranchBtn.grid(
+            row=10, column=1, columnspan=2, sticky="snw", padx=2, pady=5
+        )
+
+    def download_widget(self, report_data: DataFrame) -> None:
+        """
+        Opens widget to save the report as csv file
+
+        Args:
+            report_data:                `pandas.DataFrame` instance to be output
+                                        to csv file
+        """
+        dst_fh = filedialog.asksaveasfilename(
+            parent=self.parent,
+            title="Save as",
+            defaultextension=".csv",
+            filetypes=(("cvs file", "*.csv"),),
+            initialfile=f"",
+            initialdir=MY_DOCS,
+        )
+
+        if dst_fh:
+            report_data.to_csv(dst_fh, index=False, encoding="utf-8")
 
     def validate_criteria(self):
         """
@@ -588,8 +617,11 @@ class ReportWizView(Frame):
         if not criteria_issues:
             mlogger.debug(f"Generating report number {self.report.get()}")
             report_data = self.analyze_data()
-            if report_data:
+            if report_data is not None and self.report.get() < 4:
                 ReportView(self, report_data, **self.app_data)
+            elif report_data is not None and self.report.get() >= 4:
+                # save instead of showing
+                self.download_widget(report_data)
             else:
                 messagebox.showinfo("Info", "No data matching criteria")
 
@@ -649,11 +681,23 @@ class ReportWizView(Frame):
                     self.date_to.get(),
                 )
 
-            report_data["report_type"] = self.report.get()
-            if users:
-                report_data["users_lbl"] = users
-            else:
-                report_data["users_lbl"] = ["All users"]
+            elif self.report.get() == 4:
+                report_data = get_lang_branch(
+                    system_id,
+                    library_id,
+                    user_ids,
+                    self.date_from.get(),
+                    self.date_to.get(),
+                )
+
+            # reports 4+ have different format
+            if self.report.get() < 4:
+
+                report_data["report_type"] = self.report.get()
+                if users:
+                    report_data["users_lbl"] = users
+                else:
+                    report_data["users_lbl"] = ["All users"]
 
         except BabelError as e:
             messagebox.showerror("Report error", e)

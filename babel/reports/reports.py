@@ -24,11 +24,28 @@ def create_total_items_by_branch_dataframe(df: DataFrame) -> DataFrame:
     return DataFrame(rows)
 
 
-def create_language_to_branch_dataframe(df: DataFrame) -> DataFrame:
+def create_lang_audn_mat_to_branch_dataframe(
+    df: DataFrame,
+) -> DataFrame:
     """
     Creates a dataframe
     """
-    pass
+    fdf = df[df["cart_status"] != "in-works"]
+    rows = []
+    for labels, data in fdf.groupby(["lang_name", "audn", "mattype"], sort=True):
+        lang = labels[0]
+        audn = labels[1]
+        mattype = labels[2]
+        brow = dict()
+        for loc_code, loc_data in data.groupby(["branch_code"], sort=True):
+            loc_code = loc_code.upper()
+            copies = loc_data["qty"].sum()
+            brow[loc_code] = copies
+
+        row = dict(language=lang, audience=audn, mtype=mattype, **brow)
+        rows.append(Series(row))
+
+    return DataFrame(rows)
 
 
 def generate_fy_summary_by_user_chart(user_data, language_data):
@@ -182,7 +199,6 @@ def generate_detailed_breakdown(df, start_date, end_date):
 
     # filter out carts that are not finilized
     fdf = df[df["cart_status"] != "in-works"]
-    # fdf.to_csv("../tests/report-data.csv", index=False)
 
     # breakdown by audience
     audns = []
