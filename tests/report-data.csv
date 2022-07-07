@@ -1,0 +1,29 @@
+cart_id,cart_date,cart_status,user,system,library,order_id,lang_name,lang_code,audn,vendor,mattype,price,branch_code,branch_name,qty,fund
+929,2022-01-03 14:18:16,finalized,Alex,NYP,branches,57045,Italian,ita,juvenile,Casalini Libri,print,21.33,hk,Huguenot Park,1,24039wdbk
+929,2022-01-03 14:18:16,finalized,Alex,NYP,branches,57045,Italian,ita,juvenile,Casalini Libri,print,21.33,cn,Charleston,1,11001wdbk
+929,2022-01-03 14:18:16,finalized,Alex,NYP,branches,57045,Italian,ita,juvenile,Casalini Libri,print,21.33,be,Belmont,1,11001wdbk
+929,2022-01-03 14:18:16,finalized,Alex,NYP,branches,57045,Italian,ita,juvenile,Casalini Libri,print,21.33,sg,St. George Library Center,1,11001wdbk
+953,2022-01-18 13:29:50,finalized,Alex,NYP,branches,59362,Arabic,ara,juvenile,Sulaiman,print,10.0,cn,Charleston,1,11001wdbk
+953,2022-01-18 13:29:50,finalized,Alex,NYP,branches,59362,Arabic,ara,juvenile,Sulaiman,print,10.0,cl,Morningside Heights,1,11001wdbk
+953,2022-01-18 13:29:50,finalized,Alex,NYP,branches,59362,Arabic,ara,juvenile,Sulaiman,print,10.0,sb,South Beach,1,11001wdbk
+953,2022-01-18 13:29:50,finalized,Alex,NYP,branches,59363,Arabic,ara,juvenile,Sulaiman,print,10.0,cn,Charleston,1,11001wdbk
+930,2022-01-03 15:48:25,finalized,Alex,NYP,branches,57131,Italian,ita,young adult,Casalini Libri,print,25.99,th,Todt Hill-Westerleigh,1,11001wdbk
+930,2022-01-03 15:48:25,finalized,Alex,NYP,branches,57131,Italian,ita,young adult,Casalini Libri,print,25.99,gc,Grand Central,1,11001wdbk
+930,2022-01-03 15:48:25,finalized,Alex,NYP,branches,57131,Italian,ita,young adult,Casalini Libri,print,25.99,sg,St. George Library Center,1,11001wdbk
+930,2022-01-03 15:48:25,finalized,Alex,NYP,branches,57132,Italian,ita,young adult,Casalini Libri,print,25.99,be,Belmont,1,11001wdbk
+936,2022-01-05 20:45:17,finalized,Alex,NYP,branches,57979,Japanese,jpn,young adult,Lectorum,print,6.7915,sn,S. Niarchos Found. Library,1,11001wdbk
+936,2022-01-05 20:45:17,finalized,Alex,NYP,branches,57979,Japanese,jpn,young adult,Lectorum,print,6.7915,ft,53rd Street,1,11001wdbk
+936,2022-01-05 20:45:17,finalized,Alex,NYP,branches,57980,Japanese,jpn,young adult,Lectorum,print,6.7915,sn,S. Niarchos Found. Library,1,11001wdbk
+936,2022-01-05 20:45:17,finalized,Alex,NYP,branches,57980,Japanese,jpn,young adult,Lectorum,print,6.7915,ft,53rd Street,1,11001wdbk
+956,2022-01-18 15:08:09,finalized,Alex,NYP,branches,59493,Arabic,ara,young adult,Jarir Bookstore,print,5.75,cn,Charleston,1,11001wdbk
+956,2022-01-18 15:08:09,finalized,Alex,NYP,branches,59493,Arabic,ara,young adult,Jarir Bookstore,print,5.75,cl,Morningside Heights,1,11001wdbk
+956,2022-01-18 15:08:09,finalized,Alex,NYP,branches,59494,Arabic,ara,young adult,Jarir Bookstore,print,5.75,cn,Charleston,1,11001wdbk
+956,2022-01-18 15:08:09,finalized,Alex,NYP,branches,59494,Arabic,ara,young adult,Jarir Bookstore,print,5.75,cl,Morningside Heights,1,11001wdbk
+934,2022-01-05 13:52:25,finalized,Alex,NYP,branches,57514,Japanese,jpn,adult,Kinokuniya,print,24.6415,sn,S. Niarchos Found. Library,1,11001wdbk
+934,2022-01-05 13:52:25,finalized,Alex,NYP,branches,57514,Japanese,jpn,adult,Kinokuniya,print,24.6415,ft,53rd Street,1,11001wdbk
+934,2022-01-05 13:52:25,finalized,Alex,NYP,branches,57514,Japanese,jpn,adult,Kinokuniya,print,24.6415,rs,Riverside,1,11001wdbk
+934,2022-01-05 13:52:25,finalized,Alex,NYP,branches,57514,Japanese,jpn,adult,Kinokuniya,print,24.6415,kp,Kips Bay,1,11001wdbk
+974,2022-01-25 12:22:43,finalized,Alex,NYP,branches,60523,Spanish,spa,adult,Lectorum,print,10.36,fx,Francis Martin,1,25328wdbk
+974,2022-01-25 12:22:43,finalized,Alex,NYP,branches,60523,Spanish,spa,adult,Lectorum,print,10.36,hg,Hamilton Grange,1,25328wdbk
+974,2022-01-25 12:22:43,finalized,Alex,NYP,branches,60523,Spanish,spa,adult,Lectorum,print,10.36,mh,Mott Haven,1,25328wdbk
+974,2022-01-25 12:22:43,finalized,Alex,NYP,branches,60523,Spanish,spa,adult,Lectorum,print,10.36,sg,St. George Library Center,1,25328wdbk
