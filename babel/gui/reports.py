@@ -272,28 +272,20 @@ class ReportView:
             self.reportFrm, data["audns"].shape[0], 0, 0, data["audns"]
         )
         leftAudnTxt.insert(END, "\t\taudience\n", "tag-header")
-        leftAudnTxt.insert(
-            END, data["audns"].to_string(index=False, justify="right"), "tag-right"
-        )
+        leftAudnTxt.insert(END, data["audns"].to_string(index=False))
 
         # languages boxes
         leftLangTxt = self.create_report_widget(
             self.reportFrm, data["langs"].shape[0], 1, 0, data["langs"]
         )
         leftLangTxt.insert(END, "\t\tlanguage\n", "tag-header")
-        leftLangTxt.insert(
-            END, data["langs"].to_string(index=False, justify="right"), "tag-right"
-        )
+        leftLangTxt.insert(END, data["langs"].to_string(index=False))
 
         leftLangAudnTxt = self.create_report_widget(
             self.reportFrm, data["langs_audns"].shape[0], 2, 0, data["langs_audns"]
         )
         leftLangAudnTxt.insert(END, "\t\tlanguages by audience\n", "tag-header")
-        leftLangAudnTxt.insert(
-            END,
-            data["langs_audns"].to_string(index=False, justify="right"),
-            "tag-right",
-        )
+        leftLangAudnTxt.insert(END, data["langs_audns"].to_string(index=False))
 
         # center panel
         # vendors
@@ -302,18 +294,14 @@ class ReportView:
         )
 
         centerVendTxt.insert(END, "\t\tvendors\n", "tag-header")
-        centerVendTxt.insert(
-            END, data["vendors"].to_string(index=False, justify="right"), "tag-right"
-        )
+        centerVendTxt.insert(END, data["vendors"].to_string(index=False))
 
         # funds
         centerFundTxt = self.create_report_widget(
             self.reportFrm, data["funds"].shape[0], 1, 1, data["funds"]
         )
         centerFundTxt.insert(END, "\t\tfunds\n", "tag-header")
-        centerFundTxt.insert(
-            END, data["funds"].to_string(index=False, justify="right"), "tag-right"
-        )
+        centerFundTxt.insert(END, data["funds"].to_string(index=False))
 
         # funds and languages
         centerFundLangTxt = self.create_report_widget(
@@ -322,8 +310,7 @@ class ReportView:
         centerFundLangTxt.insert(END, "\t\tfunds and languages\n", "tag-header")
         centerFundLangTxt.insert(
             END,
-            data["funds_langs"].to_string(index=False, justify="right"),
-            "tag-right",
+            data["funds_langs"].to_string(index=False),
         )
 
         # right panel
@@ -332,9 +319,7 @@ class ReportView:
             self.reportFrm, data["mattypes"].shape[0], 0, 2, data["mattypes"]
         )
         rightMatTypeTxt.insert(END, "\t\tmaterial types\n", "tag-header")
-        rightMatTypeTxt.insert(
-            END, data["mattypes"].to_string(index=False, justify="right"), "tag-right"
-        )
+        rightMatTypeTxt.insert(END, data["mattypes"].to_string(index=False))
 
         # material type by language
         rightMatTypeLangTxt = self.create_report_widget(
@@ -347,8 +332,7 @@ class ReportView:
         rightMatTypeLangTxt.insert(END, "\t\tmaterial type by language\n", "tag-header")
         rightMatTypeLangTxt.insert(
             END,
-            data["mattypes_langs"].to_string(index=False, justify="right"),
-            "tag-right",
+            data["mattypes_langs"].to_string(index=False),
         )
 
         # total items by branch
@@ -362,7 +346,7 @@ class ReportView:
         itemsBranchTxt.insert(END, "\t\ttotal branch items\n", "tag-header")
         itemsBranchTxt.insert(
             END,
-            data["total_item_branch"].to_string(index=False, justify="left"),
+            data["total_item_branch"].to_string(index=False),
         )
 
         # read-only mode
