@@ -4,6 +4,33 @@ from pandas import DataFrame, Series, Grouper
 from matplotlib.figure import Figure
 
 
+def create_total_items_by_branch_dataframe(df: DataFrame) -> DataFrame:
+    """
+    Creates a dataframe with three columns: branch code, location, total items
+
+    Args:
+        df:                 `DataFrame` instance to be used as basis
+
+    Returns:
+        dataframe
+    """
+    rows = []
+    for labels, data in df.groupby(["branch_code", "branch_name"]):
+        branch_code = labels[0]
+        branch_name = labels[1]
+        copies = data["qty"].sum()
+        rows.append(Series(dict(code=branch_code, location=branch_name, copies=copies)))
+
+    return DataFrame(rows)
+
+
+def create_language_to_branch_dataframe(df: DataFrame) -> DataFrame:
+    """
+    Creates a dataframe
+    """
+    pass
+
+
 def generate_fy_summary_by_user_chart(user_data, language_data):
     # try refactoring it with one figure and two subplots
     f1 = Figure(figsize=(7.3, 4), dpi=100, tight_layout=True, frameon=False)
@@ -142,9 +169,9 @@ def generate_detailed_breakdown(df, start_date, end_date):
     based on Pandas dataframe
 
     args:
-        df: Pandas dataframe
-        start_date: str, report starting date (inclusive)
-        end_date: str, report ending date (inclusive)
+        df:                 Pandas dataframe
+        start_date:         str, report starting date (inclusive)
+        end_date:           str, report ending date (inclusive)
 
     returns:
         data: dict, data in form of dictionary
@@ -155,6 +182,7 @@ def generate_detailed_breakdown(df, start_date, end_date):
 
     # filter out carts that are not finilized
     fdf = df[df["cart_status"] != "in-works"]
+    # fdf.to_csv("../tests/report-data.csv", index=False)
 
     # breakdown by audience
     audns = []
@@ -293,6 +321,10 @@ def generate_detailed_breakdown(df, start_date, end_date):
 
     data["mattypes"] = DataFrame(mattypes)
     data["mattypes_langs"] = DataFrame(mattypes_langs)
+
+    # total items ordered for each branch
+    total_item_branch_df = create_total_items_by_branch_dataframe(fdf)
+    data["total_item_branch"] = total_item_branch_df
 
     return data
 
