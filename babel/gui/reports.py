@@ -384,7 +384,7 @@ class ReportView:
             )
 
             wTxt.insert(END, f"\t{name}\n", "tag-header")
-            wTxt.insert(END, data.to_string(index=False, na_rep=""))
+            wTxt.insert(END, data.to_string(index=False))
             wTxt.insert(END, "\n\n")
             wTxt["state"] = DISABLED
             mlogger.debug(
@@ -568,7 +568,7 @@ class ReportWizView(Frame):
 
         langBtn = Radiobutton(
             critFrm,
-            text="view individual languages by brach stats",
+            text="view individual languages by branch stats",
             variable=self.report,
             value=4,
         )
@@ -576,7 +576,7 @@ class ReportWizView(Frame):
 
         getLangBranchBtn = Radiobutton(
             critFrm,
-            text="Language/Branch cumulative report",
+            text="export language/branch cumulative report",
             variable=self.report,
             value=5,
         )
@@ -586,7 +586,7 @@ class ReportWizView(Frame):
 
         getBranchLangBtn = Radiobutton(
             critFrm,
-            text="Branch/Language cumulative report",
+            text="export branch/language cumulative report",
             variable=self.report,
             value=6,
         )
