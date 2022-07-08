@@ -390,12 +390,12 @@ def generate_branch_breakdown(df, start_date, end_date):
     based on Pandas dataframe
 
     args:
-        df: Pandas dataframe
-        start_date: str, report starting date (inclusive)
-        end_date: str, report ending date (inclusive)
+        df:                 Pandas dataframe
+        start_date:         str, report starting date (inclusive)
+        end_date:           str, report ending date (inclusive)
 
     returns:
-        data: dict, data in form of dictionary
+        data:               dict, data in form of dictionary
     """
     data = dict()
     data["start_date"] = start_date
@@ -453,5 +453,67 @@ def generate_branch_breakdown(df, start_date, end_date):
             branches[f"{branch_name} ({branch_code})"] = bdf
 
     data["branches"] = branches
+
+    return data
+
+
+def generate_language_breakdown(df: DataFrame, start_date: str, end_date: str) -> dict:
+    """
+    Creates individual languages report data in form of a dictionary
+    based on Pandas dataframe
+
+    args:
+        df:                 `pandas.DataFrame` instance with base data
+        start_date:         str, report starting date (inclusive)
+        end_date:           str, report ending date (inclusive)
+
+    returns:
+        data:               dict, data in form of dictionary
+    """
+    data = dict()
+    data["start_date"] = start_date
+    data["end_date"] = end_date
+
+    # filter out carts that are not finilized
+    fdf = df[df["cart_status"] != "in-works"]
+
+    languages = OrderedDict()
+
+    for lang_name, lang_data in fdf.groupby(["lang_name"], sort=True):
+        language = []
+
+        # determine columns
+        cols = []
+        for label, _ in fdf.groupby(["audn", "mattype"], sort=True):
+            cols.append(f"{label[0]} {label[1]}")
+
+        extra_row_data = OrderedDict().fromkeys(cols)
+
+        for branch_labels, branch_data in lang_data.groupby(
+            ["branch_code", "branch_name"], sort=True
+        ):
+
+            total_copies = branch_data["qty"].sum()
+
+            for type_label, type_data in branch_data.groupby(
+                ["audn", "mattype"], sort=True
+            ):
+                copies = type_data["qty"].sum()
+                col = f"{type_label[0]} {type_label[1]}"
+                extra_row_data[col] = copies
+            row = dict(
+                code=branch_labels[0].upper(),
+                location=branch_labels[1],
+                **extra_row_data,
+                total=total_copies,
+            )
+            language.append(Series(row))
+
+        # create a separate dataframe for each language
+        ldf = DataFrame(language)
+        if not ldf.empty:
+            languages[lang_name] = ldf
+
+    data["languages"] = languages
 
     return data

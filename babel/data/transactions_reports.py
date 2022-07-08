@@ -11,6 +11,7 @@ from reports.reports import (
     create_branch_to_lang_audn_mat_dataframe,
     create_lang_audn_mat_to_branch_dataframe,
     generate_branch_breakdown,
+    generate_language_breakdown,
     generate_detailed_breakdown,
     generate_fy_summary_for_display,
 )
@@ -52,6 +53,7 @@ def query2dataframe(system_id, library_id, user_ids, start_date, end_date):
 
         df = read_sql(stmn, session.bind, parse_dates=["cart_date"])
 
+        mlogger.debug(f"query2dataframe func. return dataframe with shape {df.shape}")
         return df
 
 
@@ -112,6 +114,26 @@ def get_branch_breakdown(system_id, library_id, user_ids, start_date, end_date):
     df = query2dataframe(system_id, library_id, user_ids, start_date, end_date)
     data = generate_branch_breakdown(df, start_date, end_date)
 
+    return data
+
+
+def get_lang_breakdown(
+    system_id: str, library_id: str, user_ids: list[int], start_date: str, end_date: str
+) -> dict:
+    """
+    Queries datastore and breaks down data by individual language
+    args:
+        system_id:              int, datastore system.did
+        library_id:             int, datastore library.did
+        user_ids:               list, list of datastore user.did
+        start_date:             str, starting date (inclusive) in format YYYY-MM-DD
+        end_date:               str, end date (inclusive) in format YYYY-MM-DD
+    returns:
+        data:                   dict, data to be displayed broke down by language
+    """
+    df = query2dataframe(system_id, library_id, user_ids, start_date, end_date)
+    data = generate_language_breakdown(df, start_date, end_date)
+    mlogger.debug(f"Created {len(data['languages'])} dataframes for each language.")
     return data
 
 

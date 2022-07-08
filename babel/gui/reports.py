@@ -13,6 +13,7 @@ from data.transactions_reports import (
     get_fy_summary,
     get_categories_breakdown,
     get_branch_breakdown,
+    get_lang_breakdown,
     get_lang_branch,
     get_branch_lang,
 )
@@ -178,6 +179,13 @@ class ReportView:
                 f'users: {", ".join(users_lbl)}'
             )
 
+        elif report_type == 4:
+            self.top.report_title.set(
+                f"{system} breakdown by language\n"
+                f"from {start_date} to {end_date}\n"
+                f"users: {', '.join(users_lbl)}"
+            )
+
     def generate_report(self, data):
         # reset report index
         self.reports_idx = dict()
@@ -190,7 +198,9 @@ class ReportView:
         elif data["report_type"] == 2:
             self.report_two(data)
         elif data["report_type"] == 3:
-            self.report_three(data)
+            self.report_three("branches", data)
+        elif data["report_type"] == 4:
+            self.report_three("languages", data)
 
     def report_one(self, data):
         """Current fiscal year summary"""
@@ -357,34 +367,38 @@ class ReportView:
             for w in f.winfo_children():
                 w["state"] = DISABLED
 
-    def report_three(self, data):
-        """Breakdown by branch"""
+    def report_three(self, key, data):
+        """
+        Breakdown by branch or language
 
-        rows, cols, heights = self._determine_widgets_layout(data)
+        Args:
+            key:                'branches' or 'languages'
+            data:               dict that includes dataframe
+        """
+
+        rows, cols, heights = self._determine_widgets_layout(key, data)
         n = 0
-        for branch_name, branch_data in data["branches"].items():
+        for name, data in data[key].items():
             wTxt = self.create_report_widget(
-                self.reportFrm, heights[n], rows[n], cols[n], branch_data
+                self.reportFrm, heights[n], rows[n], cols[n], data
             )
 
-            wTxt.insert(END, f"\t{branch_name}\n", "tag-header")
-            wTxt.insert(
-                END, branch_data.to_string(index=False, justify="right"), "tag-right"
-            )
+            wTxt.insert(END, f"\t{name}\n", "tag-header")
+            wTxt.insert(END, data.to_string(index=False, na_rep=""))
             wTxt.insert(END, "\n\n")
             wTxt["state"] = DISABLED
             mlogger.debug(
-                f"Report layout: {branch_name}=row:{rows[n]}, "
+                f"Report layout: {name}=row:{rows[n]}, "
                 f"col={cols[n]}, heights={heights[n]}"
             )
 
             n += 1
 
-    def _determine_widgets_layout(self, data):
+    def _determine_widgets_layout(self, key, data):
         # divide branch data into groups of three for each column
         grouped_sizes = []
         row_sizes = []
-        for branch_name, branch_data in data["branches"].items():
+        for _, data in data[key].items():
             if len(row_sizes) == 3:
                 grouped_sizes.append(row_sizes)
                 row_sizes = []
@@ -392,7 +406,7 @@ class ReportView:
                 mlogger.error("Error while determining branches report layout.")
 
             # calculate number of records in a dataframe
-            row_sizes.append(branch_data.shape[0])
+            row_sizes.append(data.shape[0])
 
         # pick up any leftovers
         if len(row_sizes) <= 3:
@@ -537,33 +551,47 @@ class ReportWizView(Frame):
             row=6, column=1, columnspan=4, sticky="snw", padx=2, pady=10
         )
         fyBtn = Radiobutton(
-            critFrm, text="current FY summary", variable=self.report, value=1
+            critFrm, text="view current FY summary", variable=self.report, value=1
         )
         fyBtn.grid(row=7, column=1, columnspa=2, sticky="snw", padx=2, pady=5)
         audnBtn = Radiobutton(
-            critFrm, text="view cumulative breakdown", variable=self.report, value=2
+            critFrm, text="view quick cumulative reports", variable=self.report, value=2
         )
         audnBtn.grid(row=8, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
         branchBtn = Radiobutton(
             critFrm,
-            text="view individual branches stats",
+            text="view individual branches by languages stats",
             variable=self.report,
             value=3,
         )
         branchBtn.grid(row=9, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
 
+        langBtn = Radiobutton(
+            critFrm,
+            text="view individual languages by brach stats",
+            variable=self.report,
+            value=4,
+        )
+        langBtn.grid(row=10, column=1, columnspan=2, sticky="snw", padx=2, pady=2)
+
         getLangBranchBtn = Radiobutton(
-            critFrm, text="Language/Branch report", variable=self.report, value=4
+            critFrm,
+            text="Language/Branch cumulative report",
+            variable=self.report,
+            value=5,
         )
         getLangBranchBtn.grid(
-            row=10, column=1, columnspan=2, sticky="snw", padx=2, pady=5
+            row=11, column=1, columnspan=2, sticky="snw", padx=2, pady=5
         )
 
         getBranchLangBtn = Radiobutton(
-            critFrm, text="Branch/Language report", variable=self.report, value=5
+            critFrm,
+            text="Branch/Language cumulative report",
+            variable=self.report,
+            value=6,
         )
         getBranchLangBtn.grid(
-            row=11, column=1, columnspan=2, sticky="snw", padx=2, pady=2
+            row=12, column=1, columnspan=2, sticky="snw", padx=2, pady=2
         )
 
     def download_widget(self, report_data: DataFrame) -> None:
@@ -625,14 +653,14 @@ class ReportWizView(Frame):
         if not criteria_issues:
             mlogger.debug(f"Generating report number {self.report.get()}")
             report_data = self.analyze_data()
-            if report_data is not None and self.report.get() < 4:
-                mlogger.debug("Viewing reports 1-3.")
+            if report_data is not None and self.report.get() < 5:
+                mlogger.debug("Viewing reports 1-4.")
                 ReportView(self, report_data, **self.app_data)
-            elif report_data is not None and self.report.get() >= 4:
+            elif report_data is not None and self.report.get() >= 5:
                 mlogger.debug("Downloading reports 4+.")
                 # save instead of showing
                 self.download_widget(report_data)
-            else:
+            elif report_data is None:
                 messagebox.showinfo("Info", "No data matching criteria")
 
         else:
@@ -659,6 +687,7 @@ class ReportWizView(Frame):
         return users
 
     def analyze_data(self):
+        self.cur_manager.busy()
         report_data = None
         system_id = self.system.get()
         users = self.get_selected_users()
@@ -669,58 +698,64 @@ class ReportWizView(Frame):
         else:
             library_id = get_record(Library, name=self.library.get()).did
 
-        try:
-            if self.report.get() == 1:
-                report_data = get_fy_summary(system_id, library_id, user_ids)
+        if self.report.get() == 1:
+            report_data = get_fy_summary(system_id, library_id, user_ids)
 
-            elif self.report.get() == 2:
-                report_data = get_categories_breakdown(
-                    system_id,
-                    library_id,
-                    user_ids,
-                    self.date_from.get(),
-                    self.date_to.get(),
-                )
+        elif self.report.get() == 2:
+            report_data = get_categories_breakdown(
+                system_id,
+                library_id,
+                user_ids,
+                self.date_from.get(),
+                self.date_to.get(),
+            )
 
-            elif self.report.get() == 3:
-                report_data = get_branch_breakdown(
-                    system_id,
-                    library_id,
-                    user_ids,
-                    self.date_from.get(),
-                    self.date_to.get(),
-                )
+        elif self.report.get() == 3:
+            report_data = get_branch_breakdown(
+                system_id,
+                library_id,
+                user_ids,
+                self.date_from.get(),
+                self.date_to.get(),
+            )
+        elif self.report.get() == 4:
+            report_data = get_lang_breakdown(
+                system_id,
+                library_id,
+                user_ids,
+                self.date_from.get(),
+                self.date_to.get(),
+            )
 
-            elif self.report.get() == 4:
-                report_data = get_lang_branch(
-                    system_id,
-                    library_id,
-                    user_ids,
-                    self.date_from.get(),
-                    self.date_to.get(),
-                )
-            elif self.report.get() == 5:
-                report_data = get_branch_lang(
-                    system_id,
-                    library_id,
-                    user_ids,
-                    self.date_from.get(),
-                    self.date_to.get(),
-                )
+        elif self.report.get() == 5:
+            report_data = get_lang_branch(
+                system_id,
+                library_id,
+                user_ids,
+                self.date_from.get(),
+                self.date_to.get(),
+            )
+        elif self.report.get() == 6:
+            report_data = get_branch_lang(
+                system_id,
+                library_id,
+                user_ids,
+                self.date_from.get(),
+                self.date_to.get(),
+            )
 
-            # reports 4+ have different format
-            if self.report.get() < 4:
+        # reports 4+ have different format
+        if self.report.get() < 5:
 
-                report_data["report_type"] = self.report.get()
-                if users:
-                    report_data["users_lbl"] = users
-                else:
-                    report_data["users_lbl"] = ["All users"]
+            report_data["report_type"] = self.report.get()
+            if users:
+                report_data["users_lbl"] = users
+            else:
+                report_data["users_lbl"] = ["All users"]
 
-        except BabelError as e:
-            messagebox.showerror("Report error", e)
-        finally:
-            return report_data
+        self.cur_manager.notbusy()
+        mlogger.debug(f"Analysis returned {type(report_data)} obj.")
+        return report_data
 
     def help(self):
         # link to Github wiki with documentation here
