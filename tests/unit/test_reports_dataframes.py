@@ -41,4 +41,5 @@ def test_create_lang_audn_mat_to_branch_dataframe(stub_dataframe):
         "HG",
         "MH",
     ]
-    # assert df.shape == (23, 18)
+    assert df.iloc[[0]].values.tolist()[0][3] == 1.0
+    assert df.shape == (7, 18)
