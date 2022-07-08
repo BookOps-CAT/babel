@@ -8,10 +8,11 @@ from pandas import DataFrame, read_sql
 from data.datastore import session_scope
 from data.datastore_worker import construct_report_query_stmn
 from reports.reports import (
-    generate_fy_summary_for_display,
-    generate_detailed_breakdown,
-    generate_branch_breakdown,
+    create_branch_to_lang_audn_mat_dataframe,
     create_lang_audn_mat_to_branch_dataframe,
+    generate_branch_breakdown,
+    generate_detailed_breakdown,
+    generate_fy_summary_for_display,
 )
 from logging_settings import LogglyAdapter
 
@@ -115,10 +116,11 @@ def get_branch_breakdown(system_id, library_id, user_ids, start_date, end_date):
 
 
 def get_lang_branch(
-    system_id: int, library_id: int, user_ids: int, start_date: str, end_date: str
+    system_id: int, library_id: int, user_ids: list[int], start_date: str, end_date: str
 ) -> DataFrame:
     """
-    Queries datastore with given criteria and returns
+    Queries datastore with given criteria and returns dataframe showing languages,
+    audience, material type broken down by each branch.
 
     Args:
         system_id:              int, datastore system.did
@@ -132,4 +134,26 @@ def get_lang_branch(
     """
     df = query2dataframe(system_id, library_id, user_ids, start_date, end_date)
     data = create_lang_audn_mat_to_branch_dataframe(df)
+    return data
+
+
+def get_branch_lang(
+    system_id: str, library_id: str, user_ids: list[int], start_date: str, end_date: str
+) -> DataFrame:
+    """
+    Queries datastore with given criteria and returns dataframe showing branches broken down
+    by number of copies for each language, audience and material type
+
+    Args:
+        system_id:              int, datastore system.did
+        library_id:             int, datastore library.did
+        user_ids:               list, list of datastore user.did
+        start_date:             str, starting date (inclusive) in format YYYY-MM-DD
+        end_date:               str, end date (inclusive) in format YYYY-MM-DD
+
+    Returns:
+        dataframe
+    """
+    df = query2dataframe(system_id, library_id, user_ids, start_date, end_date)
+    data = create_branch_to_lang_audn_mat_dataframe(df)
     return data

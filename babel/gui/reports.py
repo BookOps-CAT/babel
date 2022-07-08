@@ -14,6 +14,7 @@ from data.transactions_reports import (
     get_categories_breakdown,
     get_branch_breakdown,
     get_lang_branch,
+    get_branch_lang,
 )
 from logging_settings import LogglyAdapter
 from gui.data_retriever import get_record
@@ -552,10 +553,17 @@ class ReportWizView(Frame):
         branchBtn.grid(row=9, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
 
         getLangBranchBtn = Radiobutton(
-            critFrm, text="Language/Branch", variable=self.report, value=4
+            critFrm, text="Language/Branch report", variable=self.report, value=4
         )
         getLangBranchBtn.grid(
             row=10, column=1, columnspan=2, sticky="snw", padx=2, pady=5
+        )
+
+        getBranchLangBtn = Radiobutton(
+            critFrm, text="Branch/Language report", variable=self.report, value=5
+        )
+        getBranchLangBtn.grid(
+            row=11, column=1, columnspan=2, sticky="snw", padx=2, pady=2
         )
 
     def download_widget(self, report_data: DataFrame) -> None:
@@ -618,8 +626,10 @@ class ReportWizView(Frame):
             mlogger.debug(f"Generating report number {self.report.get()}")
             report_data = self.analyze_data()
             if report_data is not None and self.report.get() < 4:
+                mlogger.debug("Viewing reports 1-3.")
                 ReportView(self, report_data, **self.app_data)
             elif report_data is not None and self.report.get() >= 4:
+                mlogger.debug("Downloading reports 4+.")
                 # save instead of showing
                 self.download_widget(report_data)
             else:
@@ -683,6 +693,14 @@ class ReportWizView(Frame):
 
             elif self.report.get() == 4:
                 report_data = get_lang_branch(
+                    system_id,
+                    library_id,
+                    user_ids,
+                    self.date_from.get(),
+                    self.date_to.get(),
+                )
+            elif self.report.get() == 5:
+                report_data = get_branch_lang(
                     system_id,
                     library_id,
                     user_ids,
