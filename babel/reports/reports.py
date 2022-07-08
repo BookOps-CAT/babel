@@ -24,11 +24,67 @@ def create_total_items_by_branch_dataframe(df: DataFrame) -> DataFrame:
     return DataFrame(rows)
 
 
-def create_language_to_branch_dataframe(df: DataFrame) -> DataFrame:
+def create_branch_to_lang_audn_mat_dataframe(df: DataFrame) -> DataFrame:
     """
-    Creates a dataframe
+    Creates a dataframe showing locations brokend down by language, audience, material type.
+
+    Args:
+        df:                     `pandas.DataFrame` instance with base data
+
+    Returns:
+        `pandas.Dataframe` instance with filterd data
     """
-    pass
+    fdf = df[df["cart_status"] != "in-works"]
+    rows = []
+    codes = fdf["branch_code"].str.upper().sort_values().unique()
+
+    # determine columns
+    cols = []
+    for label, _ in fdf.groupby(["lang_name", "audn", "mattype"], sort=True):
+        cols.append(f"{label[0]} {label[1]} {label[2]}")
+
+    for l, d in fdf.groupby(["branch_code", "branch_name"], sort=True):
+        location = f"{l[0].upper()} / {l[1]}"
+        extra_row_data = OrderedDict().fromkeys(cols)
+        for ll, dd in d.groupby(["lang_name", "audn", "mattype"], sort=True):
+            col = f"{ll[0]} {ll[1]} {ll[2]}"
+            extra_row_data[col] = dd["qty"].sum()
+        row = dict(location=location, **extra_row_data)
+        rows.append(Series(row))
+
+    return DataFrame(rows)
+
+
+def create_lang_audn_mat_to_branch_dataframe(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Creates a dataframe showing language, audience, material type broken down
+    by each location.
+
+    Args:
+        df:                     `pandas.DataFrame` instance with base data
+
+    Returns:
+        `pandas.Dataframe` instance with filterd data
+    """
+    fdf = df[df["cart_status"] != "in-works"]
+    rows = []
+    codes = fdf["branch_code"].str.upper().sort_values().unique()
+    for labels, data in fdf.groupby(["lang_name", "audn", "mattype"], sort=True):
+        lang = labels[0]
+        audn = labels[1]
+        mattype = labels[2]
+        extra_row_data = OrderedDict().fromkeys(codes)
+        for loc_code, loc_data in data.groupby(["branch_code"]):
+            col_label = loc_code.upper()
+            copies = loc_data["qty"].sum()
+            extra_row_data[col_label] = copies
+
+        row = dict(language=lang, audience=audn, mtype=mattype, **extra_row_data)
+        rows.append(Series(row))
+
+    return DataFrame(rows)
 
 
 def generate_fy_summary_by_user_chart(user_data, language_data):
@@ -182,7 +238,6 @@ def generate_detailed_breakdown(df, start_date, end_date):
 
     # filter out carts that are not finilized
     fdf = df[df["cart_status"] != "in-works"]
-    # fdf.to_csv("../tests/report-data.csv", index=False)
 
     # breakdown by audience
     audns = []
