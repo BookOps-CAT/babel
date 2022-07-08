@@ -429,10 +429,10 @@ def generate_branch_breakdown(df, start_date, end_date):
                 Series(
                     {
                         "": kk,
-                        "total": total_lang_copies,
                         "adult": adult_lang_copies,
                         "ya": ya_lang_copies,
                         "juv": juv_lang_copies,
+                        "total": total_lang_copies,
                     }
                 )
             )
@@ -440,10 +440,10 @@ def generate_branch_breakdown(df, start_date, end_date):
             Series(
                 {
                     "": "combined",
-                    "total": total_copies,
                     "adult": adult_copies,
                     "ya": ya_copies,
                     "juv": juv_copies,
+                    "total": total_copies,
                 }
             )
         )
@@ -479,19 +479,19 @@ def generate_language_breakdown(df: DataFrame, start_date: str, end_date: str) -
 
     languages = OrderedDict()
 
+    # determine columns
+    cols = []
+    for label, _ in fdf.groupby(["audn", "mattype"], sort=True):
+        cols.append(f"{label[0]} {label[1]}")
+
     for lang_name, lang_data in fdf.groupby(["lang_name"], sort=True):
         language = []
-
-        # determine columns
-        cols = []
-        for label, _ in fdf.groupby(["audn", "mattype"], sort=True):
-            cols.append(f"{label[0]} {label[1]}")
-
-        extra_row_data = OrderedDict().fromkeys(cols)
 
         for branch_labels, branch_data in lang_data.groupby(
             ["branch_code", "branch_name"], sort=True
         ):
+
+            extra_row_data = OrderedDict().fromkeys(cols)
 
             total_copies = branch_data["qty"].sum()
 
