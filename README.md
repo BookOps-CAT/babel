@@ -29,7 +29,7 @@ create_datastore(
 
 ## Stand-alone executable under Windows (initial & updates)
 1. Copy content of Babel, Babel-updater (if changed) and Babel-windows-installer directories into a new space
-2. Update version (version.txt)
+2. Update version (babel/babel.py and babel-pyinstaller/win_info.txt)
 3. Change logging from development to production (babel.py) - make sure loggly token is added
 4. Activate virtual environment
 5. Run freeze-babel-debug.cmd shell script from the main babel folder (repeat for updater and installer if changed)
