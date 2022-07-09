@@ -10,12 +10,13 @@ from tkinter.ttk import *
 
 from data.datastore import System, Library
 from data.transactions_reports import (
-    get_fy_summary,
-    get_categories_breakdown,
+    get_basic_stats,
     get_branch_breakdown,
+    get_branch_lang,
+    get_categories_breakdown,
+    get_fy_summary,
     get_lang_breakdown,
     get_lang_branch,
-    get_branch_lang,
 )
 from logging_settings import LogglyAdapter
 from gui.data_retriever import get_record
@@ -168,18 +169,23 @@ class ReportView:
 
         elif report_type == 2:
             self.top.report_title.set(
+                f"Basic Babel stats\n" f"from {start_date} to {end_date}"
+            )
+
+        elif report_type == 3:
+            self.top.report_title.set(
                 f"{system} detailed breakdown\n"
                 f"from {start_date} to {end_date}\n"
                 f'users: {", ".join(users_lbl)}'
             )
-        elif report_type == 3:
+        elif report_type == 4:
             self.top.report_title.set(
                 f"{system} breakdown by branch\n"
                 f"(from {start_date} to {end_date})\n"
                 f'users: {", ".join(users_lbl)}'
             )
 
-        elif report_type == 4:
+        elif report_type == 5:
             self.top.report_title.set(
                 f"{system} breakdown by language\n"
                 f"from {start_date} to {end_date}\n"
@@ -193,14 +199,16 @@ class ReportView:
         self.create_report_title(
             data["report_type"], data["users_lbl"], data["start_date"], data["end_date"]
         )
-        if data["report_type"] == 1:
+        if data["reporty_type"] == 1:
             self.report_one(data)
         elif data["report_type"] == 2:
             self.report_two(data)
         elif data["report_type"] == 3:
-            self.report_three("branches", data)
+            self.report_three(data)
         elif data["report_type"] == 4:
-            self.report_three("languages", data)
+            self.report_four("branches", data)
+        elif data["report_type"] == 5:
+            self.report_four("languages", data)
 
     def report_one(self, data):
         """Current fiscal year summary"""
@@ -277,6 +285,28 @@ class ReportView:
         canvas2.draw()
 
     def report_two(self, data):
+        """Basic Babel stats"""
+        ordsTxt = self.create_report_widget(
+            self.reportFrm, data["total_orders"].shape[0], 0, 0
+        )
+        ordsTxt.insert(END, "total orders\n", "tag-header")
+        ordsTxt.insert(END, data["total_orders"].to_str(index=False))
+
+        # itemsTxt = self.create_report_widget(self.reportFrm, 3, 0, 1)
+
+        # itemLangTotalTxt = self.create_widget(self.reportFrm, 100, 1, 0)
+
+        # itemLangNyplTxt = self.create_widget(self.reportFrm, 100, 1, 1)
+
+        # itemLangBplTxt = self.create_report_widget(self.reportFrm, 100, 1, 2)
+
+        # itemMatTotalTxt = self.create_widget(self.reportFrm, 3, 2, 0)
+
+        # itemMatNyplTxt = self.create_widget(self.reportFrm, 3, 2, 1)
+
+        # itemMatBplTxt = self.create_report_widget(self.reportFrm, 3, 2, 2)
+
+    def report_three(self, data):
         """Detailed breakdown by each category"""
 
         # left panel
@@ -367,7 +397,7 @@ class ReportView:
             for w in f.winfo_children():
                 w["state"] = DISABLED
 
-    def report_three(self, key, data):
+    def report_four(self, key, data):
         """
         Breakdown by branch or language
 
@@ -554,44 +584,50 @@ class ReportWizView(Frame):
             critFrm, text="view current FY summary", variable=self.report, value=1
         )
         fyBtn.grid(row=7, column=1, columnspa=2, sticky="snw", padx=2, pady=5)
-        audnBtn = Radiobutton(
-            critFrm, text="view quick cumulative reports", variable=self.report, value=2
+
+        basicStatsBtn = Radiobutton(
+            critFrm, text="export basic Babel stats", variable=self.report, value=2
         )
-        audnBtn.grid(row=8, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
+        basicStatsBtn.grid(row=8, column=1, columnspan=2, sticky="snw", padx=2, pady=2)
+
+        audnBtn = Radiobutton(
+            critFrm, text="view quick cumulative reports", variable=self.report, value=3
+        )
+        audnBtn.grid(row=9, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
         branchBtn = Radiobutton(
             critFrm,
             text="view individual branches by languages stats",
             variable=self.report,
-            value=3,
+            value=4,
         )
-        branchBtn.grid(row=9, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
+        branchBtn.grid(row=10, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
 
         langBtn = Radiobutton(
             critFrm,
             text="view individual languages by branch stats",
             variable=self.report,
-            value=4,
+            value=5,
         )
-        langBtn.grid(row=10, column=1, columnspan=2, sticky="snw", padx=2, pady=2)
+        langBtn.grid(row=11, column=1, columnspan=2, sticky="snw", padx=2, pady=2)
 
         getLangBranchBtn = Radiobutton(
             critFrm,
             text="export language/branch cumulative report",
             variable=self.report,
-            value=5,
+            value=6,
         )
         getLangBranchBtn.grid(
-            row=11, column=1, columnspan=2, sticky="snw", padx=2, pady=5
+            row=12, column=1, columnspan=2, sticky="snw", padx=2, pady=5
         )
 
         getBranchLangBtn = Radiobutton(
             critFrm,
             text="export branch/language cumulative report",
             variable=self.report,
-            value=6,
+            value=7,
         )
         getBranchLangBtn.grid(
-            row=12, column=1, columnspan=2, sticky="snw", padx=2, pady=2
+            row=13, column=1, columnspan=2, sticky="snw", padx=2, pady=2
         )
 
     def download_widget(self, report_data: DataFrame) -> None:
@@ -623,7 +659,7 @@ class ReportWizView(Frame):
         issues = []
         msg = None
 
-        if self.system.get() not in (1, 2):
+        if self.report.get() != 2 and self.system.get() not in (1, 2):
             issues.append("- library system not defined")
         if self.report.get() != 1 and not self.date_from.get():
             issues.append("- undefined starting date")
@@ -653,11 +689,11 @@ class ReportWizView(Frame):
         if not criteria_issues:
             mlogger.debug(f"Generating report number {self.report.get()}")
             report_data = self.analyze_data()
-            if report_data is not None and self.report.get() < 5:
-                mlogger.debug("Viewing reports 1-4.")
+            if report_data is not None and self.report.get() < 6:
+                mlogger.debug("Viewing reports 1-5.")
                 ReportView(self, report_data, **self.app_data)
-            elif report_data is not None and self.report.get() >= 5:
-                mlogger.debug("Downloading reports 4+.")
+            elif report_data is not None and self.report.get() >= 6:
+                mlogger.debug("Downloading reports 6+.")
                 # save instead of showing
                 self.download_widget(report_data)
             elif report_data is None:
@@ -702,6 +738,9 @@ class ReportWizView(Frame):
             report_data = get_fy_summary(system_id, library_id, user_ids)
 
         elif self.report.get() == 2:
+            report_data = get_basic_stats(self.date_from.get(), self.date_to.get())
+
+        elif self.report.get() == 3:
             report_data = get_categories_breakdown(
                 system_id,
                 library_id,
@@ -710,7 +749,7 @@ class ReportWizView(Frame):
                 self.date_to.get(),
             )
 
-        elif self.report.get() == 3:
+        elif self.report.get() == 4:
             report_data = get_branch_breakdown(
                 system_id,
                 library_id,
@@ -718,7 +757,7 @@ class ReportWizView(Frame):
                 self.date_from.get(),
                 self.date_to.get(),
             )
-        elif self.report.get() == 4:
+        elif self.report.get() == 5:
             report_data = get_lang_breakdown(
                 system_id,
                 library_id,
@@ -727,7 +766,8 @@ class ReportWizView(Frame):
                 self.date_to.get(),
             )
 
-        elif self.report.get() == 5:
+        elif self.report.get() == 6:
+            # downloable only
             report_data = get_lang_branch(
                 system_id,
                 library_id,
@@ -735,7 +775,8 @@ class ReportWizView(Frame):
                 self.date_from.get(),
                 self.date_to.get(),
             )
-        elif self.report.get() == 6:
+        elif self.report.get() == 7:
+            # downloable only
             report_data = get_branch_lang(
                 system_id,
                 library_id,
