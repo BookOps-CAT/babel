@@ -33,13 +33,13 @@ VSVersionInfo(
         [StringStruct(u'Comments', u'Babel'),
         StringStruct(u'CompanyName', u'BookOps'),
         StringStruct(u'FileDescription', u'Babel, BookOps order records creator'),
-        StringStruct(u'FileVersion', u'3.0.0'),
+        StringStruct(u'FileVersion', u'4.0.0'),
         StringStruct(u'InternalName', u'babel.exe'),
         StringStruct(u'LegalCopyright', u'MIT license'),
         StringStruct(u'OriginalFilename', u'babel.exe'),
         StringStruct(u'ProductName', u'Babel'),
-        StringStruct(u'ProductVersion', u'3.0.0'),
-        StringStruct(u'Assembly Version', u'3.0.0')])
+        StringStruct(u'ProductVersion', u'4.0.0'),
+        StringStruct(u'Assembly Version', u'4.0.0')])
       ])
   ]
 )
