@@ -15,8 +15,12 @@ def delete_record(session, model, **kwargs):
 
 
 def get_column_values(session, model, column, **kwargs):
-    instances = session.query(model).filter_by(**kwargs).options(
-        load_only(column)).order_by(column)
+    instances = (
+        session.query(model)
+        .filter_by(**kwargs)
+        .options(load_only(column))
+        .order_by(column)
+    )
     return instances
 
 
@@ -41,8 +45,7 @@ def retrieve_first_n(session, model, n, **kwargs):
 
 
 def retrieve_first_record(session, model, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).order_by(
-        model.did).first()
+    instance = session.query(model).filter_by(**kwargs).order_by(model.did).first()
     return instance
 
 
@@ -52,8 +55,9 @@ def retrieve_last_record(session, model):
 
 
 def retrieve_last_record_filtered(session, model, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).order_by(
-        model.did.desc()).first()
+    instance = (
+        session.query(model).filter_by(**kwargs).order_by(model.did.desc()).first()
+    )
     return instance
 
 
@@ -63,83 +67,95 @@ def retrieve_record(session, model, **kwargs):
 
 
 def retrieve_records(session, model, **kwargs):
-    instances = session.query(model).filter_by(**kwargs).order_by(
-        model.did).all()
+    instances = session.query(model).filter_by(**kwargs).order_by(model.did).all()
     return instances
 
 
 def retrieve_cart_order_ids(session, cart_id):
-    stmn = text("""
+    stmn = text(
+        """
         SELECT `order`.did
         FROM `order`
         WHERE cart_id=:cart_id
         ORDER BY `order`.did
-        """)
+        """
+    )
     stmn = stmn.bindparams(cart_id=cart_id)
     instances = session.execute(stmn)
     return instances
 
 
-def get_cart_data_view_records(
-        session, system_id, user='All users', status=''):
-    if user == 'All users' and status:
-        stmn = text("""
+def get_cart_data_view_records(session, system_id, user="All users", status=""):
+    if user == "All users" and status:
+        stmn = text(
+            """
             SELECT cart_id, cart_name, cart_date,
                    system_id, cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_status=:status
             ORDER BY cart_date DESC
-        """)
+        """
+        )
         stmn = stmn.bindparams(system_id=system_id, status=status)
 
-    elif user == 'All users' and not status:
-        stmn = text("""
+    elif user == "All users" and not status:
+        stmn = text(
+            """
             SELECT cart_id, cart_name, cart_date, system_id,
                    cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id
             ORDER BY cart_date DESC
-        """)
+        """
+        )
         stmn = stmn.bindparams(system_id=system_id)
-    elif user != 'All users' and not status:
-        stmn = text("""
+    elif user != "All users" and not status:
+        stmn = text(
+            """
             SELECT cart_id, cart_name, cart_date, system_id,
                    cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_owner=:user
             ORDER BY cart_date DESC
-        """)
+        """
+        )
         stmn = stmn.bindparams(system_id=system_id, user=user)
     else:
-        stmn = text("""
+        stmn = text(
+            """
             SELECT cart_id, cart_name, cart_date, system_id,
                    cart_status, cart_owner, linked
             FROM carts_meta
             WHERE system_id=:system_id AND cart_owner=:user AND cart_status=:status
             ORDER BY cart_date DESC
-        """)
+        """
+        )
         stmn = stmn.bindparams(system_id=system_id, user=user, status=status)
     instances = session.execute(stmn)
     return instances
 
 
 def retrieve_cart_details_view_stmn(cart_id):
-    stmn = text("""
+    stmn = text(
+        """
         SELECT * FROM cart_details
         WHERE cart_id=:cart_id
-        """)
+        """
+    )
     stmn = stmn.bindparams(cart_id=cart_id)
     return stmn
 
 
 def retrieve_unique_vendors_from_cart(session, cart_id):
-    stmn = text("""
+    stmn = text(
+        """
     SELECT DISTINCT name
         FROM vendor
         JOIN `order` ON `order`.vendor_id = vendor.did
         WHERE `order`.cart_id=:cart_id
         ;
-    """)
+    """
+    )
     stmn = stmn.bindparams(cart_id=cart_id)
     instances = session.execute(stmn)
     return instances
@@ -151,18 +167,19 @@ def update_record(session, model, did, **kwargs):
         setattr(instance, key, value)
 
 
-def construct_report_query_stmn(system_id, library_id,
-                                user_ids, start_date, end_date):
+def construct_report_query_stmn(
+    system_id: int, library_id: int, user_ids: list[int], start_date: str, end_date: str
+):
     """
     Creates SQL query statemanet to select datastore records matching
     report criteria
 
     args:
-        system_id: int, datastore system.did
-        library_id: int, datastore library.did
-        user_ids: list, list of datastore user.did
-        start_date: str, starting date (inclusive) in format YYYY-MM-DD
-        end_date: str, ending date (inclusive) in format YYYY-MM-DD
+        system_id:                      int, datastore system.did
+        library_id:                     int, datastore library.did
+        user_ids:                       list, list of datastore user.did
+        start_date:                     str, starting date (inclusive) in format YYYY-MM-DD
+        end_date:                       str, ending date (inclusive) in format YYYY-MM-DD
 
     returns:
         stmn: instance of sqlalchemy.sql.expression.TextClause
@@ -200,27 +217,26 @@ def construct_report_query_stmn(system_id, library_id,
         JOIN branch ON orderlocation.branch_id = branch.did
         JOIN fund ON orderlocation.fund_id = fund.did
         WHERE cart.created BETWEEN CAST(:start_date AS DATE) AND CAST(:end_date AS DATE)
-            AND cart.system_id=:system_id
     """
+    params = dict(start_date=f"'{start_date}'", end_date=f"'{end_date}'")
 
-    params = dict(
-        system_id=system_id,
-        start_date=f'{start_date}',
-        end_date=f'{end_date}')
+    if system_id is not None:
+        params["system_id"] = system_id
+        sql_str += " AND cart.system_id=:system_id"
 
     if user_ids:
         s = []
-        sql_str += ' AND ('
+        sql_str += " AND ("
         for user in list(enumerate(user_ids)):
-            arg = f'user_{user[0]}'
+            arg = f"user_{user[0]}"
             params[arg] = user[1]
-            s.append(f'cart.user_id=:{arg}')
-        sql_str += ' OR '.join(s)
-        sql_str += ' )'
+            s.append(f"cart.user_id=:{arg}")
+        sql_str += " OR ".join(s)
+        sql_str += " )"
 
     if library_id is not None:
-        params['library_id'] = library_id
-        sql_str += ' AND cart.library_id=:library_id'
+        params["library_id"] = library_id
+        sql_str += " AND cart.library_id=:library_id"
 
     stmn = text(sql_str)
     stmn = stmn.bindparams(**params)
