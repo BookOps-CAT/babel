@@ -38,18 +38,20 @@ def get_basic_stats(start_date: str, end_date: str) -> dict:
     return data
 
 
-def get_branch_breakdown(system_id, library_id, user_ids, start_date, end_date):
+def get_branch_breakdown(
+    system_id: int, library_id: int, user_ids: list[int], start_date: str, end_date: str
+) -> dict:
     """
     Queries datastore and breaks down data by individual branch
 
     Args:
-        system_id:              int, datastore system.did
-        library_id:             int, datastore library.did
-        user_ids:               list, list of datastore user.did
-        start_date:             str, starting date (inclusive) in format YYYY-MM-DD
-        end_date:               str, end date (inclusive) in format YYYY-MM-DD
+        system_id:              datastore system.did
+        library_id:             datastore library.did
+        user_ids:               list of datastore user.did
+        start_date:             starting date (inclusive) in format YYYY-MM-DD
+        end_date:               end date (inclusive) in format YYYY-MM-DD
     Returns:
-        data:                   dict, data to be displayed broke down by branch
+        data:                   data to be displayed broke down by branch
     """
     df = query2dataframe(system_id, library_id, user_ids, start_date, end_date)
     data = generate_branch_breakdown(df, start_date, end_date)
@@ -58,7 +60,7 @@ def get_branch_breakdown(system_id, library_id, user_ids, start_date, end_date):
 
 
 def get_branch_lang(
-    system_id: str, library_id: str, user_ids: list[int], start_date: str, end_date: str
+    system_id: int, library_id: int, user_ids: list[int], start_date: str, end_date: str
 ) -> DataFrame:
     """
     Queries datastore with given criteria and returns dataframe showing branches broken down
