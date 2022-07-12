@@ -18,11 +18,6 @@ from babel import paths
 
 
 @pytest.fixture
-def mock_env_vars(monkeypatch, mock_data_dir):
-    monkeypatch.setenv("LOCALAPPDATA", f"{mock_data_dir}")
-
-
-@pytest.fixture
 def mock_vault(monkeypatch):
     def _patch(*args, **kwargs):
         return "babel_key"
