@@ -5,17 +5,32 @@ import logging
 
 from pandas import DataFrame, read_sql
 
-from data.datastore import session_scope
-from data.datastore_worker import construct_report_query_stmn
-from reports.reports import (
-    create_branch_to_lang_audn_mat_dataframe,
-    create_lang_audn_mat_to_branch_dataframe,
-    generate_branch_breakdown,
-    generate_language_breakdown,
-    generate_detailed_breakdown,
-    generate_fy_summary_for_display,
-)
-from logging_settings import LogglyAdapter
+try:
+    from data.datastore import session_scope
+    from data.datastore_worker import construct_report_query_stmn
+    from reports.reports import (
+        create_branch_to_lang_audn_mat_dataframe,
+        create_lang_audn_mat_to_branch_dataframe,
+        generate_basic_stats,
+        generate_branch_breakdown,
+        generate_language_breakdown,
+        generate_detailed_breakdown,
+        generate_fy_summary_for_display,
+    )
+    from logging_settings import LogglyAdapter
+except ImportError:
+    from babel.data.datastore import session_scope
+    from babel.data.datastore_worker import construct_report_query_stmn
+    from babel.reports.reports import (
+        create_branch_to_lang_audn_mat_dataframe,
+        create_lang_audn_mat_to_branch_dataframe,
+        generate_basic_stats,
+        generate_branch_breakdown,
+        generate_language_breakdown,
+        generate_detailed_breakdown,
+        generate_fy_summary_for_display,
+    )
+    from babel.logging_settings import LogglyAdapter
 
 
 mlogger = LogglyAdapter(logging.getLogger("babel"), None)
