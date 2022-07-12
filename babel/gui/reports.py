@@ -199,7 +199,7 @@ class ReportView:
         self.create_report_title(
             data["report_type"], data["users_lbl"], data["start_date"], data["end_date"]
         )
-        if data["reporty_type"] == 1:
+        if data["report_type"] == 1:
             self.report_one(data)
         elif data["report_type"] == 2:
             self.report_two(data)
@@ -290,7 +290,7 @@ class ReportView:
             self.reportFrm, data["total_orders"].shape[0], 0, 0
         )
         ordsTxt.insert(END, "total orders\n", "tag-header")
-        ordsTxt.insert(END, data["total_orders"].to_str(index=False))
+        ordsTxt.insert(END, data["total_orders"].to_string(index=False))
 
         # itemsTxt = self.create_report_widget(self.reportFrm, 3, 0, 1)
 
@@ -786,7 +786,7 @@ class ReportWizView(Frame):
             )
 
         # reports 4+ have different format
-        if self.report.get() < 5:
+        if self.report.get() < 6:
 
             report_data["report_type"] = self.report.get()
             if users:
