@@ -184,6 +184,7 @@ def construct_report_query_stmn(
     returns:
         stmn: instance of sqlalchemy.sql.expression.TextClause
     """
+    # fmt: off
     sql_str = """
         SELECT cart.did as cart_id,
                cart.created as cart_date,
@@ -218,7 +219,8 @@ def construct_report_query_stmn(
         JOIN fund ON orderlocation.fund_id = fund.did
         WHERE cart.created BETWEEN CAST(:start_date AS DATE) AND CAST(:end_date AS DATE)
     """
-    params = dict(start_date=f"'{start_date}'", end_date=f"'{end_date}'")
+
+    params = dict(start_date=start_date, end_date=end_date)
 
     if system_id is not None:
         params["system_id"] = system_id
@@ -242,3 +244,5 @@ def construct_report_query_stmn(
     stmn = stmn.bindparams(**params)
 
     return stmn
+
+    # fmt: on
