@@ -19,7 +19,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
-from sqlalchemy.engine.url import URL
+from sqlalchemy.engine import URL
 
 # from sqlalchemy.sql import text
 import shelve
@@ -29,12 +29,12 @@ try:
     from credentials import get_from_vault
     from data.datastore_values import *
     from data.datastore_worker import insert_or_ignore
-    from paths import USER_DATA
+    from paths import get_user_data_handle
 except ImportError:
     from babel.credentials import get_from_vault
     from babel.data.datastore_values import *
     from babel.data.datastore_worker import insert_or_ignore
-    from babel.paths import USER_DATA
+    from babel.paths import get_user_data_handle
 
 DB_DIALECT = "mysql"
 DB_DRIVER = "pymysql"
@@ -459,12 +459,21 @@ class Wlos(Base):
         return f"<Wlo({attrs})>"
 
 
-def datastore_url():
-    user_data = shelve.open(USER_DATA)
+def datastore_url(user_data_fh: str) -> URL:
+    """
+    Creates database URL
+
+    Args:
+        user_data:              path to user_data
+
+    Returns:
+        `sqlalchemy.engine.url.URL` instance
+    """
+    user_data = shelve.open(user_data_fh)
     if "db_config" in user_data:
         db_details = user_data["db_config"]
         passw = get_from_vault("babel_db", db_details["DB_USER"])
-        db_url = URL(
+        db_url = URL.create(
             drivername=DB_DIALECT + "+" + DB_DRIVER,
             username=db_details["DB_USER"],
             password=passw,
@@ -481,7 +490,8 @@ def datastore_url():
 
 class DataAccessLayer:
     def __init__(self):
-        self.db_url = datastore_url()
+        user_data_fh = get_user_data_handle()
+        self.db_url = datastore_url(user_data_fh)
         self.engine = None
         self.Session = None
 
@@ -523,7 +533,7 @@ def create_datastore(db_name=None, user=None, password=None, host=None, port=Non
         raise ValueError("Missing port parameter.")
 
     # create engine
-    database_url = URL(
+    database_url = URL.create(
         drivername=DB_DIALECT + "+" + DB_DRIVER,
         username=user,
         password=password,

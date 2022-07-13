@@ -60,7 +60,6 @@ def test_create_lang_audn_mat_to_branch_dataframe(stub_dataframe):
 
 def test_branch_to_lang_audn_mat_dataframe(stub_dataframe):
     df = create_branch_to_lang_audn_mat_dataframe(stub_dataframe)
-    print(df)
     assert isinstance(df, DataFrame)
     assert df.shape == (15, 8)
     assert list(df.columns) == [

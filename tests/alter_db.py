@@ -14,7 +14,7 @@ from babel.data.datastore_worker import retrieve_record, insert
 
 def alter_datastore(db_name=None, user=None, password=None, host=None, port=None):
     # create engine
-    database_url = URL(
+    database_url = URL.create(
         drivername=DB_DIALECT + "+" + DB_DRIVER,
         username=user,
         password=password,

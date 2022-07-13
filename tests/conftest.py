@@ -14,8 +14,6 @@ from babel.data.datastore_values import BRANCH
 from babel.sierra_adapters.platform import NypPlatform
 from babel.sierra_adapters.solr import BplSolr
 
-from babel import paths
-
 
 @pytest.fixture
 def mock_vault(monkeypatch):
@@ -34,8 +32,15 @@ def mock_no_vault(monkeypatch):
 
 
 @pytest.fixture
-def dummy_user_data_handle(tmpdir):
-    return os.path.join(tmpdir, "user_data")
+def mock_localappdata(monkeypatch, tmpdir):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmpdir))
+    return tmpdir
+
+
+@pytest.fixture
+def dummy_user_data_handle(mock_localappdata):
+    babel_dir = mock_localappdata.mkdir("Babel")
+    return os.path.join(babel_dir, "user_data")
 
 
 @pytest.fixture
