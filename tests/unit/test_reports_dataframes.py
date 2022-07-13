@@ -8,6 +8,7 @@ from babel.reports.reports import (
     create_total_items_by_branch_dataframe,
     create_branch_to_lang_audn_mat_dataframe,
     create_lang_audn_mat_to_branch_dataframe,
+    generate_basic_stats,
 )
 
 
@@ -72,3 +73,29 @@ def test_branch_to_lang_audn_mat_dataframe(stub_dataframe):
         "Japanese young adult print",
         "Spanish adult print",
     ]
+
+
+def test_generate_basic_stats(stub_dataframe):
+    data = generate_basic_stats(stub_dataframe, "2022-07-01", "2022-09-30")
+    assert sorted(data.keys()) == [
+        "babel_langs",
+        "babel_mats",
+        "bpl_langs",
+        "bpl_mats",
+        "end_date",
+        "nypl_langs",
+        "nypl_mats",
+        "start_date",
+        "total_items",
+        "total_orders",
+    ]
+    assert isinstance(data["start_date"], str)
+    assert isinstance(data["end_date"], str)
+    assert isinstance(data["babel_langs"], DataFrame)
+    assert isinstance(data["babel_mats"], DataFrame)
+    assert isinstance(data["bpl_langs"], DataFrame)
+    assert isinstance(data["bpl_mats"], DataFrame)
+    assert isinstance(data["nypl_langs"], DataFrame)
+    assert isinstance(data["nypl_mats"], DataFrame)
+    assert isinstance(data["total_items"], DataFrame)
+    assert isinstance(data["total_orders"], DataFrame)

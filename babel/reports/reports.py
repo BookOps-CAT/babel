@@ -87,6 +87,90 @@ def create_lang_audn_mat_to_branch_dataframe(
     return DataFrame(rows)
 
 
+def generate_basic_stats(df: DataFrame, start_date: str, end_date: str) -> dict:
+    """
+    Creates a dictionary that includes dataframes with basic Babel stats.
+
+    Args:
+        df:                     `pandas.DataFrame` intance with base data
+        start_date:             starting date
+        end_date:               ending date
+
+    Returns:
+        data as dict
+    """
+    data = dict()
+    data["start_date"] = start_date
+    data["end_date"] = end_date
+
+    fdf = df[df["cart_status"] != "in-works"]
+    ndf = fdf[fdf["system"] == "NYP"]
+    bdf = fdf[fdf["system"] == "BPL"]
+
+    # total Babel orders
+    rows = []
+    rows.append(Series(dict(orders="total Babel", qty=fdf["order_id"].nunique())))
+    rows.append(Series(dict(orders="total NYPL", qty=ndf["order_id"].nunique())))
+    rows.append(Series(dict(orders="total BPL", qty=bdf["order_id"].nunique())))
+    data["total_orders"] = DataFrame(rows)
+
+    # total Babel copies
+    rows = []
+    rows.append(Series(dict(items="total Babel", qty=fdf["qty"].sum())))
+    rows.append(Series(dict(items="total NYPL", qty=ndf["qty"].sum())))
+    rows.append(Series(dict(items="total BPL", qty=bdf["qty"].sum())))
+    data["total_items"] = DataFrame(rows)
+
+    # total items by language in general
+    rows = []
+    for lang, d in fdf.groupby("lang_name"):
+        rows.append(Series(dict(language=lang, qty=d["qty"].sum())))
+    df = DataFrame(rows).sort_values("qty", ascending=False)
+    data["babel_langs"] = df
+
+    # total items by language for NYPL
+    rows = []
+    for lang, d in ndf.groupby("lang_name"):
+        rows.append(Series(dict(language=lang, qty=d["qty"].sum())))
+    df = DataFrame(rows)
+    try:
+        df = df.sort_values("qty", ascending=False)
+    except KeyError:
+        pass
+    data["nypl_langs"] = df
+
+    # total items by language for BPL
+    rows = []
+    for lang, d in bdf.groupby("lang_name"):
+        rows.append(Series(dict(language=lang, qty=d["qty"].sum())))
+    df = DataFrame(rows)
+    try:
+        df = df.sort_values("qty", ascending=False)
+    except:
+        pass
+    data["bpl_langs"] = df
+
+    # total Babel items by material type
+    rows = []
+    for mat, d in fdf.groupby("mattype"):
+        rows.append(Series(dict(type=mat, qty=d["qty"].sum())))
+    data["babel_mats"] = DataFrame(rows)
+
+    # total NYPL items by material type
+    rows = []
+    for mat, d in ndf.groupby("mattype"):
+        rows.append(Series(dict(type=mat, qty=d["qty"].sum())))
+    data["nypl_mats"] = DataFrame(rows)
+
+    # total BPl items by material type
+    rows = []
+    for mat, d in bdf.groupby("mattype"):
+        rows.append(Series(dict(type=mat, qty=d["qty"].sum())))
+    data["bpl_mats"] = DataFrame(rows)
+
+    return data
+
+
 def generate_fy_summary_by_user_chart(user_data, language_data):
     # try refactoring it with one figure and two subplots
     f1 = Figure(figsize=(7.3, 4), dpi=100, tight_layout=True, frameon=False)
