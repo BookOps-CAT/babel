@@ -98,7 +98,7 @@ class ReportView:
     def download_report(self, widget_id):
 
         dst_fh = filedialog.asksaveasfilename(
-            parent=self.parent,
+            parent=self.top,
             title="Save as",
             defaultextension=".csv",
             filetypes=(("cvs file", "*.csv"),),
@@ -169,25 +169,26 @@ class ReportView:
 
         elif report_type == 2:
             self.top.report_title.set(
-                f"Basic Babel stats\n" f"from {start_date} to {end_date}"
+                f"Babel totals in quarterly reporting format\n"
+                f"from {start_date} to {end_date}"
             )
 
         elif report_type == 3:
             self.top.report_title.set(
-                f"{system} detailed breakdown\n"
+                f"{system} cumulative report\n"
                 f"from {start_date} to {end_date}\n"
                 f'users: {", ".join(users_lbl)}'
             )
         elif report_type == 4:
             self.top.report_title.set(
-                f"{system} breakdown by branch\n"
+                f"{system} individual branches and their languages\n"
                 f"(from {start_date} to {end_date})\n"
                 f'users: {", ".join(users_lbl)}'
             )
 
         elif report_type == 5:
             self.top.report_title.set(
-                f"{system} breakdown by language\n"
+                f"{system} individual languages and their branches\n"
                 f"from {start_date} to {end_date}\n"
                 f"users: {', '.join(users_lbl)}"
             )
@@ -287,24 +288,52 @@ class ReportView:
     def report_two(self, data):
         """Basic Babel stats"""
         ordsTxt = self.create_report_widget(
-            self.reportFrm, data["total_orders"].shape[0], 0, 0
+            self.reportFrm, data["total_orders"].shape[0], 0, 0, data["total_orders"]
         )
-        ordsTxt.insert(END, "total orders\n", "tag-header")
+        ordsTxt.insert(END, "\ttotal Babel orders\n", "tag-header")
         ordsTxt.insert(END, data["total_orders"].to_string(index=False))
 
-        # itemsTxt = self.create_report_widget(self.reportFrm, 3, 0, 1)
+        itemsTxt = self.create_report_widget(
+            self.reportFrm, data["total_items"].shape[0], 0, 1, data["total_items"]
+        )
+        itemsTxt.insert(END, "\ttotal Babel items\n", "tag-header")
+        itemsTxt.insert(END, data["total_items"].to_string(index=False))
 
-        # itemLangTotalTxt = self.create_widget(self.reportFrm, 100, 1, 0)
+        itemLangTotalTxt = self.create_report_widget(
+            self.reportFrm, data["babel_langs"].shape[0], 1, 0, data["babel_langs"]
+        )
+        itemLangTotalTxt.insert(END, "\ttotal Babel items by lang\n", "tag-header")
+        itemLangTotalTxt.insert(END, data["babel_langs"].to_string(index=False))
 
-        # itemLangNyplTxt = self.create_widget(self.reportFrm, 100, 1, 1)
+        itemLangNyplTxt = self.create_report_widget(
+            self.reportFrm, data["nypl_langs"].shape[0], 1, 1, data["nypl_langs"]
+        )
+        itemLangNyplTxt.insert(END, "\tNYPL items by lang\n", "tag-header")
+        itemLangNyplTxt.insert(END, data["nypl_langs"].to_string(index=False))
 
-        # itemLangBplTxt = self.create_report_widget(self.reportFrm, 100, 1, 2)
+        itemLangBplTxt = self.create_report_widget(
+            self.reportFrm, data["bpl_langs"].shape[0], 1, 2, data["bpl_langs"]
+        )
+        itemLangBplTxt.insert(END, "\tBPL items by lang\n", "tag-header")
+        itemLangBplTxt.insert(END, data["bpl_langs"].to_string(index=False))
 
-        # itemMatTotalTxt = self.create_widget(self.reportFrm, 3, 2, 0)
+        itemMatTotalTxt = self.create_report_widget(
+            self.reportFrm, data["babel_mats"].shape[0], 2, 0, data["babel_mats"]
+        )
+        itemMatTotalTxt.insert(END, "\tBabel items by mat type\n", "tag-header")
+        itemMatTotalTxt.insert(END, data["babel_mats"].to_string(index=False))
 
-        # itemMatNyplTxt = self.create_widget(self.reportFrm, 3, 2, 1)
+        itemMatNyplTxt = self.create_report_widget(
+            self.reportFrm, data["nypl_mats"].shape[0], 2, 1, data["nypl_mats"]
+        )
+        itemMatNyplTxt.insert(END, "\tNYPL items by mat type\n", "tag-header")
+        itemMatNyplTxt.insert(END, data["nypl_mats"].to_string(index=False))
 
-        # itemMatBplTxt = self.create_report_widget(self.reportFrm, 3, 2, 2)
+        itemMatBplTxt = self.create_report_widget(
+            self.reportFrm, data["bpl_mats"].shape[0], 2, 2, data["bpl_mats"]
+        )
+        itemMatBplTxt.insert(END, "\tBPL items by mat type\n", "tag-header")
+        itemMatBplTxt.insert(END, data["bpl_mats"].to_string(index=False))
 
     def report_three(self, data):
         """Detailed breakdown by each category"""
@@ -586,17 +615,20 @@ class ReportWizView(Frame):
         fyBtn.grid(row=7, column=1, columnspa=2, sticky="snw", padx=2, pady=5)
 
         basicStatsBtn = Radiobutton(
-            critFrm, text="export basic Babel stats", variable=self.report, value=2
+            critFrm,
+            text="view Babel totals in quarterly reporting format",
+            variable=self.report,
+            value=2,
         )
         basicStatsBtn.grid(row=8, column=1, columnspan=2, sticky="snw", padx=2, pady=2)
 
         audnBtn = Radiobutton(
-            critFrm, text="view quick cumulative reports", variable=self.report, value=3
+            critFrm, text="view cumulative reports", variable=self.report, value=3
         )
         audnBtn.grid(row=9, column=1, columnspan=2, sticky="snw", padx=2, pady=5)
         branchBtn = Radiobutton(
             critFrm,
-            text="view individual branches by languages stats",
+            text="view individual branches and their languages",
             variable=self.report,
             value=4,
         )
@@ -604,7 +636,7 @@ class ReportWizView(Frame):
 
         langBtn = Radiobutton(
             critFrm,
-            text="view individual languages by branch stats",
+            text="view individual languages and their branches",
             variable=self.report,
             value=5,
         )
