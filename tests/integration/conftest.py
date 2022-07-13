@@ -9,11 +9,6 @@ from babel.data.datastore import session_scope
 
 
 @pytest.fixture
-def dev_evn_vars(monkeypatch, mock_data_dir):
-    monkeypatch.setenv("LOCALAPPDATA", f"{mock_data_dir}")
-
-
-@pytest.fixture
 def mock_db_creds_from_vault(monkeypatch):
     def _patch(*args, **kwargs):
         with open(
@@ -42,7 +37,7 @@ def dev_user_data(dummy_user_data_handle):
 
     user_data = shelve.open(dummy_user_data_handle)
     user_data["db_config"] = dict(
-        DB_NAME=db["db"], DB_HOST=db["host"], DB_USER=["user"], DB_PORT=db["port"]
+        DB_NAME=db["db"], DB_HOST=db["host"], DB_USER=db["user"], DB_PORT=db["port"]
     )
     user_data["nyp_platform"] = dict(
         PLATFORM_OAUTH_SERVER=pl["oauth-server"], PLATFORM_CLIENT_ID=pl["client-id"]
