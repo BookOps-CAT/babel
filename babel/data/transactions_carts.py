@@ -69,7 +69,7 @@ def get_carts_data(system_id, user="All users", status=""):
         raise BabelError(exc)
 
 
-def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
+def export_orders_to_marc_file(fh, cart_rec, progbar):
     # this has to be rewritten to make it more transparent
     # and easier to maintain
 
@@ -162,8 +162,6 @@ def export_orders_to_marc_file(fh, saving_status, cart_rec, progbar):
                 make_bib(fh, oclc_code, library_code, blanketPO, selector_code, order)
                 progbar["value"] += 1
                 progbar.update()
-
-        saving_status.set("Data saved to MARC file successfully.")
 
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
