@@ -1,5 +1,6 @@
 import logging
 from os import path
+from time import sleep
 import shelve
 from tkinter import *
 from tkinter.ttk import *
@@ -395,7 +396,7 @@ class CartsView(Frame):
     def help(self):
         open_url("https://github.com/BookOps-CAT/babel/wiki/Carts")
 
-    def ask_for_destination(self, parent, title, cart_name):
+    def ask_for_destination(self, title, cart_name):
         # retrieve initial directory
         if "MARC" in title:
             initialdir_key = "marc_out"
@@ -413,7 +414,7 @@ class CartsView(Frame):
             initialdir = MY_DOCS
 
         dst_fh = filedialog.asksaveasfilename(
-            parent=parent,
+            parent=self,
             title=title,
             filetypes=(file_types,),
             initialfile=f"{cart_name}.{extention}",
@@ -423,9 +424,10 @@ class CartsView(Frame):
         if dst_fh:
             user_data[initialdir_key] = path.dirname(dst_fh)
             user_data.close()
-            self.dst_fh.set(dst_fh)
+            return dst_fh
         else:
             user_data.close()
+            return None
 
     def ask_for_source(self):
         user_data = shelve.open(USER_DATA)
@@ -441,138 +443,59 @@ class CartsView(Frame):
         user_data.close()
         return source_fh
 
-    def create_to_marc_widget(self, cart_rec):
+    def create_to_marc_widget(self, cart_rec, dst_fh):
 
         top = Toplevel()
         top.title("Saving to MARC file")
 
-        self.dst_fh = StringVar()
-        self.saving_status = StringVar()
-
         frm = Frame(top)
         frm.grid(row=0, column=0, sticky="snew", padx=20, pady=20)
 
-        Label(frm, text=f'"{cart_rec.name}" cart').grid(
+        Label(frm, text=f'Converting "{cart_rec.name}" cart to MARC file.').grid(
             row=0, column=0, columnspan=4, sticky="snew"
         )
-        nameEnt = Entry(
-            frm, justify="right", textvariable=self.dst_fh, state="readonly", width=60
-        )
-        nameEnt.grid(row=1, column=0, columnspan=3, sticky="snew", pady=10)
-
-        dstBtn = Button(
-            frm,
-            image=self.viewImgS,
-            command=lambda: self.ask_for_destination(
-                top, "Save to MARC file", cart_rec.name
-            ),
-        )
-        dstBtn.grid(row=1, column=4, sticky="snw", padx=5, pady=10)
 
         progbar = Progressbar(
             frm,
             mode="determinate",
             orient=HORIZONTAL,
         )
-        progbar.grid(row=2, column=0, columnspan=4, sticky="snew", pady=5)
+        progbar.grid(row=1, column=0, columnspan=4, sticky="snew", pady=5)
 
-        statusLbl = Label(frm, textvariable=self.saving_status)
-        statusLbl.grid(row=3, column=0, columnspan=2, sticky="snew", pady=5)
+        self.launch_save2marc(top, dst_fh, cart_rec, progbar)
 
-        btnFrm = Frame(frm)
-        btnFrm.grid(row=4, column=0, columnspan=4, sticky="snew")
-        btnFrm.columnconfigure(0, minsize=100)
+    def launch_save2marc(self, top, dst_fh, cart_rec, progbar):
+        try:
+            self.cur_manager.busy()
+            export_orders_to_marc_file(dst_fh, cart_rec, progbar)
+            self.cur_manager.notbusy()
+            sleep(2)
+            top.destroy()
 
-        okBtn = Button(
-            btnFrm,
-            image=self.saveImg,
-            command=lambda: self.launch_save2marc(top, cart_rec, progbar),
-        )
-        okBtn.grid(row=4, column=1, sticky="snew", padx=25, pady=10)
-
-        cancelBtn = Button(btnFrm, image=self.deleteImg, command=top.destroy)
-        cancelBtn.grid(row=4, column=2, sticky="snew", padx=25, pady=10)
-
-    def launch_save2marc(self, top, cart_rec, progbar):
-        if self.dst_fh.get():
-            try:
-                self.cur_manager.busy()
-                export_orders_to_marc_file(
-                    self.dst_fh.get(), self.saving_status, cart_rec, progbar
-                )
-                self.cur_manager.notbusy()
-
-            except BabelError as e:
-                self.cur_manager.notbusy()
-                messagebox.showerror(
-                    "Saving Error",
-                    "Unable to create MARC file.\n"
-                    "Run cart validation to find and correct any problems.\n"
-                    f"Error: {e}",
-                    parent=top,
-                )
+        except BabelError as e:
+            self.cur_manager.notbusy()
+            messagebox.showerror(
+                "Saving Error",
+                "Unable to create MARC file.\n"
+                "Run cart validation to find and correct any problems.\n"
+                f"Error: {e}",
+                parent=top,
+            )
 
     def create_marc_file(self):
         cart_rec = get_record(Cart, did=self.selected_cart_id.get())
         if cart_rec:
             status = get_record(Status, did=cart_rec.status_id)
             if status.name == "finalized":
-                self.create_to_marc_widget(cart_rec)
+                dst_fh = self.ask_for_destination("Saving to MARC File", cart_rec.name)
+                if dst_fh:
+                    self.create_to_marc_widget(cart_rec, dst_fh)
             else:
                 msg = (
                     f'Cart "{cart_rec.name}" is not finalized.\n'
                     "Please change cart status to proceed."
                 )
                 messagebox.showwarning("Output to MARC file", msg)
-
-    def create_to_sheet_widget(self, cart_rec, system, cart_data):
-
-        top = Toplevel()
-        top.title("Saving to spreadsheet")
-
-        self.dst_fh = StringVar()
-        self.saving_status = StringVar()
-
-        frm = Frame(top)
-        frm.grid(row=0, column=0, sticky="snew", padx=20, pady=20)
-
-        Label(frm, text=f'"{cart_rec.name}" cart').grid(
-            row=0, column=0, columnspan=4, sticky="snew"
-        )
-        nameEnt = Entry(
-            frm, justify="right", textvariable=self.dst_fh, state="readonly", width=60
-        )
-        nameEnt.grid(row=1, column=0, columnspan=3, sticky="snew", pady=10)
-
-        dstBtn = Button(
-            frm,
-            image=self.viewImgS,
-            command=lambda: self.ask_for_destination(
-                top, "Save to spreadsheet", cart_rec.name
-            ),
-        )
-        dstBtn.grid(row=1, column=4, sticky="snw", padx=5, pady=10)
-
-        statusLbl = Label(frm, textvariable=self.saving_status)
-        statusLbl.grid(row=2, column=0, columnspan=2, sticky="snew", pady=5)
-
-        btnFrm = Frame(frm)
-        btnFrm.grid(row=4, column=0, columnspan=4, sticky="snew")
-        btnFrm.columnconfigure(0, minsize=100)
-
-        okBtn = Button(
-            btnFrm,
-            image=self.saveImg,
-            command=lambda: save2spreadsheet(
-                self.dst_fh.get(), self.saving_status, system, cart_data
-            )
-            if self.dst_fh.get()
-            else None,
-        )
-        okBtn.grid(row=4, column=1, sticky="snew", padx=25, pady=10)
-
-        cancelBtn = Button(btnFrm, image=self.deleteImg, command=top.destroy)
-        cancelBtn.grid(row=4, column=2, sticky="snew", padx=25, pady=10)
 
     def create_order_sheet(self):
         if self.selected_cart_id.get():
@@ -585,23 +508,24 @@ class CartsView(Frame):
                 systemLbl = "New York Public Library"
 
             if status.name == "finalized":
-
-                cart_data = []
-                try:
-                    cart_data = get_cart_data_for_order_sheet(
-                        self.selected_cart_id.get()
-                    )
-                except BabelError as e:
-                    messagebox.showerror(
-                        "Retrieval Error",
-                        "Unable to retrieve records from database.\n" f"Error: {e}",
-                    )
-
-                if cart_data:
+                dst_fh = self.ask_for_destination("Export to spreasheet", cart_rec.name)
+                if dst_fh:
+                    cart_data = []
                     try:
-                        self.create_to_sheet_widget(cart_rec, systemLbl, cart_data)
+                        cart_data = get_cart_data_for_order_sheet(
+                            self.selected_cart_id.get()
+                        )
                     except BabelError as e:
-                        messagebox.showerror("Saving error", e)
+                        messagebox.showerror(
+                            "Retrieval Error",
+                            "Unable to retrieve records from database.\n" f"Error: {e}",
+                        )
+
+                    if cart_data:
+                        try:
+                            save2spreadsheet(dst_fh, systemLbl, cart_data)
+                        except BabelError as e:
+                            messagebox.showerror("Saving error", e)
             else:
                 msg = (
                     f'Cart "{cart_rec.name}" is not finalized.\n'

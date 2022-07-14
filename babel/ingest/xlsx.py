@@ -12,27 +12,27 @@ from openpyxl.styles import Font, PatternFill
 
 from errors import BabelError
 from data.data_objs import VenData
-from data.validators import (shorten4datastore, value2string, normalize_date,
-                             normalize_isbn, normalize_price,
-                             normalize_whitespaces)
+from data.validators import (
+    shorten4datastore,
+    value2string,
+    normalize_date,
+    normalize_isbn,
+    normalize_price,
+    normalize_whitespaces,
+)
 from logging_settings import format_traceback
 
 
-mlogger = logging.getLogger('babel')
+mlogger = logging.getLogger("babel")
 
 
 FONT_BOLD = Font(bold=True)
-FILL_GRAY = PatternFill(fill_type='solid',
-                        start_color='C4C5C6',
-                        end_color='C4C5C6')
+FILL_GRAY = PatternFill(fill_type="solid", start_color="C4C5C6", end_color="C4C5C6")
 
 
 class SheetReader:
-
     def __init__(self, file):
-        self.wb = load_workbook(
-            filename=file,
-            data_only=True)
+        self.wb = load_workbook(filename=file, data_only=True)
         self.ws = self.wb.active
         self.max_row = 0
         self.max_column = 1
@@ -42,11 +42,9 @@ class SheetReader:
             max_column = len(stripped_row)
             if max_column > self.max_column:
                 self.max_column = max_column
-        self.range = 'A1:' + str(
-            get_column_letter(self.max_column)) + str(self.max_row)
+        self.range = "A1:" + str(get_column_letter(self.max_column)) + str(self.max_row)
 
-        mlogger.debug(
-            f'Loaded sheet {file}: data range detected: {self.range}')
+        mlogger.debug(f"Loaded sheet {file}: data range detected: {self.range}")
 
     def __iter__(self):
         for row in self.ws[self.range]:
@@ -102,24 +100,26 @@ class ResourceDataReader:
     """
 
     def __init__(
-            self, fh,
-            header_row=None,
-            title_col=None,
-            add_title_col=None,
-            author_col=None,
-            series_col=None,
-            publisher_col=None,
-            pub_date_col=None,
-            pub_place_col=None,
-            summary_col=None,
-            isbn_col=None,
-            upc_col=None,
-            other_no_col=None,
-            price_list_col=None,
-            price_disc_col=None,
-            desc_url_col=None,
-            comment_col=None,
-            misc_col=None):
+        self,
+        fh,
+        header_row=None,
+        title_col=None,
+        add_title_col=None,
+        author_col=None,
+        series_col=None,
+        publisher_col=None,
+        pub_date_col=None,
+        pub_place_col=None,
+        summary_col=None,
+        isbn_col=None,
+        upc_col=None,
+        other_no_col=None,
+        price_list_col=None,
+        price_disc_col=None,
+        desc_url_col=None,
+        comment_col=None,
+        misc_col=None,
+    ):
 
         self.header_row = header_row
         self.title_col = title_col
@@ -142,24 +142,18 @@ class ResourceDataReader:
         try:
             self.min_row = header_row + 1
         except TypeError:
-            raise AttributeError(
-                'Header row number is a required argument')
+            raise AttributeError("Header row number is a required argument")
 
         if title_col is None:
-            raise AttributeError(
-                'Title column number is a required argument')
+            raise AttributeError("Title column number is a required argument")
 
         wb = load_workbook(
-            filename=fh,
-            read_only=True,
-            keep_vba=False,
-            data_only=True,
-            keep_links=True)
+            filename=fh, read_only=True, keep_vba=False, data_only=True, keep_links=True
+        )
         self.ws = wb.active
 
     def __iter__(self):
-        for row in self.ws.iter_rows(
-                values_only=True, min_row=self.min_row):
+        for row in self.ws.iter_rows(values_only=True, min_row=self.min_row):
             data = self._map_content(row)
             if data:
                 data = self._normalize(data)
@@ -167,34 +161,23 @@ class ResourceDataReader:
 
     def _normalize(self, data):
         data = data._replace(
-            title=shorten4datastore(
-                normalize_whitespaces(data.title), 250),
-            add_title=shorten4datastore(
-                normalize_whitespaces(data.add_title), 250),
-            author=shorten4datastore(
-                normalize_whitespaces(data.author), 150),
-            series=shorten4datastore(
-                normalize_whitespaces(data.series), 250),
-            publisher=shorten4datastore(
-                normalize_whitespaces(data.publisher), 150),
-            pub_date=shorten4datastore(
-                normalize_date(data.pub_date), 25),
-            pub_place=shorten4datastore(
-                normalize_whitespaces(data.pub_place), 50),
-            summary=shorten4datastore(
-                normalize_whitespaces(data.summary), 500),
+            title=shorten4datastore(normalize_whitespaces(data.title), 250),
+            add_title=shorten4datastore(normalize_whitespaces(data.add_title), 250),
+            author=shorten4datastore(normalize_whitespaces(data.author), 150),
+            series=shorten4datastore(normalize_whitespaces(data.series), 250),
+            publisher=shorten4datastore(normalize_whitespaces(data.publisher), 150),
+            pub_date=shorten4datastore(normalize_date(data.pub_date), 25),
+            pub_place=shorten4datastore(normalize_whitespaces(data.pub_place), 50),
+            summary=shorten4datastore(normalize_whitespaces(data.summary), 500),
             isbn=normalize_isbn(data.isbn),
-            upc=shorten4datastore(
-                value2string(data.upc), 20),
-            other_no=shorten4datastore(
-                value2string(data.other_no), 25),
+            upc=shorten4datastore(value2string(data.upc), 20),
+            other_no=shorten4datastore(value2string(data.other_no), 25),
             price_list=normalize_price(data.price_list),
             price_disc=normalize_price(data.price_disc),
             desc_url=shorten4datastore(data.desc_url, 500),
-            comment=shorten4datastore(
-                normalize_whitespaces(data.comment), 150),
-            misc=shorten4datastore(
-                normalize_whitespaces(data.misc), 250))
+            comment=shorten4datastore(normalize_whitespaces(data.comment), 150),
+            misc=shorten4datastore(normalize_whitespaces(data.misc), 250),
+        )
         return data
 
     def _map_content(self, row):
@@ -205,66 +188,66 @@ class ResourceDataReader:
             kwargs = dict()
             if row[self.title_col] is not None:
                 title = str(row[self.title_col]).strip()
-                if title != '':
-                    kwargs['title'] = title
+                if title != "":
+                    kwargs["title"] = title
                     if self.add_title_col is not None:
-                        kwargs['add_title'] = row[self.add_title_col]
+                        kwargs["add_title"] = row[self.add_title_col]
                     if self.author_col is not None:
-                        kwargs['author'] = row[self.author_col]
+                        kwargs["author"] = row[self.author_col]
                     if self.series_col is not None:
-                        kwargs['series'] = row[self.series_col]
+                        kwargs["series"] = row[self.series_col]
                     if self.publisher_col is not None:
-                        kwargs['publisher'] = row[self.publisher_col]
+                        kwargs["publisher"] = row[self.publisher_col]
                     if self.pub_date_col is not None:
-                        kwargs['pub_date'] = row[self.pub_date_col]
+                        kwargs["pub_date"] = row[self.pub_date_col]
                     if self.pub_place_col is not None:
-                        kwargs['pub_place'] = row[self.pub_place_col]
+                        kwargs["pub_place"] = row[self.pub_place_col]
                     if self.summary_col is not None:
-                        kwargs['summary'] = row[self.summary_col]
+                        kwargs["summary"] = row[self.summary_col]
                     if self.isbn_col is not None:
-                        kwargs['isbn'] = row[self.isbn_col]
+                        kwargs["isbn"] = row[self.isbn_col]
                     if self.upc_col is not None:
-                        kwargs['upc'] = row[self.upc_col]
+                        kwargs["upc"] = row[self.upc_col]
                     if self.other_no_col is not None:
-                        kwargs['other_no'] = row[self.other_no_col]
+                        kwargs["other_no"] = row[self.other_no_col]
                     if self.price_list_col is not None:
-                        kwargs['price_list'] = row[self.price_list_col]
+                        kwargs["price_list"] = row[self.price_list_col]
                     if self.price_disc_col is not None:
-                        kwargs['price_disc'] = row[self.price_disc_col]
+                        kwargs["price_disc"] = row[self.price_disc_col]
                     if self.desc_url_col is not None:
-                        kwargs['desc_url'] = row[self.desc_url_col]
+                        kwargs["desc_url"] = row[self.desc_url_col]
                     if self.comment_col is not None:
-                        kwargs['comment'] = row[self.comment_col]
+                        kwargs["comment"] = row[self.comment_col]
                     if self.misc_col is not None:
-                        kwargs['misc'] = row[self.misc_col]
+                        kwargs["misc"] = row[self.misc_col]
 
                     return VenData(**kwargs)
         except IndexError:
             return None
 
 
-def save2spreadsheet(fh, saving_status, system, data):
+def save2spreadsheet(fh, system, data):
     try:
         if os.path.isfile(fh):
             os.remove(fh)
 
-        red_font = Font(color='CC0000')
+        red_font = Font(color="CC0000")
         order_wb = Workbook()
         order_ws = order_wb.active
-        address_line1 = f'BookOps {system}'
-        address_line2 = '31-11 Thomson Avenue'
-        address_line3 = 'Long Island City, NY 11101'
+        address_line1 = f"BookOps {system}"
+        address_line2 = "31-11 Thomson Avenue"
+        address_line3 = "Long Island City, NY 11101"
 
         # set columns width
-        order_ws.column_dimensions['A'].width = 4
-        order_ws.column_dimensions['C'].width = 16
-        order_ws.column_dimensions['D'].width = 25
-        order_ws.column_dimensions['E'].width = 20
-        order_ws.column_dimensions['F'].width = 9
-        order_ws.column_dimensions['G'].width = 8
-        order_ws.column_dimensions['H'].width = 10
-        order_ws.column_dimensions['I'].width = 12
-        order_ws.column_dimensions['J'].width = 18
+        order_ws.column_dimensions["A"].width = 4
+        order_ws.column_dimensions["C"].width = 16
+        order_ws.column_dimensions["D"].width = 25
+        order_ws.column_dimensions["E"].width = 20
+        order_ws.column_dimensions["F"].width = 9
+        order_ws.column_dimensions["G"].width = 8
+        order_ws.column_dimensions["H"].width = 10
+        order_ws.column_dimensions["I"].width = 12
+        order_ws.column_dimensions["J"].width = 18
 
         order_ws.cell(row=2, column=1).value = address_line1
         order_ws.cell(row=2, column=1).font = FONT_BOLD
@@ -274,25 +257,25 @@ def save2spreadsheet(fh, saving_status, system, data):
         order_ws.cell(row=4, column=1).font = FONT_BOLD
 
         # headers
-        order_ws.cell(row=6, column=1).value = '#'
+        order_ws.cell(row=6, column=1).value = "#"
         order_ws.cell(row=6, column=1).fill = FILL_GRAY
-        order_ws.cell(row=6, column=2).value = 'SKU'
+        order_ws.cell(row=6, column=2).value = "SKU"
         order_ws.cell(row=6, column=2).fill = FILL_GRAY
-        order_ws.cell(row=6, column=3).value = 'ISBN'
+        order_ws.cell(row=6, column=3).value = "ISBN"
         order_ws.cell(row=6, column=3).fill = FILL_GRAY
-        order_ws.cell(row=6, column=4).value = 'Title'
+        order_ws.cell(row=6, column=4).value = "Title"
         order_ws.cell(row=6, column=4).fill = FILL_GRAY
-        order_ws.cell(row=6, column=5).value = 'Author'
+        order_ws.cell(row=6, column=5).value = "Author"
         order_ws.cell(row=6, column=5).fill = FILL_GRAY
-        order_ws.cell(row=6, column=6).value = 'Unit Price'
+        order_ws.cell(row=6, column=6).value = "Unit Price"
         order_ws.cell(row=6, column=6).fill = FILL_GRAY
-        order_ws.cell(row=6, column=7).value = 'Copies'
+        order_ws.cell(row=6, column=7).value = "Copies"
         order_ws.cell(row=6, column=7).fill = FILL_GRAY
-        order_ws.cell(row=6, column=8).value = 'Total Price'
+        order_ws.cell(row=6, column=8).value = "Total Price"
         order_ws.cell(row=6, column=8).fill = FILL_GRAY
-        order_ws.cell(row=6, column=9).value = 'o Number'
+        order_ws.cell(row=6, column=9).value = "o Number"
         order_ws.cell(row=6, column=9).fill = FILL_GRAY
-        order_ws.cell(row=6, column=10).value = 'blanket PO'
+        order_ws.cell(row=6, column=10).value = "blanket PO"
         order_ws.cell(row=6, column=10).fill = FILL_GRAY
 
         r = 1
@@ -305,19 +288,16 @@ def save2spreadsheet(fh, saving_status, system, data):
             order_ws.cell(row=6 + r, column=10).font = red_font
             r += 1
         last_r = 6 + r
-        order_ws.cell(row=last_r + 2, column=3).value = 'total copies='
+        order_ws.cell(row=last_r + 2, column=3).value = "total copies="
         order_ws.cell(row=last_r + 2, column=3).fill = FILL_GRAY
-        order_ws.cell(row=last_r + 2, column=4).value = \
-            '=SUM(G7:G' + str(last_r) + ')'
+        order_ws.cell(row=last_r + 2, column=4).value = "=SUM(G7:G" + str(last_r) + ")"
         order_ws.cell(row=last_r + 2, column=4).fill = FILL_GRAY
-        order_ws.cell(row=last_r + 3, column=3).value = 'total cost='
+        order_ws.cell(row=last_r + 3, column=3).value = "total cost="
         order_ws.cell(row=last_r + 3, column=3).fill = FILL_GRAY
-        order_ws.cell(row=last_r + 3, column=4).value = \
-            '=SUM(H7:H' + str(last_r) + ')'
+        order_ws.cell(row=last_r + 3, column=4).value = "=SUM(H7:H" + str(last_r) + ")"
         order_ws.cell(row=last_r + 3, column=4).fill = FILL_GRAY
 
         order_wb.save(filename=fh)
-        saving_status.set('Data saved to spreadsheet successfuly.')
 
     except WindowsError as e:
         raise BabelError(e)
@@ -325,7 +305,5 @@ def save2spreadsheet(fh, saving_status, system, data):
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
-        mlogger.error(
-            'Unhandled error on saving to sheet.'
-            f'Traceback: {tb}')
+        mlogger.error("Unhandled error on saving to sheet." f"Traceback: {tb}")
         raise BabelError(exc)
