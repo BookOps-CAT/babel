@@ -187,7 +187,7 @@ class Installer(Tk):
             try:
                 shutil.rmtree(APP_DATA_DIR)
             except FileNotFoundError:
-                ilogger.debug("Init: No Babel direcrtoy in AppData/Local.")
+                ilogger.debug("Init: No Babel directory in AppData/Local.")
             except PermissionError as exc:
                 ilogger.error(
                     f"Init: Unable to delete current Babel directory in AppData/Local. Error: {exc}"
