@@ -6,7 +6,7 @@ authors = ["Tomasz Kalata <tomaszkalata@bookops.org>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.11"
 pymarc = "^4.2.0"
 openpyxl = "^3.0.9"
 SQLAlchemy = "^1.4.35"
@@ -20,6 +20,7 @@ bookops-nypl-platform = {git = "https://github.com/BookOps-CAT/bookops-nypl-plat
 keyring = "^23.5.0"
 cryptography = "^36.0.2"
 bookops-bpl-solr = {git = "https://github.com/BookOps-CAT/bookops-bpl-solr", rev = "v0.3.0"}
+pyinstaller = "^5.2"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
