@@ -10,8 +10,6 @@ import keyring
 from keyring.backends.Windows import WinVaultKeyring
 
 
-# from credentials import get_from_vault
-
 from installer import is_configured, Installer
 from logging_settings import DEV_LOGGING, PROD_LOGGING
 
