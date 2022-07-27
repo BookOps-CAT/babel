@@ -38,7 +38,7 @@ def alter_datastore(db_name=None, user=None, password=None, host=None, port=None
     print("Added temp_closed column to branch table.")
 
     engine.execute(
-        "ALTER TABLE cart MODIFY `name` VARCHAR(100) CHARACTER SET UTF8 COLLATE utf8_bin;"
+        "ALTER TABLE cart MODIFY `name` VARCHAR(120) CHARACTER SET UTF8 COLLATE utf8_bin;"
     )
     print("Modified cart name column to allow longer names.")
 
