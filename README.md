@@ -41,6 +41,9 @@ create_datastore(
 14. Remove loggly token from `logging_settings` and change logging back to `DEV_LOGGING`
 14. Assist users with unlocking Babel (if creds changed)
 
+## New Feature Requests
+In addition to [GitHub Issues](https://github.com/BookOps-CAT/babel/issues) users can utilize [this google document](https://docs.google.com/document/d/18w87cPrZvU-DUNDGZl1_W-PIUVWcaS3cTW5nfNK_EZs/edit?usp=sharing) to suggest new features or report bugs.
+
 ## Icon Credits
 Icons by
 * Babel2 icon by our colleague Kimberly H. (thanks!)
