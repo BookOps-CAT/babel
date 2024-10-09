@@ -10,7 +10,7 @@ class TestOrderDataReader(unittest.TestCase):
     """Test parsing vendor sheet with title/order info"""
 
     def setUp(self):
-        self.fh_eng = "./test_sheets/eng.xlsx"
+        self.fh_eng = "./tests/test_sheets/eng.xlsx"
 
     def test_no_header_provided(self):
         with self.assertRaises(AttributeError):
