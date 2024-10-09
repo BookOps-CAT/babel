@@ -29,10 +29,10 @@ def dev_user_data(dummy_user_data_handle):
     with open(os.path.join(user_fh, ".babel/new-babel-prod-db.json"), "r") as f:
         db = json.load(f)
 
-    with open(os.path.join(user_fh, ".platform/tomasz_platform.json"), "r") as f:
+    with open(os.path.join(user_fh, ".cred/.platform/tomasz_platform.json"), "r") as f:
         pl = json.load(f)
 
-    with open(os.path.join(user_fh, ".bpl-solr/bpl-solr-prod.json"), "r") as f:
+    with open(os.path.join(user_fh, ".cred/.solr/bpl-solr-prod.json"), "r") as f:
         sl = json.load(f)
 
     user_data = shelve.open(dummy_user_data_handle)
