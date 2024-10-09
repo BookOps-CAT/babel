@@ -171,7 +171,7 @@ def construct_report_query_stmn(
     system_id: int, library_id: int, user_ids: list[int], start_date: str, end_date: str
 ):
     """
-    Creates SQL query statemanet to select datastore records matching
+    Creates SQL query statement to select datastore records matching
     report criteria
 
     args:
@@ -190,7 +190,7 @@ def construct_report_query_stmn(
                cart.created as cart_date,
                status.name as cart_status,
                user.name as user,
-               system.name as system,
+               `system`.name as system_name,
                library.name as library,
                `order`.did as order_id,
                lang.name as lang_name,
@@ -206,7 +206,7 @@ def construct_report_query_stmn(
         FROM cart
         JOIN status ON cart.status_id = status.did
         JOIN user ON cart.user_id = user.did
-        JOIN system ON cart.system_id = system.did
+        JOIN `system` ON cart.system_id = `system`.did
         JOIN library ON cart.library_id = library.did
         JOIN `order` ON cart.did = `order`.cart_id
         JOIN lang ON `order`.lang_id = lang.did

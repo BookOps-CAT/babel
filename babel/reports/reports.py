@@ -104,8 +104,8 @@ def generate_basic_stats(df: DataFrame, start_date: str, end_date: str) -> dict:
     data["end_date"] = end_date
 
     fdf = df[df["cart_status"] != "in-works"]
-    ndf = fdf[fdf["system"] == "NYP"]
-    bdf = fdf[fdf["system"] == "BPL"]
+    ndf = fdf[fdf["system_name"] == "NYP"]
+    bdf = fdf[fdf["system_name"] == "BPL"]
 
     # total Babel orders
     rows = []

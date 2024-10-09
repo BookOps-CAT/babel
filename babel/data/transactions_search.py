@@ -7,33 +7,50 @@ import sys
 from sqlalchemy.sql import text
 
 
-from data.datastore import (session_scope, Order, Cart, Resource, System,
-                            Library, User, Lang, Audn, MatType, Vendor,
-                            OrderLocation, Fund, Branch, ShelfCode, Wlos)
+from data.datastore import (
+    session_scope,
+    Order,
+    Cart,
+    Resource,
+    System,
+    Library,
+    User,
+    Lang,
+    Audn,
+    MatType,
+    Vendor,
+    OrderLocation,
+    Fund,
+    Branch,
+    ShelfCode,
+    Wlos,
+)
 from data.datastore_worker import retrieve_record
 from errors import BabelError
 from logging_settings import format_traceback
 
 
-mlogger = logging.getLogger('babel')
+mlogger = logging.getLogger("babel")
 
 
 @lru_cache(maxsize=2)
 def get_shelfcode(session, shelfcode_id, audn_code):
-    shelfcode = ''
+    shelfcode = ""
     if shelfcode_id is not None:
-        stmn = text("""
+        stmn = text(
+            """
             SELECT code, includes_audn FROM shelfcode
             WHERE did=:shelfcode_id
-            """)
+            """
+        )
         stmn = stmn.bindparams(shelfcode_id=shelfcode_id)
         instances = session.execute(stmn)
-        shelfcode = ''
+        shelfcode = ""
         for i in instances:
             if i.includes_audn:
-                shelfcode = f'{audn_code}{i.code}'
+                shelfcode = f"{audn_code}{i.code}"
             else:
-                shelfcode = f'{i.code}'
+                shelfcode = f"{i.code}"
             break
     return shelfcode
 
@@ -42,10 +59,12 @@ def get_shelfcode(session, shelfcode_id, audn_code):
 def get_fund_code(session, fund_id):
     code = None
     if fund_id is not None:
-        stmn = text("""
+        stmn = text(
+            """
             SELECT code FROM fund
             WHERE did=:fund_id
-            """)
+            """
+        )
         stmn = stmn.bindparams(fund_id=fund_id)
         instances = session.execute(stmn)
         for i in instances:
@@ -58,10 +77,12 @@ def get_fund_code(session, fund_id):
 def get_branch_code(session, branch_id):
     code = None
     if branch_id is not None:
-        stmn = text("""
+        stmn = text(
+            """
             SELECT code FROM branch
             WHERE did=:branch_id
-            """)
+            """
+        )
         stmn = stmn.bindparams(branch_id=branch_id)
         instances = session.execute(stmn)
         for i in instances:
@@ -74,22 +95,26 @@ def get_branch_code(session, branch_id):
 def get_vendor_code(session, vendor_id, system):
     code = None
     if vendor_id is not None:
-        if system == 'BPL':
-            stmn = text("""
+        if system == "BPL":
+            stmn = text(
+                """
                 SELECT bpl_code FROM vendor
                 WHERE did=:vendor_id
-                """)
-        elif system == 'NYP':
-            stmn = text("""
+                """
+            )
+        elif system == "NYP":
+            stmn = text(
+                """
                 SELECT nyp_code FROM vendor
                 WHERE did=:vendor_id
-                """)
+                """
+            )
         stmn = stmn.bindparams(vendor_id=vendor_id)
         instances = session.execute(stmn)
         for i in instances:
-            if system == 'BPL':
+            if system == "BPL":
                 code = i.bpl_code
-            elif system == 'NYP':
+            elif system == "NYP":
                 code = i.nyp_code
             break
         return code
@@ -99,10 +124,12 @@ def get_vendor_code(session, vendor_id, system):
 def get_lang_name(session, lang_id):
     name = None
     if lang_id is not None:
-        stmn = text("""
+        stmn = text(
+            """
             SELECT name FROM lang
             WHERE did=:lang_id
-            """)
+            """
+        )
         stmn = stmn.bindparams(lang_id=lang_id)
         instances = session.execute(stmn)
         for i in instances:
@@ -116,10 +143,12 @@ def get_audn_name_and_code(session, audn_id):
     name = None
     code = None
     if audn_id is not None:
-        stmn = text("""
+        stmn = text(
+            """
             SELECT name, code FROM audn
             WHERE did=:audn_id
-            """)
+            """
+        )
         stmn = stmn.bindparams(audn_id=audn_id)
         instances = session.execute(stmn)
         for i in instances:
@@ -133,10 +162,12 @@ def get_audn_name_and_code(session, audn_id):
 def get_mattype_name(session, mattype_id):
     name = None
     if mattype_id is not None:
-        stmn = text("""
+        stmn = text(
+            """
             SELECT name FROM mattype
             WHERE did=:mattype_id
-            """)
+            """
+        )
         stmn = stmn.bindparams(mattype_id=mattype_id)
         instances = session.execute(stmn)
         for i in instances:
@@ -147,10 +178,12 @@ def get_mattype_name(session, mattype_id):
 
 @lru_cache(maxsize=4)
 def get_status_name(session, status_id):
-    stmn = text("""
+    stmn = text(
+        """
         SELECT name FROM status
         WHERE did=:status_id
-        """)
+        """
+    )
     stmn = stmn.bindparams(status_id=status_id)
     instances = session.execute(stmn)
     for i in instances:
@@ -161,10 +194,12 @@ def get_status_name(session, status_id):
 
 @lru_cache(maxsize=2)
 def get_library_name(session, library_id):
-    stmn = text("""
+    stmn = text(
+        """
         SELECT name FROM library
         WHERE did=:library_id
-        """)
+        """
+    )
     stmn = stmn.bindparams(library_id=library_id)
     instances = session.execute(stmn)
 
@@ -179,10 +214,12 @@ def get_library_name(session, library_id):
 @lru_cache(maxsize=2)
 def get_system_name(session, system_id):
     name = None
-    stmn = text("""
-        SELECT name FROM system
+    stmn = text(
+        """
+        SELECT name FROM `system`
         WHERE did=:system_id
-        """)
+        """
+    )
     stmn = stmn.bindparams(system_id=system_id)
     instances = session.execute(stmn)
     for i in instances:
@@ -194,10 +231,12 @@ def get_system_name(session, system_id):
 @lru_cache(maxsize=4)
 def get_owner(session, user_id):
     owner = None
-    stmn = text("""
-        SELECT name FROM user
+    stmn = text(
+        """
+        SELECT name FROM `user`
         WHERE did=:user_id
-        """)
+        """
+    )
     stmn = stmn.bindparams(user_id=user_id)
     instances = session.execute(stmn)
     for i in instances:
@@ -207,35 +246,33 @@ def get_owner(session, user_id):
 
 
 def get_data_by_identifier(keyword, keyword_type):
-    if keyword_type == 'bib #':
+    if keyword_type == "bib #":
         param = Order.bid
-    elif keyword_type == 'order #':
+    elif keyword_type == "order #":
         param = Order.oid
-    elif keyword_type == 'wlo #':
+    elif keyword_type == "wlo #":
         param = Order.wlo
-    elif keyword_type == 'ISBN':
+    elif keyword_type == "ISBN":
         param = Resource.isbn
-    elif keyword_type == 'UPC':
+    elif keyword_type == "UPC":
         param = Resource.upc
-    elif keyword_type == 'other #':
+    elif keyword_type == "other #":
         param = Resource.other_no
-    elif keyword_type == 'blanketPO':
+    elif keyword_type == "blanketPO":
         param = Cart.blanketPO
     else:
-        raise AttributeError('Invalid keyword_type passed')
-    mlogger.debug(f'Basic search params: {keyword}, type {param}')
+        raise AttributeError("Invalid keyword_type passed")
+    mlogger.debug(f"Basic search params: {keyword}, type {param}")
 
     try:
         with session_scope() as session:
             recs = (
-                session.query(
-                    Cart,
-                    Order,
-                    Resource)
+                session.query(Cart, Order, Resource)
                 .join(Order, Cart.did == Order.cart_id)
                 .join(Resource, Order.did == Resource.order_id)
                 .filter(param == keyword)
-                .all())
+                .all()
+            )
 
             results = []
             for cart_rec, ord_rec, res_rec in recs:
@@ -255,20 +292,17 @@ def get_data_by_identifier(keyword, keyword_type):
                 po = ord_rec.poPerLine
 
                 lang = get_lang_name(session, ord_rec.lang_id)
-                audn_name, audn_code = get_audn_name_and_code(
-                    session, ord_rec.audn_id)
+                audn_name, audn_code = get_audn_name_and_code(session, ord_rec.audn_id)
                 vendor = get_vendor_code(session, ord_rec.vendor_id, system)
                 mattype = get_mattype_name(session, ord_rec.matType_id)
 
                 locs = []
                 for loc in ord_rec.locations:
                     branch = get_branch_code(session, loc.branch_id)
-                    shelfcode = get_shelfcode(
-                        session, loc.shelfcode_id, audn_code)
+                    shelfcode = get_shelfcode(session, loc.shelfcode_id, audn_code)
                     qty = loc.qty
                     fund = get_fund_code(session, loc.fund_id)
-                    locs.append(
-                        f'{branch}{shelfcode}({qty})/{fund}')
+                    locs.append(f"{branch}{shelfcode}({qty})/{fund}")
 
                 # resouce
                 title = res_rec.title
@@ -297,7 +331,8 @@ def get_data_by_identifier(keyword, keyword_type):
                     audn_name=audn_name,
                     mattype=mattype,
                     po=po,
-                    locs=', '.join(locs))
+                    locs=", ".join(locs),
+                )
                 results.append(unit)
             session.expunge_all()
 
@@ -306,16 +341,14 @@ def get_data_by_identifier(keyword, keyword_type):
     except Exception as exc:
         _, _, exc_traceback = sys.exc_info()
         tb = format_traceback(exc, exc_traceback)
-        mlogger.error(
-            'Unhandled error during Basic search.'
-            f'Traceback: {tb}')
-        raise BabelError('Unable to retrieve records.')
+        mlogger.error("Unhandled error during Basic search." f"Traceback: {tb}")
+        raise BabelError("Unable to retrieve records.")
 
 
 def complex_search(conditions):
     """
     args:
-        condictions: dict, key=element name, value=tuple(con, value)
+        conditions: dict, key=element name, value=tuple(con, value)
     """
 
     # will tackle in next iteration
