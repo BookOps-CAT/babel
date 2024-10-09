@@ -54,6 +54,9 @@ Icons by
 * [Simiographics](https://www.iconarchive.com/artist/simiographics.html) used under [CC0 - Public Domain](https://creativecommons.org/publicdomain/zero/1.0/)
 
 ## Changelog
+### 4.0.1 (2024-10-09)
+#### Fixed
++ escaped `system` table name to comply with the new MySQL 8 server and this word being reserved in its SQL syntax
 ### 4.0.0 (2022-07-27)
 #### Added
 + ability to query NYPL Platform and BPL Solr to retrieve matches in the catalog
