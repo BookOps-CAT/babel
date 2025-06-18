@@ -46,3 +46,8 @@ def dev_user_data(dummy_user_data_handle):
     user_data["bpl_solr"] = dict(SOLR_ENDPOINT=sl["endpoint"])
     user_data.close()
     return dummy_user_data_handle
+
+
+@pytest.fixture
+def live_bpl_connection():
+    pass
