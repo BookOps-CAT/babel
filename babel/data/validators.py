@@ -2,18 +2,9 @@
 from decimal import Decimal
 import re
 
-p1 = re.compile(r'[12]\d{3}')
-p2 = re.compile(r'97\d{10}[xX]|97\d{11}|^\d{10}(?!\d)|^\d{9}[xX](?!\d)')
-p3 = re.compile(r'\d{1,4}\.\d{1,}|\d{1,4}')
-
-
-def value2string(value):
-    if type(value) is str:
-        return value
-    elif value is None:
-        return value
-    else:
-        return str(value)
+p1 = re.compile(r"[12]\d{3}")
+p2 = re.compile(r"97\d{10}[xX]|97\d{11}|^\d{10}(?!\d)|^\d{9}[xX](?!\d)")
+p3 = re.compile(r"\d{1,4}\.\d{1,}|\d{1,4}")
 
 
 def normalize_date(value):
@@ -27,8 +18,9 @@ def normalize_date(value):
 def normalize_isbn(value):
     value = value2string(value)
     if value:
-        value = value.replace('-', '').replace(' ', '').replace(
-            '\n', ' ').lower().strip()
+        value = (
+            value.replace("-", "").replace(" ", "").replace("\n", " ").lower().strip()
+        )
         m = re.search(p2, value)
         if m:
             return m.group(0)
@@ -44,23 +36,23 @@ def normalize_price(value):
         if m:
             return Decimal(m.group(0))
         else:
-            return Decimal('0.00')
+            return Decimal("0.00")
     else:
-        return Decimal('0.00')
+        return Decimal("0.00")
 
 
 def normalize_whitespaces(value):
     value = value2string(value)
-    if value is not None:
-        value = value.replace('\t', ' ').replace('\n', ' ').strip()
-    if value == '':
+    if value:
+        value = value.replace("\t", " ").replace("\n", " ").strip()
+    else:
         value = None
     return value
 
 
 def shorten4datastore(value, chr_allowed):
     """
-    Shortens string to specified in chr_allowed paramater number
+    Shortens string to specified in chr_allowed parameter number
     of characters
     args:
         value: str, string to be shorten
@@ -69,12 +61,23 @@ def shorten4datastore(value, chr_allowed):
         value: str, shortened string
     """
 
-    if type(chr_allowed) != int:
-        raise AttributeError('chr_allowed must be an integer')
+    if not isinstance(chr_allowed, int):
+        raise TypeError("chr_allowed must be an integer")
 
-    try:
-        value = value[:chr_allowed]
-    except TypeError:
+    if value is None:
         return None
+    elif isinstance(value, str):
+        return value[:chr_allowed]
+    else:
+        raise TypeError(
+            "shorten4datastore accepts only strings, got {}".format(type(value))
+        )
 
-    return value
+
+def value2string(value):
+    if type(value) is str:
+        return value
+    elif value is None:
+        return value
+    else:
+        return str(value)
