@@ -10,9 +10,9 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, PatternFill
 
 
-from errors import BabelError
-from data.data_objs import VenData
-from data.validators import (
+from babel.errors import BabelError
+from babel.data.data_objs import VenData
+from babel.data.validators import (
     shorten4datastore,
     value2string,
     normalize_date,
@@ -20,7 +20,7 @@ from data.validators import (
     normalize_price,
     normalize_whitespaces,
 )
-from logging_settings import format_traceback
+from babel.logging_settings import format_traceback
 
 
 mlogger = logging.getLogger("babel")
@@ -57,7 +57,6 @@ class SheetReader:
 class ResourceDataReader:
     """
     Parses specified rows and columns of the xlsx spreadsheet
-    The reader can be iterater over in a loop
 
     Arguments:
     ----------
@@ -75,8 +74,8 @@ class ResourceDataReader:
         series column number, index starts with 0
     publisher_col: int
         publisher column number, index starts with 0
-    pub_datae_col: int
-        publicattion column number, index starts with 0
+    pub_date_col: int
+        publication column number, index starts with 0
     summary_col: int
         summary column number, index starts with 0
     isbn_col: int
@@ -84,7 +83,7 @@ class ResourceDataReader:
     upc_col: int
         UPC column number, index starts with 0
     other_no_col: int
-        publisher interal ID, etc. column number, index starts with 0
+        publisher internal ID, etc. column number, index starts with 0
     price_list_col: int
         list price column number, index starts with 0
     price_disc: int
