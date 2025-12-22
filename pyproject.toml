@@ -1,28 +1,29 @@
-[tool.poetry]
+[project]
 name = "babel"
 version = "4.0.0"
 description = "A Windows application for library material selectors that manipulates vendor's spreadsheets to produced MARC21 order records to be loaded to BPL & NYPL Sierra."
-authors = ["Tomasz Kalata <tomaszkalata@bookops.org>"]
+authors = [{name = "Tomasz Kalata", email = "tomaszkalata@bookops.org"}]
 license = "MIT"
+readme = "README.md"
+requires-python = ">=3.9, <3.11"
+dependencies = [
+    "pymarc (>=4.2.2, <5.0)",
+    "openpyxl (>=3.0.9)",
+    "SQLAlchemy (>=1.4.35)",
+    "PyMySQL (>=1.0.2)",
+    "Pillow (>=9.1.1)",
+    "numpy (>=1.22.3)",
+    "pandas (>=1.4.2)",
+    "matplotlib (>=3.5.1)",
+    "loggly-python-handler (>=1.0.1)",
+    "bookops-nypl-platform @ git+https://github.com/BookOps-CAT/bookops-nypl-platform.git@v0.3.0",
+    "keyring (>=23.5.0)",
+    "cryptography (>=36.0.2)",
+    "bookops-bpl-solr @ git+https://github.com/BookOps-CAT/bookops-bpl-solr.git@v0.3.0",
+    "pyinstaller (>=5.2)"
+]
 
-[tool.poetry.dependencies]
-python = ">=3.9,<3.11"
-pymarc = "^4.2.0"
-openpyxl = "^3.0.9"
-SQLAlchemy = "^1.4.35"
-PyMySQL = "^1.0.2"
-Pillow = "^9.1.1"
-numpy = "^1.22.3"
-pandas = "^1.4.2"
-matplotlib = "^3.5.1"
-loggly-python-handler = "^1.0.1"
-bookops-nypl-platform = {git = "https://github.com/BookOps-CAT/bookops-nypl-platform", rev = "v0.3.0"}
-keyring = "^23.5.0"
-cryptography = "^36.0.2"
-bookops-bpl-solr = {git = "https://github.com/BookOps-CAT/bookops-bpl-solr", rev = "v0.3.0"}
-pyinstaller = "^5.2"
-
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^22.3.0"
 coverage = {extras = ["toml"], version = "^6.3.2"}
 pytest = "^7.1.1"
